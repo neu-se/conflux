@@ -1,26 +1,20 @@
 @inproceedings{Kang2011DTADT,
     title = {DTA++: Dynamic Taint Analysis with Targeted Control-Flow Propagation},
     author = {Min Gyung Kang and Stephen McCamant and Pongsin Poosankam and Dawn Xiaodong Song},
-    booktitle ={ NDSS},
+    booktitle = {NDSS},
     year = {2011},
-    annote = {TODO}
+    annote = {
+        Kang \etal propose propagating taints only along select control flows in order to address under-tainting in ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
+        To identify branches related to ``information-preserving'' transformations, they first perform dynamic analysis to collect execution traces.
+        Then, they analyze the execution traces to find control-flow paths that can only be reached by a single input value.
+        Propagation rules are generated to mitigate under-tainting along the branches of these control-flow paths.
+        Lastly, the dynamic analysis is rerun with the generated rules.
+        The authors evaluated an implementation of their approach by tracking the flow of sensitive information in word processing applications and found that it successfully addressed under-tainting in that context.
+        \par
+        Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
+        However, they do not suggest or evaluate general-purpose control flow semantics.
+    }
 }
-%They are doing binary analysis so there are some low-level language issues that they run
-%into, but otherwise similar situation. They were trying to find
-%“[i]nformation-preserving transformations, such as the conversion of data from on
-%format to another” as they has observed under-tainting as a result of these types of
-%flows. Their definition of “information-preserving”  was that there is a one-to-one
-%mapping between legal inputs and output values.
-%Branches related to these transformations were identified by finding control-flow paths
-%that could only be reached by a single input value. So, they perform dynamic analysis to
-%collect execution traces
-%Then they perform a static analysis with these traces and use
-%symbolic execution to identify “culprit branches.” Next they generate propagation rules
-%to address under-tainting from these culprit branches. Lastly they rerun the dynamic
-%analysis with the generated rules.
-%They only evaluated this approach with respect to two specific cases they were
-%interested in that deal with word processing applications. Unfortunately, it is hard to
-%comment of the general efficacy of the approach based on that.
 
 @phdthesis{Jee2015DFT,
     title    = {On Efficiency and Accuracy of Data Flow Tracking Systems},
@@ -81,42 +75,42 @@
 }
 
 @article{Sabelfeld:2006:LIS:2312191.2314769,
-author = {Sabelfeld, A. and Myers, A. C.},
-title = {Language-based Information-flow Security},
-journal = {IEEE J.Sel. A. Commun.},
-issue_date = {September 2006},
-volume = {21},
-number = {1},
-month = sep,
-year = {2006},
-issn = {0733-8716},
-pages = {5--19},
-numpages = {15},
-url = {https://doi.org/10.1109/JSAC.2002.806121},
-doi = {10.1109/JSAC.2002.806121},
-acmid = {2314769},
-publisher = {IEEE Press},
-address = {Piscataway, NJ, USA},
-annote = {TODO}
+    author = {Sabelfeld, A. and Myers, A. C.},
+    title = {Language-based Information-flow Security},
+    journal = {IEEE J.Sel. A. Commun.},
+    issue_date = {September 2006},
+    volume = {21},
+    number = {1},
+    month = sep,
+    year = {2006},
+    issn = {0733-8716},
+    pages = {5--19},
+    numpages = {15},
+    url = {https://doi.org/10.1109/JSAC.2002.806121},
+    doi = {10.1109/JSAC.2002.806121},
+    acmid = {2314769},
+    publisher = {IEEE Press},
+    address = {Piscataway, NJ, USA},
+    annote = {TODO}
 }
 
 @inproceedings{Clause:2007:DGD:1273463.1273490,
-author = {Clause, James and Li, Wanchun and Orso, Alessandro},
-title = {Dytan: A Generic Dynamic Taint Analysis Framework},
-booktitle = {Proceedings of the 2007 International Symposium on Software Testing and Analysis},
-series = {ISSTA '07},
-year = {2007},
-isbn = {978-1-59593-734-6},
-location = {London, United Kingdom},
-pages = {196--206},
-numpages = {11},
-url = {http://doi.acm.org/10.1145/1273463.1273490},
-doi = {10.1145/1273463.1273490},
-acmid = {1273490},
-publisher = {ACM},
-address = {New York, NY, USA},
-keywords = {dynamic tainting, general framework, information flow},
-annote = {TODO}
+    author = {Clause, James and Li, Wanchun and Orso, Alessandro},
+    title = {Dytan: A Generic Dynamic Taint Analysis Framework},
+    booktitle = {Proceedings of the 2007 International Symposium on Software Testing and Analysis},
+    series = {ISSTA '07},
+    year = {2007},
+    isbn = {978-1-59593-734-6},
+    location = {London, United Kingdom},
+    pages = {196--206},
+    numpages = {11},
+    url = {http://doi.acm.org/10.1145/1273463.1273490},
+    doi = {10.1145/1273463.1273490},
+    acmid = {1273490},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {dynamic tainting, general framework, information flow},
+    annote = {TODO}
 } 
 
 
