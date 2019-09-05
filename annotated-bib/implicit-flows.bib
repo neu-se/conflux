@@ -10,11 +10,10 @@
         Propagation rules are generated to mitigate under-tainting along the branches of these control-flow paths.
         Lastly, the dynamic analysis is rerun with the generated rules.
         The authors evaluated an implementation of their approach by tracking the flow of sensitive information in word processing applications and found that it successfully addressed under-tainting in that context.
-        \par
-        Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
+		Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
         However, they do not suggest general-purpose control flow semantics.
+        Some mention is made of instances where a branch causes some value to not be written, which the authors refer to as ``negative'' implicit flows, and a technique for partially mitigating simple instances of such flows is presented.
     }
-    % Might want to discuss their very limited handling of "negative" implicit flows
 }
 
 @phdthesis{Jee2015DFT,
@@ -92,7 +91,13 @@
     acmid = {2314769},
     publisher = {IEEE Press},
     address = {Piscataway, NJ, USA},
-    annote = {TODO}
+    annote = {
+    	Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
+    	They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
+    	The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of the program.
+    	The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
+    	However, they also briefly discuss more relaxed policies, such as selective declassification which allows the confidentiality of data to be ``downgraded'' by certain entities, and quantitative security which allows a limited amount of information to leak.
+    }
 }
 
 @inproceedings{Clause:2007:DGD:1273463.1273490,
