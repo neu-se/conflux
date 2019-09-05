@@ -1,0 +1,122 @@
+@inproceedings{Kang2011DTADT,
+    title = {DTA++: Dynamic Taint Analysis with Targeted Control-Flow Propagation},
+    author = {Min Gyung Kang and Stephen McCamant and Pongsin Poosankam and Dawn Xiaodong Song},
+    booktitle ={ NDSS},
+    year = {2011},
+    annote = {TODO}
+}
+%They are doing binary analysis so there are some low-level language issues that they run
+%into, but otherwise similar situation. They were trying to find
+%“[i]nformation-preserving transformations, such as the conversion of data from on
+%format to another” as they has observed under-tainting as a result of these types of
+%flows. Their definition of “information-preserving”  was that there is a one-to-one
+%mapping between legal inputs and output values.
+%Branches related to these transformations were identified by finding control-flow paths
+%that could only be reached by a single input value. So, they perform dynamic analysis to
+%collect execution traces
+%Then they perform a static analysis with these traces and use
+%symbolic execution to identify “culprit branches.” Next they generate propagation rules
+%to address under-tainting from these culprit branches. Lastly they rerun the dynamic
+%analysis with the generated rules.
+%They only evaluated this approach with respect to two specific cases they were
+%interested in that deal with word processing applications. Unfortunately, it is hard to
+%comment of the general efficacy of the approach based on that.
+
+@phdthesis{Jee2015DFT,
+    title    = {On Efficiency and Accuracy of Data Flow Tracking Systems},
+    school   = {Columbia University},
+    author   = {Jee, Kangkook},
+    year     = {2015},
+    doi = {10.7916/D8MG7P9D},
+    url = {https://doi.org/10.7916/D8MG7P9D},
+    annote = {TODO: specifically ch 7},
+}
+
+@inproceedings{Bao:2010:SCD:1831708.1831711,
+    author = {Bao, Tao and Zheng, Yunhui and Lin, Zhiqiang and Zhang, Xiangyu and Xu, Dongyan},
+    title = {Strict Control Dependence and Its Effect on Dynamic Information Flow Analyses},
+    booktitle = {Proceedings of the 19th International Symposium on Software Testing and Analysis},
+    series = {ISSTA '10},
+    year = {2010},
+    isbn = {978-1-60558-823-0},
+    location = {Trento, Italy},
+    pages = {13--24},
+    numpages = {12},
+    url = {http://doi.acm.org/10.1145/1831708.1831711},
+    doi = {10.1145/1831708.1831711},
+    acmid = {1831711},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {control dependence, data dependence, dynamic information flow, strict control dependence, taint analysis},
+    annote = {TODO}
+}
+
+@inproceedings{McCamant:2008:QIF:1375581.1375606,
+    author = {McCamant, Stephen and Ernst, Michael D.},
+    title = {Quantitative Information Flow As Network Flow Capacity},
+    booktitle = {Proceedings of the 29th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+    series = {PLDI '08},
+    year = {2008},
+    isbn = {978-1-59593-860-2},
+    location = {Tucson, AZ, USA},
+    pages = {193--205},
+    numpages = {13},
+    url = {http://doi.acm.org/10.1145/1375581.1375606},
+    doi = {10.1145/1375581.1375606},
+    acmid = {1375606},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {dynamic analysis, implicit flow, information-flow analysis},
+    annote = {TODO}
+}
+
+@techreport{samarati-protect,
+    author = {{P.} Samarati and {L.} Sweeney},
+    title = {Protecting Privacy when Disclosing Information: k-Anonymity and its Enforcement through Generalization and Suppression},
+    year= {1998},
+    url = {http://www.csl.sri.com/papers/sritr-98-04/},
+    booktitle = {Technical Report {SRI-CSL-98-04}},
+    publisher = {Computer Science Laboratory, {SRI} International},
+    annote = {TODO}
+}
+
+@article{Sabelfeld:2006:LIS:2312191.2314769,
+author = {Sabelfeld, A. and Myers, A. C.},
+title = {Language-based Information-flow Security},
+journal = {IEEE J.Sel. A. Commun.},
+issue_date = {September 2006},
+volume = {21},
+number = {1},
+month = sep,
+year = {2006},
+issn = {0733-8716},
+pages = {5--19},
+numpages = {15},
+url = {https://doi.org/10.1109/JSAC.2002.806121},
+doi = {10.1109/JSAC.2002.806121},
+acmid = {2314769},
+publisher = {IEEE Press},
+address = {Piscataway, NJ, USA},
+annote = {TODO}
+}
+
+@inproceedings{Clause:2007:DGD:1273463.1273490,
+author = {Clause, James and Li, Wanchun and Orso, Alessandro},
+title = {Dytan: A Generic Dynamic Taint Analysis Framework},
+booktitle = {Proceedings of the 2007 International Symposium on Software Testing and Analysis},
+series = {ISSTA '07},
+year = {2007},
+isbn = {978-1-59593-734-6},
+location = {London, United Kingdom},
+pages = {196--206},
+numpages = {11},
+url = {http://doi.acm.org/10.1145/1273463.1273490},
+doi = {10.1145/1273463.1273490},
+acmid = {1273490},
+publisher = {ACM},
+address = {New York, NY, USA},
+keywords = {dynamic tainting, general framework, information flow},
+annote = {TODO}
+} 
+
+
