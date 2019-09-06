@@ -4,14 +4,14 @@
     booktitle = {NDSS},
     year = {2011},
     annote = {
-        Kang \etal propose propagating taints only along select control flows in order to address under-tainting in ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
+    Kang \etal propose propagating taints only along select control flows in order to address under-tainting in ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
         To identify branches related to ``information-preserving'' transformations, they first perform dynamic analysis to collect execution traces.
         Then, they analyze the execution traces to find control-flow paths that can only be reached by a single input value.
         Propagation rules are generated to mitigate under-tainting along the branches of these control-flow paths.
         Lastly, the dynamic analysis is rerun with the generated rules.
         The authors evaluated an implementation of their approach by tracking the flow of sensitive information in word processing applications and found that it successfully addressed under-tainting in that context.
 		Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
-        However, they do not suggest general-purpose control flow semantics.
+        However, they do not generally examine under-tainting from control flows.
         Some mention is made of instances where a branch causes some value to not be written, which the authors refer to as ``negative'' implicit flows, and a technique for partially mitigating simple instances of such flows is presented.
     }
 }
@@ -23,7 +23,17 @@
     year     = {2015},
     doi = {10.7916/D8MG7P9D},
     url = {https://doi.org/10.7916/D8MG7P9D},
-    annote = {TODO: specifically ch 7},
+    pages = content,
+    annote = {
+    Jee presents TaintMark, a dynamic data flow tracking evalution tool for the Android Framework.
+    	TaintMark looks at system outputs when given different input values to determine if taints should propagate from the inputs to the outputs.
+    	It tests applications with different tainted input values from sources like GPS device, IMSI, IMEI, and password data.
+    	During the execution, file and network activities performed by the application are logged for analysis.
+    	Logged outputs are compared; differences in the outputs for different input values are interpreted as meaning that taint from the input should have propagated to the output.
+    	Non-deterministic output is addressed by re-testing an application with the same input.
+    	Outputs that vary for the same input are removed and outputs' field that vary for the same input are excluded when comparing outputs.
+    	TaintMark also provides support for debugging reported inaccuracies.
+    },
 }
 
 @inproceedings{Bao:2010:SCD:1831708.1831711,
@@ -92,7 +102,7 @@
     publisher = {IEEE Press},
     address = {Piscataway, NJ, USA},
     annote = {
-    	Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
+    Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
     	They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
     	The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of the program.
     	The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
