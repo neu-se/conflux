@@ -54,6 +54,49 @@
     keywords = {control dependence, data dependence, dynamic information flow, strict control dependence, taint analysis},
     annote = {TODO}
 }
+%implicit channel may leak info -> false negatives
+%control flows -> false positives
+%strict control dependence -> data flow like due to strong correlations
+%"A statement j is control dependent
+%on a predicate p if and only if the execution of j is directly
+%decided by the branch outcome of p"
+%lineage tracing - inputs that contribute to an output value
+%
+%
+%"Definition 1. A statement s is strictly control dependent
+%on a predicate p : e 1 ⋄ e 2 with ⋄ a comparative operator, de-
+%scd
+%noted as s −−→ p, if and only if:
+%(1) p directly or transitively guards the execution of s;
+%(2) the execution of s infers that e 1 ≡ e 2 +c with c a compile
+%time constant;
+%(3) p is the closest predicate to s that satisfies the above two
+%conditions along control flow.
+%The branch of p leading to s’s execution is called the SCD
+%branch."
+%
+%push at branch, pop at immediate post-dominator
+%execution omission error -> (implicit not control or data dependency?)
+%
+%28 - "the technique switches the branch
+%outcome of the predicate during execution and observes if
+%the variable is defined in the other branch."
+%
+%
+%adds dummy identity assignments like Dytan to remedy differences between the branches
+%
+%"the equivalence of the left-hand
+%side and the right-hand side expressions of the predicate can
+%be inferred"
+%directly via == or != OR indirectly with a different comparison operator and certain path conditions
+%
+%implemanted on GCC-4.4.0, compiler pass on GIMPLE IR
+%
+%just data flow
+%data + all control flows
+%data + strict control
+%
+%8 programs -> good middle between full control and no control
 
 @inproceedings{McCamant:2008:QIF:1375581.1375606,
     author = {McCamant, Stephen and Ernst, Michael D.},
@@ -127,6 +170,34 @@
     address = {New York, NY, USA},
     keywords = {dynamic tainting, general framework, information flow},
     annote = {TODO}
-} 
+}
+
+@inproceedings{Pauck:2018:ATA:3236024.3236029,
+    author = {Pauck, Felix and Bodden, Eric and Wehrheim, Heike},
+    title = {Do Android Taint Analysis Tools Keep Their Promises?},
+    booktitle = {Proceedings of the 2018 26th ACM Joint Meeting on European Software Engineering Conference and Symposium on the Foundations of Software Engineering},
+    series = {ESEC/FSE 2018},
+    year = {2018},
+    isbn = {978-1-4503-5573-5},
+    location = {Lake Buena Vista, FL, USA},
+    pages = {331--341},
+    numpages = {11},
+    url = {http://doi.acm.org/10.1145/3236024.3236029},
+    doi = {10.1145/3236024.3236029},
+    acmid = {3236029},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {Android Taint Analysis, Benchmarks, Empirical Studies, Reproducibility, Tools},
+    annote = {TODO}
+}
+
+@techreport{hniid=9833,
+author = {Luo, Linghui and Bodden, Eric and Sp{\"a}th, Johannes},
+title = {A Qualitative Analysis of Taint-Analysis Results},
+institution = {Heinz Nixdorf Institute, Paderborn University},
+month = aug,
+year = {2018},
+annote = {TODO}
+}
 
 
