@@ -1,122 +1,3 @@
-@inproceedings{Kang2011DTADT,
-    title = {DTA++: Dynamic Taint Analysis with Targeted Control-Flow Propagation},
-    author = {Min Gyung Kang and Stephen McCamant and Pongsin Poosankam and Dawn Xiaodong Song},
-    booktitle = {NDSS},
-    year = {2011},
-    annote = {
-    Kang \etal propose propagating taints only along select control flows in order to address under-tainting in ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
-        To identify branches related to ``information-preserving'' transformations, they first perform dynamic analysis to collect execution traces.
-        Then, they analyze the execution traces to find control-flow paths that can only be reached by a single input value.
-        Propagation rules are generated to mitigate under-tainting along the branches of these control-flow paths.
-        Lastly, the dynamic analysis is rerun with the generated rules.
-        The authors evaluated an implementation of their approach by tracking the flow of sensitive information in word processing applications and found that it successfully addressed under-tainting in that context.
-		Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
-        However, they do not generally examine under-tainting from control flows.
-        Some mention is made of instances where a branch causes some value to not be written, which the authors refer to as ``negative'' implicit flows, and a technique for partially mitigating simple instances of such flows is presented.
-    }
-}
-
-@phdthesis{Jee2015DFT,
-    title    = {On Efficiency and Accuracy of Data Flow Tracking Systems},
-    school   = {Columbia University},
-    author   = {Jee, Kangkook},
-    year     = {2015},
-    doi = {10.7916/D8MG7P9D},
-    url = {https://doi.org/10.7916/D8MG7P9D},
-    pages = content,
-    annote = {
-    Jee presents TaintMark, a dynamic data flow tracking evalution tool for the Android Framework.
-    	TaintMark looks at system outputs when given different input values to determine if taints should propagate from the inputs to the outputs.
-    	It tests applications with different tainted input values from sources like GPS device, IMSI, IMEI, and password data.
-    	During the execution, file and network activities performed by the application are logged for analysis.
-    	Logged outputs are compared; differences in the outputs for different input values are interpreted as meaning that taint from the input should have propagated to the output.
-    	Non-deterministic output is addressed by re-testing an application with the same input.
-    	Outputs that vary for the same input are removed and outputs' field that vary for the same input are excluded when comparing outputs.
-    	TaintMark also provides support for debugging reported inaccuracies.
-    },
-}
-
-@inproceedings{Bao:2010:SCD:1831708.1831711,
-    author = {Bao, Tao and Zheng, Yunhui and Lin, Zhiqiang and Zhang, Xiangyu and Xu, Dongyan},
-    title = {Strict Control Dependence and Its Effect on Dynamic Information Flow Analyses},
-    booktitle = {Proceedings of the 19th International Symposium on Software Testing and Analysis},
-    series = {ISSTA '10},
-    year = {2010},
-    isbn = {978-1-60558-823-0},
-    location = {Trento, Italy},
-    pages = {13--24},
-    numpages = {12},
-    url = {http://doi.acm.org/10.1145/1831708.1831711},
-    doi = {10.1145/1831708.1831711},
-    acmid = {1831711},
-    publisher = {ACM},
-    address = {New York, NY, USA},
-    keywords = {control dependence, data dependence, dynamic information flow, strict control dependence, taint analysis},
-    annote = {TODO}
-}
-%implicit channel may leak info -> false negatives
-%control flows -> false positives
-%strict control dependence -> data flow like due to strong correlations
-%"A statement j is control dependent
-%on a predicate p if and only if the execution of j is directly
-%decided by the branch outcome of p"
-%lineage tracing - inputs that contribute to an output value
-%
-%
-%"Definition 1. A statement s is strictly control dependent
-%on a predicate p : e 1 ⋄ e 2 with ⋄ a comparative operator, de-
-%scd
-%noted as s −−→ p, if and only if:
-%(1) p directly or transitively guards the execution of s;
-%(2) the execution of s infers that e 1 ≡ e 2 +c with c a compile
-%time constant;
-%(3) p is the closest predicate to s that satisfies the above two
-%conditions along control flow.
-%The branch of p leading to s’s execution is called the SCD
-%branch."
-%
-%push at branch, pop at immediate post-dominator
-%execution omission error -> (implicit not control or data dependency?)
-%
-%28 - "the technique switches the branch
-%outcome of the predicate during execution and observes if
-%the variable is defined in the other branch."
-%
-%
-%adds dummy identity assignments like Dytan to remedy differences between the branches
-%
-%"the equivalence of the left-hand
-%side and the right-hand side expressions of the predicate can
-%be inferred"
-%directly via == or != OR indirectly with a different comparison operator and certain path conditions
-%
-%implemanted on GCC-4.4.0, compiler pass on GIMPLE IR
-%
-%just data flow
-%data + all control flows
-%data + strict control
-%
-%8 programs -> good middle between full control and no control
-
-@inproceedings{McCamant:2008:QIF:1375581.1375606,
-    author = {McCamant, Stephen and Ernst, Michael D.},
-    title = {Quantitative Information Flow As Network Flow Capacity},
-    booktitle = {Proceedings of the 29th ACM SIGPLAN Conference on Programming Language Design and Implementation},
-    series = {PLDI '08},
-    year = {2008},
-    isbn = {978-1-59593-860-2},
-    location = {Tucson, AZ, USA},
-    pages = {193--205},
-    numpages = {13},
-    url = {http://doi.acm.org/10.1145/1375581.1375606},
-    doi = {10.1145/1375581.1375606},
-    acmid = {1375606},
-    publisher = {ACM},
-    address = {New York, NY, USA},
-    keywords = {dynamic analysis, implicit flow, information-flow analysis},
-    annote = {TODO}
-}
-
 @techreport{samarati-protect,
     author = {{P.} Samarati and {L.} Sweeney},
     title = {Protecting Privacy when Disclosing Information: k-Anonymity and its Enforcement through Generalization and Suppression},
@@ -145,12 +26,12 @@
     publisher = {IEEE Press},
     address = {Piscataway, NJ, USA},
     annote = {
-    Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
-    	They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
-    	The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of the program.
-    	The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
-    	However, they also briefly discuss more relaxed policies, such as selective declassification which allows the confidentiality of data to be ``downgraded'' by certain entities, and quantitative security which allows a limited amount of information to leak.
-    }
+	Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
+	They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
+	The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of the program.
+	The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
+	However, they also briefly discuss more relaxed policies, such as selective declassification which allows the confidentiality of data to be ``downgraded'' by certain entities, and quantitative security which allows a limited amount of information to leak.
+	}
 }
 
 @inproceedings{Clause:2007:DGD:1273463.1273490,
@@ -170,6 +51,90 @@
     address = {New York, NY, USA},
     keywords = {dynamic tainting, general framework, information flow},
     annote = {TODO}
+}
+
+@inproceedings{McCamant:2008:QIF:1375581.1375606,
+    author = {McCamant, Stephen and Ernst, Michael D.},
+    title = {Quantitative Information Flow As Network Flow Capacity},
+    booktitle = {Proceedings of the 29th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+    series = {PLDI '08},
+    year = {2008},
+    isbn = {978-1-59593-860-2},
+    location = {Tucson, AZ, USA},
+    pages = {193--205},
+    numpages = {13},
+    url = {http://doi.acm.org/10.1145/1375581.1375606},
+    doi = {10.1145/1375581.1375606},
+    acmid = {1375606},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {dynamic analysis, implicit flow, information-flow analysis},
+    annote = {TODO}
+}
+
+@inproceedings{Bao:2010:SCD:1831708.1831711,
+    author = {Bao, Tao and Zheng, Yunhui and Lin, Zhiqiang and Zhang, Xiangyu and Xu, Dongyan},
+    title = {Strict Control Dependence and Its Effect on Dynamic Information Flow Analyses},
+    booktitle = {Proceedings of the 19th International Symposium on Software Testing and Analysis},
+    series = {ISSTA '10},
+    year = {2010},
+    isbn = {978-1-60558-823-0},
+    location = {Trento, Italy},
+    pages = {13--24},
+    numpages = {12},
+    url = {http://doi.acm.org/10.1145/1831708.1831711},
+    doi = {10.1145/1831708.1831711},
+    acmid = {1831711},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {control dependence, data dependence, dynamic information flow, strict control dependence, taint analysis},
+    annote = {
+		The authors introduce the term strict control dependence (SCD) to refer to implicit flows where there is a strong, almost data flow like, correlation between statements.
+		They identify such SCDs as a source of improperly tracked information leaks that may cause false negative in an analysis.
+		SCDs are controls flows where ``the equivalence of the left-hand side and the right-hand side expressions of the predicate can be inferred''.
+		The effectiveness of considering SCDs was evaluated using three analyzer implementations for GCC-4.4.0: one that only considered data flows, one that considered data flows and all control flows, and one that considered data flow and only strict control flows.
+		The analyzers were run on 8 different programs and the authors found that the implementation that considered strict control flows had a lower overhead and fewer false positives than the one that considered all control flows and fewer false negative than the one that considered only data flows.
+	}
+    % Also discuss execution omission error/negative implicit flow issue - like Dytan they use dummy identity assignments to remedy differences between the branches
+}
+
+@inproceedings{Kang2011DTADT,
+    title = {DTA++: Dynamic Taint Analysis with Targeted Control-Flow Propagation},
+    author = {Min Gyung Kang and Stephen McCamant and Pongsin Poosankam and Dawn Xiaodong Song},
+    booktitle = {NDSS},
+    year = {2011},
+    annote = {
+    Similar to Bao \etal \cite{Bao:2010:SCD:1831708.1831711}, Kang \etal propose propagating taints only along select control flows in order to address under-tainting.
+    	Inparticular, they target controls flows associated with ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
+        To identify branches related to ``information-preserving'' transformations, they first perform dynamic analysis to collect execution traces.
+        Then, they analyze the execution traces to find control-flow paths that can only be reached by a single input value.
+        Propagation rules are generated to mitigate under-tainting along the branches of these control-flow paths.
+        Lastly, the dynamic analysis is rerun with the generated rules.
+        The authors evaluated an implementation of their approach by tracking the flow of sensitive information in word processing applications and found that it successfully addressed under-tainting in that context.
+		Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
+        However, they do not generally examine under-tainting from control flows.
+        Some mention is made of instances where a branch causes some value to not be written, which the authors refer to as ``negative'' implicit flows, and technique similar to Clause \etal's \cite{Clause:2007:DGD:1273463.1273490} for partially mitigating simple instances of such flows is discussed.
+    }
+}
+
+@phdthesis{Jee2015DFT,
+    title    = {On Efficiency and Accuracy of Data Flow Tracking Systems},
+    school   = {Columbia University},
+    author   = {Jee, Kangkook},
+    year     = {2015},
+    doi = {10.7916/D8MG7P9D},
+    url = {https://doi.org/10.7916/D8MG7P9D},
+    pages = content,
+    annote = {
+    Jee presents TaintMark, a dynamic data flow tracking evalution tool for the Android Framework.
+    	TaintMark looks at system outputs when given different input values to determine if taints should propagate from the inputs to the outputs.
+    	It tests applications with different tainted input values from sources like GPS device, IMSI, IMEI, and password data.
+    	During the execution, file and network activities performed by the application are logged for analysis.
+    	Logged outputs are compared; differences in the outputs for different input values are interpreted as meaning that taint from the input should have propagated to the output.
+    	Non-deterministic output is addressed by re-testing an application with the same input.
+    	Outputs that vary for the same input are removed and outputs' field that vary for the same input are excluded when comparing outputs.
+    	TaintMark also provides support for debugging reported inaccuracies.
+    },
 }
 
 @inproceedings{Pauck:2018:ATA:3236024.3236029,
