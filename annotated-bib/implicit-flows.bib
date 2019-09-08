@@ -110,6 +110,39 @@
     address = {New York, NY, USA},
     keywords = {dynamic analysis, implicit flow, information-flow analysis},
     annote = {TODO}
+    %McCamant and Ernst
+    %confidentiality policy enforcement
+    %maximum flow
+    %determine if flow of secret inputs to public outputs in unacceptable
+    %only a portion of private info leaks e.g. last four digits of credit card #
+    %quantiative information-flow security -> detects if number of leaks bits exceeds acceptable limited placed by policy
+    %observe execution of program to measure extent to which private inputs were leaked to the public outputs for the execution
+    %considers both direct data flows and "implicit flows in which the value of a variable depends on a previous secret branch condition or pointer value"
+    %
+    %Measured information flow with network flow capacity model instead of taint tracking
+    %
+    %Find maximum flow of secret information
+    %
+    %construct graph of potential secret flows
+    %* values represented as edges - weight = # bits of data they can hold
+    %* nodes represent operations on values
+    %* source node represents secret inputs
+    %* sink node represents public outputs
+    %* "add edges to connect each implicit flow operation to the outputs of the enclosed computation"
+    %By default entire program is considered as a enclosed computation, but the authors express that defining enclosed regions for sub-computations increases the precision of the system.
+    %
+    %dynamic bit-width analysis to calc edge weights via
+    %bit-level dynamic tainting used to analysis bit-widths to compute the number of secret bits that a value might contain  - used as edge weights
+    %
+    % can combine the graphs from multiple executions and analyzes them together for more general results
+    % measures the flows in particular executions, and is intended for testing or debugging - unlike static analysis that could describe all possible executions
+    %
+    %implementation for x86 executables using Valgrind Framework - Flowcheck
+    %
+    %evaulated on bzip2, a general-
+    %purpose (lossless) compression tool based on block sorting
+    %b.c and found that the flow reported  by Flowcheck was within pre-calculated expected bounds
+    %case studies of confidentiality properties in real programs and found previously unknown bug that violated confidentiality
 }
 
 @inproceedings{Bao:2010:SCD:1831708.1831711,
@@ -197,12 +230,12 @@
 }
 
 @techreport{hniid=9833,
-author = {Luo, Linghui and Bodden, Eric and Sp{\"a}th, Johannes},
-title = {A Qualitative Analysis of Taint-Analysis Results},
-institution = {Heinz Nixdorf Institute, Paderborn University},
-month = aug,
-year = {2018},
-annote = {TODO}
+    author = {Luo, Linghui and Bodden, Eric and Sp{\"a}th, Johannes},
+    title = {A Qualitative Analysis of Taint-Analysis Results},
+    institution = {Heinz Nixdorf Institute, Paderborn University},
+    month = aug,
+    year = {2018},
+    annote = {TODO}
 }
 
 
