@@ -1,3 +1,24 @@
+@article{Denning:1977:CPS:359636.359712,
+    author = {Denning, Dorothy E. and Denning, Peter J.},
+    title = {Certification of Programs for Secure Information Flow},
+    journal = {Commun. ACM},
+    issue_date = {July 1977},
+    volume = {20},
+    number = {7},
+    month = jul,
+    year = {1977},
+    issn = {0001-0782},
+    pages = {504--513},
+    numpages = {10},
+    url = {http://doi.acm.org/10.1145/359636.359712},
+    doi = {10.1145/359636.359712},
+    acmid = {359712},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {confinement, information flow, lattice, program certification, protection, security, security classes},
+    annote = {TODO}
+}
+
 @techreport{samarati-protect,
     author = {{P.} Samarati and {L.} Sweeney},
     title = {Protecting Privacy when Disclosing Information: k-Anonymity and its Enforcement through Generalization and Suppression},
@@ -6,7 +27,7 @@
     booktitle = {Technical Report {SRI-CSL-98-04}},
     publisher = {Computer Science Laboratory, {SRI} International},
     annote = {
-    	Samarati and Sweeney put forward a metric for quantifying the degree to which data is annoymized, k-anonymity.
+    Samarati and Sweeney put forward a metric for quantifying the degree to which data is annoymized, k-anonymity.
     	They establish that certain combinations of attributes can be used to uniquely identify an individual or a small set of individuals.
     	A release of data is said to observe k-anonymity if every combination of ``quasi-identifiers'', controlled attributes, can be matched to at least k individuals.
     	The authors were not discussing privacy in the context of information flow analysis.
@@ -33,11 +54,11 @@
     publisher = {IEEE Press},
     address = {Piscataway, NJ, USA},
     annote = {
-	Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
-	They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
-	The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of the program.
-	The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
-	However, they also briefly discuss more relaxed policies, such as selective declassification which allows the confidentiality of data to be ``downgraded'' by certain entities, and quantitative security which allows a limited amount of information to leak.
+    Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
+	    They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
+	    The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of the program.
+	    The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
+	    However, they also briefly discuss more relaxed policies, such as selective declassification which allows the confidentiality of data to be ``downgraded'' by certain entities, and quantitative security which allows a limited amount of information to leak.
 	}
 }
 
@@ -58,64 +79,64 @@
     address = {New York, NY, USA},
     keywords = {dynamic tainting, general framework, information flow},
     annote = {
-        TODO
+    TODO
     }
-%general dynamic tainting framework
-%uses:
-%security: attack detection, attack preventation, enforcing flow policies for sensitive information
-%program undertsanding
-%software testing, debugging
-%
-%implementation dytan for x86 executables
-%flexible
-%customize - propagation logic, checking logic and placement
-%explicit flow = due to data dependences/flows
-%implicit information flow = tainted data's value impacts another variable's value indirectly
-%- typically due to control dependences
-%
-%dynamic slicing -> subset of statements that affect set or data vs (subset of data that affect set of data for tainting)
-%"1
-%A statement s 2 is data dependent on a statement s 1 if (1) s 2 uses a
-%variable v that is defined in s 1 and (2) there is a def-clear path with
-%respect to v between s 1 and s 2 .
-%2
-%Informally, a statement s 2 is control dependent on a statement s 1
-%if (1) s 1 contains a predicate, and (2) depending on the outcome of
-%s 1 , s 2 may not to be executed"
-%
-%Sources:
-%vars and mem offsets
-%data returned from specified function
-%data from a type of IO stream - e.g. network, filesystem, and keyboard
-%data from specific IO stream
-%User can specify different taint markings (labels)
-%Propagation:
-%- data-flow or data+control flow
-%- mapping function (to combine input taints for an operation)
-%* default: union
-%Sinks:
-%specify location for checking taint markings
-%
-%
-%Control Flow:
-%- at branch add pair <br, taint>
-%- at ipdom(br), pop all pairs<br, y>
-%- when a statement is exe'd adds all taints to combine for destination operands
-%For conditional instructions that impact different memory locations:
-%adds definitions that make the set of memory locations defined along the two branches equal
-%
-%
-%Study 1
-%Replicated techniques of 2 prior studies using dytan:
-%- prevention of overwrite attacks
-%- Detection of SQL injection (positive tainting approach)
-%found they could produce the same results as the original task-specific implementations
-%both only used data-flow propagtion policy
-%
-%Study 2
-%Compared number of bytes tainted for different taint-propagation approaches
-%
-%flexibility came at cost of time and space efficiency compared with ad-hoc implementations
+    %general dynamic tainting framework
+    %uses:
+    %security: attack detection, attack preventation, enforcing flow policies for sensitive information
+    %program undertsanding
+    %software testing, debugging
+    %
+    %implementation dytan for x86 executables
+    %flexible
+    %customize - propagation logic, checking logic and placement
+    %explicit flow = due to data dependences/flows
+    %implicit information flow = tainted data's value impacts another variable's value indirectly
+    %- typically due to control dependences
+    %
+    %dynamic slicing -> subset of statements that affect set or data vs (subset of data that affect set of data for tainting)
+    %"1
+    %A statement s 2 is data dependent on a statement s 1 if (1) s 2 uses a
+    %variable v that is defined in s 1 and (2) there is a def-clear path with
+    %respect to v between s 1 and s 2 .
+    %2
+    %Informally, a statement s 2 is control dependent on a statement s 1
+    %if (1) s 1 contains a predicate, and (2) depending on the outcome of
+    %s 1 , s 2 may not to be executed"
+    %
+    %Sources:
+    %vars and mem offsets
+    %data returned from specified function
+    %data from a type of IO stream - e.g. network, filesystem, and keyboard
+    %data from specific IO stream
+    %User can specify different taint markings (labels)
+    %Propagation:
+    %- data-flow or data+control flow
+    %- mapping function (to combine input taints for an operation)
+    %* default: union
+    %Sinks:
+    %specify location for checking taint markings
+    %
+    %
+    %Control Flow:
+    %- at branch add pair <br, taint>
+    %- at ipdom(br), pop all pairs<br, y>
+    %- when a statement is exe'd adds all taints to combine for destination operands
+    %For conditional instructions that impact different memory locations:
+    %adds definitions that make the set of memory locations defined along the two branches equal
+    %
+    %
+    %Study 1
+    %Replicated techniques of 2 prior studies using dytan:
+    %- prevention of overwrite attacks
+    %- Detection of SQL injection (positive tainting approach)
+    %found they could produce the same results as the original task-specific implementations
+    %both only used data-flow propagtion policy
+    %
+    %Study 2
+    %Compared number of bytes tainted for different taint-propagation approaches
+    %
+    %flexibility came at cost of time and space efficiency compared with ad-hoc implementations
 }
 
 @inproceedings{McCamant:2008:QIF:1375581.1375606,
