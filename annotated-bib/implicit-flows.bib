@@ -189,7 +189,7 @@
     	Non-deterministic output is addressed by re-testing an application with the same input.
     	Outputs that vary for the same input are removed and outputs' field that vary for the same input are excluded when comparing outputs.
     	TaintMark also provides support for debugging reported inaccuracies.
-    },
+    }
 }
 
 @inproceedings{Pauck:2018:ATA:3236024.3236029,
@@ -209,35 +209,20 @@
     address = {New York, NY, USA},
     keywords = {Android Taint Analysis, Benchmarks, Empirical Studies, Reproducibility, Tools},
     annote = {
-    TODO
+    Pauck \etal introduce ReproDroid a framework for comparing Android taint analysis tools using a precise, consistent evaluation target.
+        The authors establish that popular micro-benchmarks like DroidBench and ICC-Bench specify only the number of leaks that a should be detected for a particular test not the exact leaks that should be detected.
+        As a result, these micro-benchmarks can often have imprecise results.
+        Furthermore evaluations that use real-world apps are hard to reproduce, may not evaluate whether reported leaks represent true flows, and often cannot determine if true leaks were missed.
+        ReproDroid offers a way of converting a tools' results to a standard format, provides a language to describe flows found by a tool, and facilitates the refinement of existing benchmarks through the use of a wizard.
+        This wizard allows users to deselect or combine (in order to unify different definitions used by different tools) considered sources and sinks thereby adding necessary information for identifying exact leaks.
+        Additionally, the wizard assists with manual classification of true positive and negative test cases.
+        The authors note that this manual determination of the ground truth is necessary because, ``tools that could potentially be used to derive the ground truth are at the same time the tools we want to evaluate.''
+        They extended the TaintDroid framework to add benchmark cases specifically aimed at evaluating features promised by popular Android taint analysis tools and created some benchmark cases from the 30 Real-world apps in DIALDroid-Bench by manually investigating their source code.
+        ReproDroid was used to evaluate whether 6 popular Android taint analysis tools truly supported features that they purported to support, and were truly as accurate as was claimed.
+        ReproDroid determined that generally features promised by the tools were fully supported, but that the tools' F-measures were typically lower than promised values.
+        Pauck \etal's human-guided approach to benchmark development and refinement contrasts with Jee's automated approach \cite{Jee2015DFT}. 
+        Furthermore, they provide a strong argument against automated approaches for determining the ground truth of taint analyses.
     }
-    % hard to compare taint analysis tools b/c different/imprecise evaulations
-    % ReproDroid - framework for comparision
-    %
-    % micro-benchmarks like droidbench or icc-bench: lack exact leaks vs just a count
-    % real-world apps: hard to confirm or reproduce, may not evaluate whether reports are FPs, hard to determine whether there are FNs
-    %
-    % Android App Analysis Query Language (AQL) - describe flows found
-    %
-    % AQL-System: processes AQL-Queries and to determine AQL-Answers -> exe tools and convert results to standard format
-    %
-    % Benchmark Refinement and Execution Wizard (Brew)
-    %   - user can delect unwanted sources + sinks from preselected one or combine them to unify differently defined sources/sinks
-    %   - assists with manual identification of positive and negative cases
-    %       Note: manual inspection necessary b/c "tools that could potentially be used to derive the ground truth are at the same time the tools we want to evaluate"
-    %   - overall used to add missing information to benchmark's test cases
-    %
-    % extended TaintDroid  by Developing "18 apps comprising 21 positive and 6 negative feature-checking benchmark cases" feature-checking = designed to check one-specific feature
-    %
-    %
-    %
-    % 30 Real-world apps in DIALDroid-Bench
-    %   - one positive case for every source + sink pair = 841,514 potential positive benchmark cases
-    %   - ran all 6 tools 1007 candidate leaks
-    %   - if > 1 tool reported a leak -> manually investigated source code to determine if true leak
-    %
-    %"feature-checking benchmarks, all promises except five are kept and most of the promised features are fully supported."
-    %* Found that tool's F-measures were typically lower than promised values.
 }
 
 @techreport{Luo:QualitativeAnalysis,
