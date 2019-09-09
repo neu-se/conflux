@@ -109,40 +109,22 @@
     publisher = {ACM},
     address = {New York, NY, USA},
     keywords = {dynamic analysis, implicit flow, information-flow analysis},
-    annote = {TODO}
-    %McCamant and Ernst
-    %confidentiality policy enforcement
-    %maximum flow
-    %determine if flow of secret inputs to public outputs in unacceptable
-    %only a portion of private info leaks e.g. last four digits of credit card #
-    %quantiative information-flow security -> detects if number of leaks bits exceeds acceptable limited placed by policy
-    %observe execution of program to measure extent to which private inputs were leaked to the public outputs for the execution
-    %considers both direct data flows and "implicit flows in which the value of a variable depends on a previous secret branch condition or pointer value"
-    %
-    %Measured information flow with network flow capacity model instead of taint tracking
-    %
-    %Find maximum flow of secret information
-    %
-    %construct graph of potential secret flows
-    %* values represented as edges - weight = # bits of data they can hold
-    %* nodes represent operations on values
-    %* source node represents secret inputs
-    %* sink node represents public outputs
-    %* "add edges to connect each implicit flow operation to the outputs of the enclosed computation"
-    %By default entire program is considered as a enclosed computation, but the authors express that defining enclosed regions for sub-computations increases the precision of the system.
-    %
-    %dynamic bit-width analysis to calc edge weights via
-    %bit-level dynamic tainting used to analysis bit-widths to compute the number of secret bits that a value might contain  - used as edge weights
-    %
-    % can combine the graphs from multiple executions and analyzes them together for more general results
-    % measures the flows in particular executions, and is intended for testing or debugging - unlike static analysis that could describe all possible executions
-    %
-    %implementation for x86 executables using Valgrind Framework - Flowcheck
-    %
-    %evaulated on bzip2, a general-
-    %purpose (lossless) compression tool based on block sorting
-    %b.c and found that the flow reported  by Flowcheck was within pre-calculated expected bounds
-    %case studies of confidentiality properties in real programs and found previously unknown bug that violated confidentiality
+    annote = {
+    McCamant and Ernst measure the maximum flow of secret information with a network flow capacity model instead of taint tracking.
+	    They reason that is may be acceptable for a portion of private information to leak, \eg the last four digits of a credit card number.
+	    Thus, it is more practical to use a quantitative approach information-flow security which detects if number of leaked bits exceeds the acceptable limit placed by a confidentiality policy.
+	    Their approach observes the execution of a program in order to measure the extent to which private inputs were leaked to public outputs for the execution.
+	    Both explicit flows and implicit flows, which they define as those ``in which the value of a variable depends on a previous secret branch condition or pointer value'', are modeled.
+	    A graph of potential secret flows is constructed with edges representing values, edge weights conveying the number of bits that a value can hold, and nodes representing operations on values.
+	    The source node is used to represent secret inputs and a sink node is used to represent public outputs.
+	    Implicit flows are modeled by adding edges to connect each implicit flow operation to the outputs of enclosed computational regions.
+	    By default entire program is considered as a enclosed computation.
+	    However, addition enclosed regions for sub-computations can be defined to increase the model's precision.
+	    The authors' implementation of their approach, Flowcheck, works on x86 executables and uses the Valgrind Framework.
+	    Flowcheck was run on bzip2, a lossless compression tool, and reported a flow that was within pre-calculated expected bounds.
+	    Additionally, case studies of confidentiality properties in real programs were conducted using Flowcheck and found a previously unknown bug that violated confidentiality.
+	    McCamant and Ernst offer a unique technique for addressing implicit flows and a practical approach for enforcing confidentiality policies.
+    }
 }
 
 @inproceedings{Bao:2010:SCD:1831708.1831711,
@@ -230,12 +212,12 @@
 }
 
 @techreport{hniid=9833,
-    author = {Luo, Linghui and Bodden, Eric and Sp{\"a}th, Johannes},
-    title = {A Qualitative Analysis of Taint-Analysis Results},
-    institution = {Heinz Nixdorf Institute, Paderborn University},
-    month = aug,
-    year = {2018},
-    annote = {TODO}
+author = {Luo, Linghui and Bodden, Eric and Sp{\"a}th, Johannes},
+title = {A Qualitative Analysis of Taint-Analysis Results},
+institution = {Heinz Nixdorf Institute, Paderborn University},
+month = aug,
+year = {2018},
+annote = {TODO}
 }
 
 
