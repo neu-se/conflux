@@ -32,7 +32,7 @@
     	A release of data is said to observe k-anonymity if every combination of ``quasi-identifiers'', controlled attributes, can be matched to at least k individuals.
     	The authors were not discussing privacy in the context of information flow analysis.
     	However, k-anonymity could be used evaluate the likelihood that input data can be inferred from output data.
-    	Thus, it could be used provide a basis for a more flexible privacy-oriented information flow policy than a noninterference.
+    	Thus, it could be used provide a basis for a more flexible privacy-oriented information flow policy than noninterference.
     }
 }
 
@@ -220,7 +220,7 @@
         They extended the TaintDroid framework to add benchmark cases specifically aimed at evaluating features promised by popular Android taint analysis tools and created some benchmark cases from the 30 Real-world apps in DIALDroid-Bench by manually investigating their source code.
         ReproDroid was used to evaluate whether 6 popular Android taint analysis tools truly supported features that they purported to support, and were truly as accurate as was claimed.
         ReproDroid determined that generally features promised by the tools were fully supported, but that the tools' F-measures were typically lower than promised values.
-        Pauck \etal's human-guided approach to benchmark development and refinement contrasts with Jee's automated approach \cite{Jee2015DFT}. 
+        Pauck \etal's human-guided approach to benchmark development and refinement contrasts with Jee's automated approach \cite{Jee2015DFT}.
         Furthermore, they provide a strong argument against automated approaches for determining the ground truth of taint analyses.
     }
 }
@@ -231,7 +231,18 @@
     institution = {Heinz Nixdorf Institute, Paderborn University},
     month = aug,
     year = {2018},
-    annote = {TODO}
+    annote = {
+    Luo \etal analyze the conditions under which taint-flows reported by the static taint analysis tool FlowDroid occur.
+    	They contrast their style of analysis, which they refer to as qualitative, with prior analyses which take a more quantitative approach.
+    	To support their analysis they created COVA, an extension to the Soot analysis framework which computes partial path constraints.
+    	COVA can classify leaks, \ie taint flows, based on ``leak-constraints'' formed from conditions which depend on values from an invocation of a predefined ``constraint-API''.
+    	A leak-constraint is the logical and of the conditions required for the source of the leak to be executed with the conditions required for the sink of the leak to be executed.
+    	COVA was used to analyze the leaks reported by FloidDroid on 1,022 real-world Android applications.
+    	By manually inspecting random sampled leaks the authors were able to remove 31% of the leaks due to incorrect sources, incorrect sinks, or source-sink pairs on the same object.
+    	Using leak-constraints, the remaining leaks were classified as being constrained by input/output, user interface or configurations conditions; unconstrained; or infeasible.
+    	The authors found that at least 20.53% of the leaks were constrained by one of the three conditions types.
+        Luo \etal provide an alternative, non-quantitative approach to analyzing taint analysis tools.
+    }
 }
 
 
