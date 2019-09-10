@@ -246,10 +246,7 @@
     	They prevent SQL injection attack by ensuring that certain syntactic parts of SQL queries are made from trusted values.
     	The authors' Java implementation of their technique, WASP, was evaluated on 7 web applications using 12,616 SQL injection attacks and 5,602 legitimate accesses.
     	WASP was able to correctly prevent all of the SQL attacks on the applications without preventing any legitimate accesses.
-    	Unlike negative-tainting, Halfond \etal's positive-tainting has a diminished need for implicit flow considerations.
-    	If taints are not propagated in an positive-tainting approach, for example due to implicit flows, then a false positive occurs.
-    	False positives are easier to identify and correct than false negatives.
-    	Thus, the impact not propagating taints due to an implicit flow is reduced. 
+    	Halfond \etal do not discuss implicit flows nor do they indicate any design considerations made to address implicit flows.
     }
 }
 
