@@ -1,24 +1,3 @@
-@article{Denning:1977:CPS:359636.359712,
-    author = {Denning, Dorothy E. and Denning, Peter J.},
-    title = {Certification of Programs for Secure Information Flow},
-    journal = {Commun. ACM},
-    issue_date = {July 1977},
-    volume = {20},
-    number = {7},
-    month = jul,
-    year = {1977},
-    issn = {0001-0782},
-    pages = {504--513},
-    numpages = {10},
-    url = {http://doi.acm.org/10.1145/359636.359712},
-    doi = {10.1145/359636.359712},
-    acmid = {359712},
-    publisher = {ACM},
-    address = {New York, NY, USA},
-    keywords = {confinement, information flow, lattice, program certification, protection, security, security classes},
-    annote = {TODO}
-}
-
 @techreport{samarati-protect,
     author = {{P.} Samarati and {L.} Sweeney},
     title = {Protecting Privacy when Disclosing Information: k-Anonymity and its Enforcement through Generalization and Suppression},
@@ -243,6 +222,94 @@
     	The authors found that at least 20.53% of the leaks were constrained by one of the three conditions types.
         Luo \etal provide an alternative, non-quantitative approach to analyzing taint analysis tools.
     }
+}
+
+@inproceedings{Halfond:2006:UPT:1181775.1181797,
+    author = {Halfond, William G. J. and Orso, Alessandro and Manolios, Panagiotis},
+    title = {Using Positive Tainting and Syntax-aware Evaluation to Counter SQL Injection Attacks},
+    booktitle = {Proceedings of the 14th ACM SIGSOFT International Symposium on Foundations of Software Engineering},
+    series = {SIGSOFT '06/FSE-14},
+    year = {2006},
+    isbn = {1-59593-468-5},
+    location = {Portland, Oregon, USA},
+    pages = {175--185},
+    numpages = {11},
+    url = {http://doi.acm.org/10.1145/1181775.1181797},
+    doi = {10.1145/1181775.1181797},
+    acmid = {1181797},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {SQL injection, dynamic tainting, runtime monitoring},
+    annote = {
+    	Halfond \etal provide an automated technique for detecting and preventing SQL injection attacks.
+    	Their technique uses ``positive-tainting'' which tracks the flow of trusted values (opposed to the more common approach of ``negative'' tainting which tracks untrusted values).
+    	They prevent SQL injection attack by ensuring that certain syntactic parts of SQL queries are made from trusted values.
+    	The authors' Java implementation of their technique, WASP, was evaluated on 7 web applications using 12,616 SQL injection attacks and 5,602 legitimate accesses.
+    	WASP was able to correctly prevent all of the SQL attacks on the applications without preventing any legitimate accesses.
+    	Unlike negative-tainting, Halfond \etal's positive-tainting has a diminished need for implicit flow considerations.
+    	If taints are not propagated in an positive-tainting approach, for example due to implicit flows, then a false positive occurs.
+    	False positives are easier to identify and correct than false negatives.
+    	Thus, the impact not propagating taints due to an implicit flow is reduced. 
+    }
+}
+
+@inproceedings{Clause:2009:PAI:1572272.1572301,
+    author = {Clause, James and Orso, Alessandro},
+    title = {Penumbra: Automatically Identifying Failure-relevant Inputs Using Dynamic Tainting},
+    booktitle = {Proceedings of the Eighteenth International Symposium on Software Testing and Analysis},
+    series = {ISSTA '09},
+    year = {2009},
+    isbn = {978-1-60558-338-9},
+    location = {Chicago, IL, USA},
+    pages = {249--260},
+    numpages = {12},
+    url = {http://doi.acm.org/10.1145/1572272.1572301},
+    doi = {10.1145/1572272.1572301},
+    acmid = {1572301},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {automated debugging, dynamic information flow, dynamic tainting, failure-relevant inputs},
+    annote = {TODO}
+}
+
+@inproceedings{Huo:2014:IOQ:2635868.2635917,
+    author = {Huo, Chen and Clause, James},
+    title = {Improving Oracle Quality by Detecting Brittle Assertions and Unused Inputs in Tests},
+    booktitle = {Proceedings of the 22Nd ACM SIGSOFT International Symposium on Foundations of Software Engineering},
+    series = {FSE 2014},
+    year = {2014},
+    isbn = {978-1-4503-3056-5},
+    location = {Hong Kong, China},
+    pages = {621--631},
+    numpages = {11},
+    url = {http://doi.acm.org/10.1145/2635868.2635917},
+    doi = {10.1145/2635868.2635917},
+    acmid = {2635917},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {Brittleness, Dynamic tainting, Improving oracles, Mutation, Unit testing, Unused inputs},
+    annote = {TODO}
+}
+
+
+
+@inproceedings{Hoschele:2016:MIG:2970276.2970321,
+    author = {H\"{o}schele, Matthias and Zeller, Andreas},
+    title = {Mining Input Grammars from Dynamic Taints},
+    booktitle = {Proceedings of the 31st IEEE/ACM International Conference on Automated Software Engineering},
+    series = {ASE 2016},
+    year = {2016},
+    isbn = {978-1-4503-3845-5},
+    location = {Singapore, Singapore},
+    pages = {720--725},
+    numpages = {6},
+    url = {http://doi.acm.org/10.1145/2970276.2970321},
+    doi = {10.1145/2970276.2970321},
+    acmid = {2970321},
+    publisher = {ACM},
+    address = {New York, NY, USA},
+    keywords = {Input formats, context-free grammars, dynamic tainting, fuzzing},
+    annote = {TODO}
 }
 
 
