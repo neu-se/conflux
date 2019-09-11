@@ -95,7 +95,7 @@
 	    A graph of potential secret flows is constructed with edges representing values, edge weights conveying the number of bits that a value can hold, and nodes representing operations on values.
 	    A source node is used to represent secret inputs and a sink node is used to represent public outputs.
 	    Implicit flows are modeled by adding edges to connect each implicit flow operation to the outputs of enclosed computational regions.
-	    By default an entire program is considered as a enclosed computation.
+	    By default an entire program is considered as an enclosed computation.
 	    However, additional enclosed regions for sub-computations can be defined to increase the model's precision.
 	    The authors' implementation of their approach, Flowcheck, works on x86 executables and uses the Valgrind Framework.
 	    Flowcheck was run on bzip2, a lossless compression tool, and reported a flow that was within pre-calculated expected bounds.
