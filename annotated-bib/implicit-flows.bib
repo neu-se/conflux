@@ -293,5 +293,16 @@
     author={Sanjay Rawat and Vivek Jain and Ashish Jith Sreejith Kumar and Lucian Cojocar and Cristiano Giuffrida and Herbert Bos},
     booktitle={NDSS},
     year={2017},
-    annote = {TODO}
+    annote = {
+        Rawat \etal's fuzzing strategy leverages control and data flow information to generate ``interesting'' inputs capable of finding bugs deep in a program's execution.
+        The authors argue that blind fuzzing is ineffective for discovering bugs deep in a program's execution particularly if the program uses complex input formats.
+        Additionally, they contend fuzzing approaches that use symbolic execution have difficultly scaling.
+        They propose using taint analysis to produce high quality inputs without the use of symbolic execution.
+        The authors detail a coverage-based mutational fuzzer.
+       	Static analysis is performed to gather control flow information which is used to up-weight highly nested basic blocks.
+       	These weights are considered by the fitness function used by the evolutionary algorithm for input generation.
+        Byte-level dynamic taint analysis provides data flow information used to guide the mutation process and address ``magic bytes'' which are present in certain file formats (\eg jpeg, pdf, elf). 
+        The authors evaluated VUzzer, their implementation of this fuzzing strategy, on the DARPA Grand Challenge binaries, the LAVA dataset binaries, and a set of real-world applications.
+        They found that VUzzer discovered more unique crashes than the other state-of-the-art fuzzers that were evaluated.
+    }
 }
