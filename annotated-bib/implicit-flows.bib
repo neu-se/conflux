@@ -8,9 +8,8 @@
     annote = {
     Samarati and Sweeney put forward a metric for quantifying the degree to which data is annoymized, k-anonymity.
     	They establish that certain combinations of attributes can be used to uniquely identify an individual or a small set of individuals.
-    	A release of data is said to observe k-anonymity if every combination of ``quasi-identifiers'', controlled attributes, can be matched to at least k individuals.
-    	The authors were not discussing privacy in the context of information flow analysis.
-    	However, k-anonymity could be used evaluate the likelihood that input data can be inferred from output data.
+    	A release of data is said to observe k-anonymity if every combination of ``quasi-identifiers'', \ie controlled attributes, can be matched to at least k individuals.
+    	Although the authors were not discussing privacy in the context of information flow analysis, k-anonymity could be used a metric for quantifying the likelihood that input data can be inferred from output data.
     	Thus, it could be used provide a basis for a more flexible privacy-oriented information flow policy than noninterference.
     }
 }
@@ -59,13 +58,13 @@
     keywords = {dynamic tainting, general framework, information flow},
     annote = {
     Clause \etal discuss a flexible dynamic tainting framework that could be used for various security and software engineering purposes, such as attack detection, enforcing flow policies for sensitive information, software testing, and debugging.
-        The authors advocate for a flexible dynamic tainting framework that allows user to select taint propagation policies, specify different taint markings, define custom logic for checking taint markings and combine source operand taints on destination values, and choose different taint source and sink locations.
-        They also argue that the dynamic tainting framework should be able to track not only explicit flows due to data dependences, but also offer the option to track implicit flows where tainted value impacts another variable's value indirectly, in particular those due to control dependences.
+        The authors advocate for a flexible dynamic tainting framework that allows user to select taint propagation policies, specify different taint markings, define custom logic for checking taint markings and combining source operand taints on destination values, and choose different taint source and sink locations.
+        They also argue that the dynamic tainting framework should be able to track not only explicit flows due to data dependences, but should also offer the option to track implicit flows where tainted values impact other variables' values indirectly, in particular they discuss implicit flows those due to control dependences.
         Control dependences are informally defined: ``a statement s\textsubscript{2} is control dependent on a statement s\textsubscript{1} if (1) s\textsubscript{1} contains a predicate, and (2) depending on the outcome of s\textsubscript{1} , s\textsubscript{2} may not to be executed.''
         A more formal definition in terms of control flow graphs and post-dominators is also provided.
         In order to partially address conditional instructions whose branches impact different memory locations, the authors suggest adding identity definitions to ensure that the sets of memory locations impacted by two branches match.
         Clause \etal implemented and evaluated, Dytan, a flexible dynamic tainting framework implementation for x86 executables.
-        Two techniques from prior studies were replicated using Dytan, an approach for the prevention of overwrite attacks and a positive tainting approach for detecting SQL injection.
+        Two techniques from prior studies were replicated using Dytan, an approach for the prevention of overwrite attacks and a positive tainting approach for detecting SQL injection \cite{Halfond:2006:UPT:1181775.1181797}.
         Dytan produced similar results to the original task-specific implementations for both techniques, but Dytan's flexibility impacted its time and space efficiency compared to task-specific implementations.
         The authors also used Dytan to evaluate the number of tainted bytes for different taint-propagation approaches.
         However, the correctness of Dytan's control flow propagation policies was not evaluated.
@@ -89,16 +88,15 @@
     address = {New York, NY, USA},
     keywords = {dynamic analysis, implicit flow, information-flow analysis},
     annote = {
-    McCamant and Ernst measure the maximum flow of secret information with a network flow capacity model instead of taint tracking.
-	    They reason that is may be acceptable for a portion of private information to leak, \eg the last four digits of a credit card number.
-	    Thus, it is more practical to use a quantitative approach information-flow security which detects if number of leaked bits exceeds the acceptable limit placed by a confidentiality policy.
-	    Their approach observes the execution of a program in order to measure the extent to which private inputs were leaked to public outputs for the execution.
+    McCamant and Ernst measure the maximum flow of secret information with a network flow capacity model instead of using a taint tracking approach.
+	    They reason that it may be acceptable for a portion of private information to leak, \eg the last four digits of a credit card number, thus it is practical to use a quantitative approach information-flow security which detects if number of leaked bits exceeds the acceptable limit placed by a confidentiality policy.
+	    Their approach observes the execution of a program in order to measure the extent to which private inputs were leaked to public outputs.
 	    Both explicit flows and implicit flows, which they define as those ``in which the value of a variable depends on a previous secret branch condition or pointer value'', are modeled.
 	    A graph of potential secret flows is constructed with edges representing values, edge weights conveying the number of bits that a value can hold, and nodes representing operations on values.
-	    The source node is used to represent secret inputs and a sink node is used to represent public outputs.
+	    A source node is used to represent secret inputs and a sink node is used to represent public outputs.
 	    Implicit flows are modeled by adding edges to connect each implicit flow operation to the outputs of enclosed computational regions.
-	    By default entire program is considered as a enclosed computation.
-	    However, addition enclosed regions for sub-computations can be defined to increase the model's precision.
+	    By default an entire program is considered as a enclosed computation.
+	    However, additional enclosed regions for sub-computations can be defined to increase the model's precision.
 	    The authors' implementation of their approach, Flowcheck, works on x86 executables and uses the Valgrind Framework.
 	    Flowcheck was run on bzip2, a lossless compression tool, and reported a flow that was within pre-calculated expected bounds.
 	    Additionally, case studies of confidentiality properties in real programs were conducted using Flowcheck and found a previously unknown bug that violated confidentiality.
@@ -123,11 +121,11 @@
     address = {New York, NY, USA},
     keywords = {control dependence, data dependence, dynamic information flow, strict control dependence, taint analysis},
     annote = {
-		The authors introduce the term strict control dependence (SCD) to refer to implicit flows where there is a strong, almost data flow like, correlation between statements.
-		They identify such SCDs as a source of improperly tracked information leaks that may cause false negative in an analysis.
+		The authors introduce the term strict control dependence (SCD) to refer to implicit flows where there is a strong, almost data flow like correlation between statements.
+		They identify such SCDs as a source of improperly tracked information leaks that may cause false negatives in an analysis.
 		SCDs are controls flows where ``the equivalence of the left-hand side and the right-hand side expressions of the predicate can be inferred''.
-		The effectiveness of considering SCDs was evaluated using three analyzer implementations for GCC-4.4.0: one that only considered data flows, one that considered data flows and all control flows, and one that considered data flow and only strict control flows.
-		The analyzers were run on 8 different programs and the authors found that the implementation that considered strict control flows had a lower overhead and fewer false positives than the one that considered all control flows and fewer false negative than the one that considered only data flows.
+		The effectiveness of considering SCDs was evaluated using three analyzer implementations for GCC-4.4.0: one that only considered data flows, one that considered data flows and all control flows, and one that considered data flows and only strict control flows.
+		The analyzers were run on 8 different programs and the authors found that the implementation that considered strict control flows had a lower overhead and fewer false positives than the one that considered all control flows and fewer false negatives than the one that considered only data flows.
 	}
     % Also discuss execution omission error/negative implicit flow issue - like Dytan they use dummy identity assignments to remedy differences between the branches
 }
@@ -139,7 +137,7 @@
     year = {2011},
     annote = {
     Similar to Bao \etal \cite{Bao:2010:SCD:1831708.1831711}, Kang \etal propose propagating taints only along select control flows in order to address under-tainting.
-    	Inparticular, they target controls flows associated with ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
+    	In particular, they target controls flows associated with ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
         To identify branches related to ``information-preserving'' transformations, they first perform dynamic analysis to collect execution traces.
         Then, they analyze the execution traces to find control-flow paths that can only be reached by a single input value.
         Propagation rules are generated to mitigate under-tainting along the branches of these control-flow paths.
@@ -147,7 +145,8 @@
         The authors evaluated an implementation of their approach by tracking the flow of sensitive information in word processing applications and found that it successfully addressed under-tainting in that context.
 		Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
         However, they do not generally examine under-tainting from control flows.
-        Some mention is made of instances where a branch causes some value to not be written, which the authors refer to as ``negative'' implicit flows, and technique similar to Clause \etal's \cite{Clause:2007:DGD:1273463.1273490} for partially mitigating simple instances of such flows is discussed.
+        Some mention is made of the issue identified in Clause \etal \cite{Clause:2007:DGD:1273463.1273490} where tainted branches impact different memory locations.
+        The authors refer to these situations as ``negative'' implicit flows and present a technique similar to Clause \etal's \cite{Clause:2007:DGD:1273463.1273490} for partially mitigating simple instances of such flows.
     }
 }
 
@@ -160,7 +159,7 @@
     url = {https://doi.org/10.7916/D8MG7P9D},
     pages = content,
     annote = {
-    Jee presents TaintMark, a dynamic data flow tracking evalution tool for the Android Framework.
+    Jee presents TaintMark, a dynamic data flow tracking evaluation tool for the Android Framework.
     	TaintMark looks at system outputs when given different input values to determine if taints should propagate from the inputs to the outputs.
     	It tests applications with different tainted input values from sources like GPS device, IMSI, IMEI, and password data.
     	During the execution, file and network activities performed by the application are logged for analysis.
@@ -296,13 +295,13 @@
     annote = {
         Rawat \etal's fuzzing strategy leverages control and data flow information to generate ``interesting'' inputs capable of finding bugs deep in a program's execution.
         The authors argue that blind fuzzing is ineffective for discovering bugs deep in a program's execution particularly if the program uses complex input formats.
-        Additionally, they contend fuzzing approaches that use symbolic execution have difficultly scaling.
+        Additionally, they contend that fuzzing approaches that use symbolic execution have difficultly scaling.
         They propose using taint analysis to produce high quality inputs without the use of symbolic execution.
-        The authors detail a coverage-based mutational fuzzer.
+        The authors detail a coverage-based mutational fuzzing approach.
        	Static analysis is performed to gather control flow information which is used to up-weight highly nested basic blocks.
        	These weights are considered by the fitness function used by the evolutionary algorithm for input generation.
         Byte-level dynamic taint analysis provides data flow information used to guide the mutation process and address ``magic bytes'' which are present in certain file formats (\eg jpeg, pdf, elf). 
         The authors evaluated VUzzer, their implementation of this fuzzing strategy, on the DARPA Grand Challenge binaries, the LAVA dataset binaries, and a set of real-world applications.
-        They found that VUzzer discovered more unique crashes than the other state-of-the-art fuzzers that were evaluated.
+        They found that VUzzer discovered more unique crashes than the other state-of-the-art fuzzers that they evaluated.
     }
 }
