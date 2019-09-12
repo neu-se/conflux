@@ -99,6 +99,7 @@
 	    However, additional enclosed regions for sub-computations can be defined to increase the model's precision.
 	    The authors' implementation of their approach, Flowcheck, works on x86 executables and uses the Valgrind Framework.
 	    Flowcheck was run on bzip2, a lossless compression tool, and reported a flow that was within pre-calculated expected bounds.
+        Since the bzip2 is a compression tool, the expected bounds for the flow was the size of the program's output minus an approximation of the size of input independent output like headers and progress messages.
 	    Additionally, case studies of confidentiality properties in real programs were conducted using Flowcheck and found a previously unknown bug that violated confidentiality.
 	    McCamant and Ernst offer a unique technique for addressing implicit flows and a practical approach for enforcing confidentiality policies.
     }
@@ -123,11 +124,14 @@
     annote = {
 		The authors introduce the term strict control dependence (SCD) to refer to implicit flows where there is a strong, almost data flow like correlation between statements.
 		They identify such SCDs as a source of improperly tracked information leaks that may cause false negatives in an analysis.
-		SCDs are controls flows where ``the equivalence of the left-hand side and the right-hand side expressions of the predicate can be inferred''.
+		A statement is said be strictly control dependent on a predicate if that predicate affects whether the statement will execute, ``the equivalence of the left-hand side and the right-hand side expressions of the predicate can be inferred'', and the predicate is the ``closest'' predicate to the statement for which the first two conditions are met.
 		The effectiveness of considering SCDs was evaluated using three analyzer implementations for GCC-4.4.0: one that only considered data flows, one that considered data flows and all control flows, and one that considered data flows and only strict control flows.
-		The analyzers were run on 8 different programs and the authors found that the implementation that considered strict control flows had a lower overhead and fewer false positives than the one that considered all control flows and fewer false negatives than the one that considered only data flows.
+        The lineage sets of the outputs of eight different programs were calculated with each implementation.
+        A ground truth lineage set for the outputs of each program was determined by running the program with different values for a particular input.
+        If multiple values for the input led to the same output, the input was determined to not be in the ground truth lineage set of the output.
+		The authors found that the implementation that considered strict control flows had a lower overhead and fewer false positives than the one that considered all control flows and fewer false negatives than the one that considered only data flows.
 	}
-    % Also discuss execution omission error/negative implicit flow issue - like Dytan they use dummy identity assignments to remedy differences between the branches
+    % Note: Paper also discusses branch-not-taken flow - like Dytan they use dummy identity assignments to remedy differences between the branches
 }
 
 @inproceedings{Kang2011DTADT,
