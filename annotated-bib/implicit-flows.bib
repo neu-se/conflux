@@ -96,7 +96,7 @@
 	    A source node is used to represent secret inputs and a sink node is used to represent public outputs.
 	    Implicit flows are modeled by adding edges to connect each implicit flow operation to the outputs of enclosed computational regions.
 	    By default an entire program is considered as an enclosed computation.
-	    However, additional enclosed regions for sub-computations can be defined to increase the model's precision.
+	    However, additional enclosure regions for sub-computations can be defined to increase the model's precision.
 	    The authors' implementation of their approach, Flowcheck, works on x86 executables and uses the Valgrind Framework.
 	    Flowcheck was run on bzip2, a lossless compression tool, and reported a flow that was within pre-calculated expected bounds.
         Since the bzip2 is a compression tool, the expected bounds for the flow was the size of the program's output minus an approximation of the size of input independent output like headers and progress messages.
@@ -244,7 +244,7 @@
     address = {New York, NY, USA},
     keywords = {SQL injection, dynamic tainting, runtime monitoring},
     annote = {
-    	Halfond \etal provide an automated technique for detecting and preventing SQL injection attacks.
+    Halfond \etal provide an automated technique for detecting and preventing SQL injection attacks.
     	Their technique uses ``positive-tainting'' which tracks the flow of trusted values (opposed to the more common approach of ``negative'' tainting which tracks untrusted values).
     	They prevent SQL injection attack by ensuring that certain syntactic parts of SQL queries are made from trusted values.
     	The authors' Java implementation of their technique, WASP, was evaluated on 7 web applications using 12,616 SQL injection attacks and 5,602 legitimate accesses.
@@ -269,7 +269,19 @@
     publisher = {ACM},
     address = {New York, NY, USA},
     keywords = {automated debugging, dynamic information flow, dynamic tainting, failure-relevant inputs},
-    annote = {TODO}
+    annote = {
+    Clause and Orso present a technique for identifying the subset of a failure-inducing program input that is relevant to a failure in order to assist with program debugging.
+        The authors use data and control flow information to identify ``failure-relevant'' inputs.
+        Values from external input sources, like keyboard, network connection, and file system inputs, to a program are tainted.
+        Taints are propagated through the program and eventually used to determine which inputs impact data involved in failures.
+        This input-centered technique is intended to be applied to programs with large input domains and can be used in conjunction with other debugging techniques in particular those that aim to identify suspect statements.
+        The authors' implementation of their approach for x86 binaries, Penumbra, was compared to a delta debugging (a different technique used to identify failure-relevant inputs) tool.
+        Five applications from BugBench that the authors identified as having a relatively large number of inputs were selected for testing.
+        For each application, failure-inducing inputs were selected and the location of the induced failures occurred were manually identified.
+        The failure-relevant input sets calculated by Penumbra using only data-flow tracking and the delta debugging tool were roughly the same size and the setup time for Penumbra was less than the delta debugging tool.
+		The authors noted that using control flow tracking, in addition to data flow tracking, in Penumbra resulted in larger failure-relevant input sets and in the case of one application, resulted in almost all of the program's roughly 15 million inputs being marked as failure-relevant.
+		After conducting a qualitative assessment of the failure-relevant input sets calculated by Penumbra, the authors argue that Penumbra provides useful debugging guidance.
+    }
 }
 
 @inproceedings{Huo:2014:IOQ:2635868.2635917,
@@ -297,15 +309,15 @@
     booktitle={NDSS},
     year={2017},
     annote = {
-        Rawat \etal's fuzzing strategy leverages control and data flow information to generate ``interesting'' inputs capable of finding bugs deep in a program's execution.
+    Rawat \etal's fuzzing strategy leverages control and data flow information to generate ``interesting'' inputs capable of finding bugs deep in a program's execution.
         The authors argue that blind fuzzing is ineffective for discovering bugs deep in a program's execution particularly if the program uses complex input formats.
         Additionally, they contend that fuzzing approaches that use symbolic execution have difficultly scaling.
         They propose using taint analysis to produce high quality inputs without the use of symbolic execution.
         The authors detail a coverage-based mutational fuzzing approach.
        	Static analysis is performed to gather control flow information which is used to up-weight highly nested basic blocks.
        	These weights are considered by the fitness function used by the evolutionary algorithm for input generation.
-        Byte-level dynamic taint analysis provides data flow information used to guide the mutation process and address ``magic bytes'' which are present in certain file formats (\eg jpeg, pdf, elf). 
-        The authors evaluated VUzzer, their implementation of this fuzzing strategy, on the DARPA Grand Challenge binaries, the LAVA dataset binaries, and a set of real-world applications.
+        Byte-level dynamic taint analysis provides data flow information used to guide the mutation process and address ``magic bytes'' which are present in certain file formats (\eg jpeg, pdf, elf).
+    The authors evaluated VUzzer, their implementation of this fuzzing strategy, on the DARPA Grand Challenge binaries, the LAVA dataset binaries, and a set of real-world applications.
         They found that VUzzer discovered more unique crashes than the other state-of-the-art fuzzers that they evaluated.
     }
 }
