@@ -300,7 +300,71 @@
     publisher = {ACM},
     address = {New York, NY, USA},
     keywords = {Brittleness, Dynamic tainting, Improving oracles, Mutation, Unit testing, Unused inputs},
-    annote = {TODO}
+    annote = {
+    Huo and Clause
+    }
+    %brittle assertions - depend on value derived from uncontrolled inputs
+    %unused inputs - not checked by an assertion
+    %
+    %OraclePolish - Java Junit testing framework
+    %
+    %test =
+    %inputs to program under test
+    %+
+    %oracle check that execution with inputs produce expected results
+    %
+    %oracle frequently assertions that check values of subset of program state
+    %check too little --> fail to find bugs
+    %check too much --> hard to maintain
+    %
+    %track data + control flow of controlled and uncontrolled inputs
+    %
+    %controlled = provided in test method
+    %otherwise uncontrolled
+    %
+    %* check taint tags associated with values checked by assertions
+    %
+    %brittle = has tag from uncontrolled
+    %unused -> calc union of all taints checked by assertions, check if every controlled tag is in the set
+    %
+    %controlled = constants not passed to an assertio method
+    %that are i setup code for test or test method' code
+    %return values of 0-arg method in the test class
+    %
+    %uncontrolled
+    %global var (static mutatble fields)
+    %all non-final fields in the test’s contain-ing class are considered
+    %
+    %"A control-flow dependence arises when a conditional branch
+    %b decides whether a statement s is executed"
+    %"the taint
+    %marks associated with the values read by b must be combined
+    %and associated with the values written by s"
+    %
+    %brittle check - comparison operations made by assertion methods
+    %
+    %reports where values were assigned tags and what their values were when the tag was assigned
+    %
+    %filters out false positives due to imprecise taint propagation
+    %
+    %re-executes tests
+    %Mutates uncontrolled inputs ---> if they truely cause brittle assertions ---> outcome of test should be impacted by change
+    %
+    %
+    %Mutates controlled inputs ---> if truely unused assertions ---> outcome of test should not be impacted by change
+    %multiple re-executions (3 was found to be sufficient in experimental trials)
+    %
+    %Evaluatation
+    %OraclePolish prototype Java tests that use the JUnit testing framework
+    %analyzed > 4.7k tests in 20 real-world Java applications that represent a wide range of domains
+    %
+    %it detected 164 tests that contain at least
+    %one brittle assertion and 1,618 tests that contain unused
+    %inputs.
+    %
+    %authors detail 2 randomy choosen brittle tests and two randomly choosen unused inputs
+    %
+    %runtime cost: between 5 and 30 times
 }
 
 @inproceedings{Rawat2017VUzzerAE,
@@ -317,7 +381,7 @@
        	Static analysis is performed to gather control flow information which is used to up-weight highly nested basic blocks.
        	These weights are considered by the fitness function used by the evolutionary algorithm for input generation.
         Byte-level dynamic taint analysis provides data flow information used to guide the mutation process and address ``magic bytes'' which are present in certain file formats (\eg jpeg, pdf, elf).
-    The authors evaluated VUzzer, their implementation of this fuzzing strategy, on the DARPA Grand Challenge binaries, the LAVA dataset binaries, and a set of real-world applications.
+        The authors evaluated VUzzer, their implementation of this fuzzing strategy, on the DARPA Grand Challenge binaries, the LAVA dataset binaries, and a set of real-world applications.
         They found that VUzzer discovered more unique crashes than the other state-of-the-art fuzzers that they evaluated.
     }
 }
