@@ -12,7 +12,7 @@
         <version>0.0.4-SNAPSHOT</version>
     </parent>
     <properties>
-        <jre.cache>${project.basedir}/jre-cache</jre.cache>
+        <inst.jre.cache>${project.basedir}/inst-jre-cache</inst.jre.cache>
     </properties>
     <build>
         <plugins>
@@ -22,13 +22,13 @@
                 <version>0.0.4-SNAPSHOT</version>
                 <executions>
                     <execution>
+                        <id>control</id>
                         <goals>
                             <goal>instrument</goal>
                         </goals>
-                        <id>jre-inst-implicit</id>
                         <configuration>
-                            <targetBaseDir>${jre.cache}</targetBaseDir>
-                            <name>jre-inst-implicit</name>
+                            <targetBaseDir>${inst.jre.cache}</targetBaseDir>
+                            <name>control</name>
                             <options>
                                 <controlTrack/>
                                 <multiTaint/>
@@ -38,13 +38,13 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>data-only</id>
                         <goals>
                             <goal>instrument</goal>
                         </goals>
-                        <id>jre-inst-obj</id>
                         <configuration>
-                            <targetBaseDir>${jre.cache}</targetBaseDir>
-                            <name>jre-inst-obj</name>
+                            <targetBaseDir>${inst.jre.cache}</targetBaseDir>
+                            <name>data-only</name>
                             <options>
                                 <multiTaint/>
                                 <forceUnboxAcmpEq/>
@@ -54,17 +54,51 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>edu.gmu.swe.phosphor</groupId>
+                <artifactId>flow-bench-maven-plugin</artifactId>
+                <version>0.0.4-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>benchmark</goal>
+                        </goals>
+                        <configuration>
+                            <phosphorConfigurations>
+                                <phosphorConfiguration>
+                                    <name>control</name>
+                                    <options>
+                                        <enum/>
+                                        <acmpeq/>
+                                        <implicitExceptions/>
+                                    </options>
+                                    <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
+                                </phosphorConfiguration>
+                                <phosphorConfiguration>
+                                    <name>data-only</name>
+                                    <options>
+                                        <enum/>
+                                        <acmpeq/>
+                                        <objmethods/>
+                                    </options>
+                                    <instrumentedJVM>${inst.jre.cache}/data-only</instrumentedJVM>
+                                </phosphorConfiguration>
+                            </phosphorConfigurations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
-            <artifactId>Phosphor</artifactId>
+            <artifactId>phosphor-instrument-maven-plugin</artifactId>
             <version>0.0.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
-            <artifactId>phosphor-instrument-maven-plugin</artifactId>
+            <artifactId>flow-bench-maven-plugin</artifactId>
             <version>0.0.4-SNAPSHOT</version>
         </dependency>
     </dependencies>

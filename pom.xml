@@ -17,6 +17,7 @@
     <description>Dynamic Taint Tracking Benchmark</description>
     <modules>
         <module>phosphor-instrument-maven-plugin</module>
+        <module>flow-bench-maven-plugin</module>
         <module>flow-bench-core</module>
     </modules>
     <properties>

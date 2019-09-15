@@ -1,4 +1,4 @@
-package edu.columbia.cs.psl.phosphor.maven;
+package edu.gmu.swe.phosphor.maven;
 
 import edu.columbia.cs.psl.phosphor.Configuration;
 import edu.columbia.cs.psl.phosphor.Instrumenter;
@@ -33,7 +33,7 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 	 * Constant name of phosphor-properties files used to store information about the configuration options that were
 	 * used by Phosphor when instrumenting a JVM.
 	 */
-	private static final String PROPERTIES_FILE_NAME = "phosphor-properties";
+	public static final String PROPERTIES_FILE_NAME = "phosphor-properties";
 
 	/**
 	 * Options considered by Phosphor that have boolean values.

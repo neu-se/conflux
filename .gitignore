@@ -23,6 +23,6 @@ lastClass.txt
 **/target/*
 
 # Cached instrumented JREs
-**/jre-cache/*
+**/inst-jre-cache/*
 
 !**/.gitignore

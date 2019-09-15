@@ -1,4 +1,4 @@
-package edu.columbia.cs.psl.phosphor.maven;
+package edu.gmu.swe.phosphor.maven;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
