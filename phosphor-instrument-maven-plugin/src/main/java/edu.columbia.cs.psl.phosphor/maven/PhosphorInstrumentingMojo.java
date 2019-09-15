@@ -49,7 +49,7 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 	 * Options considered by Phosphor that have string values.
 	 */
 	private static final String[] STRING_VALUED_PHOSPHOR_OPTIONS = new String[]{
-			"withSelectiveInst", "priorClassVisitor"
+			"priorClassVisitor"
 	};
 
 	/**
@@ -220,8 +220,6 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 		Configuration.SKIP_LOCAL_VARIABLE_TABLE = "true".equals(options.getProperty("skipLocals"));
 		Configuration.ALWAYS_CHECK_FOR_FRAMES = "true".equals(options.getProperty("alwaysCheckForFrames"));
 		Configuration.IMPLICIT_HEADERS_NO_TRACKING = "true".equals(options.getProperty("implicitHeadersNoTracking"));
-		Configuration.WITH_SELECTIVE_INST = options.contains("withSelectiveInst");
-		Configuration.selective_inst_config = options.getProperty("withSelectiveInst");
 		String priorClassVisitorName = options.getProperty("priorClassVisitor");
 		if(priorClassVisitorName != null) {
 			try {
