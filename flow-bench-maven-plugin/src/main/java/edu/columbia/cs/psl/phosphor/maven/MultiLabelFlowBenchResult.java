@@ -102,6 +102,20 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         return 2 * (microAveragePrecision() * microAverageRecall())/(microAveragePrecision() + microAverageRecall());
     }
 
+    protected double subSetAccuracy() {
+        int count = 0;
+        IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
+        IntSinglyLinkedList.IntListIterator expectedIt = numExpected.iterator();
+        for(int correct = correctIt.nextInt(), expected = expectedIt.nextInt();
+            correctIt.hasNext() && expectedIt.hasNext();
+            correct = correctIt.nextInt(), expected = expectedIt.nextInt()) {
+            if(correct == expected) {
+                count++;
+            }
+        }
+        return (1.0 * count) / numCorrect.size();
+    }
+
     @Override
     public void check(Set<?> expected, Set<?> actual) {
         // Treat the empty set as though it is a set containing only the "empty" label to avoid division by zero issues

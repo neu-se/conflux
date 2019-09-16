@@ -1,6 +1,5 @@
 package edu.columbia.cs.psl.phosphor.maven;
 
-import dnl.utils.text.table.TextTable;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -166,9 +165,11 @@ public class FlowBenchmarkMojo extends AbstractMojo {
         };
         Iterator<? extends List<FlowBenchReport>> reportsIt = reportLists.iterator();
         for(String name : configurationNames) {
-            System.out.println("-------------------------------------------------------");
-            System.out.printf("%s CONFIGURATION FLOW BENCHMARK RESULTS\n", name.toUpperCase());
-            System.out.println("-------------------------------------------------------");
+            String[] split = name.split("\\s+");
+            for(int i = 0; i < split.length; i++) {
+                split[i] = Character.toTitleCase(split[i].charAt(0)) + split[i].substring(1);
+            }
+            String title = String.format("%s Flow Benchmark Results", String.join(" ", split));
             List<FlowBenchReport> reports = reportsIt.next();
             Object[][] data = new Object[reports.size()][];
             int i = 0;
@@ -188,11 +189,8 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                 data[i] = new Object[]{report.getClassName(), report.getMethodName(), report.getTimeElapsed(), 
                         precision, recall, f1Score};
             }
-            TextTable table = new TextTable(columnNames, data);
-            // sort by the first column
-            table.setSort(0); // Order by first column
-            table.printTable();
-            System.out.println();
+            TablePrintUtil.printTable(title, columnNames, data);
+            System.out.println("\n");
         }
     }
 
