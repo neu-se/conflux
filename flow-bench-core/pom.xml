@@ -71,7 +71,6 @@
                                     <options>
                                         <enum/>
                                         <acmpeq/>
-                                        <implicitExceptions/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
                                 </phosphorConfiguration>

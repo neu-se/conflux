@@ -1,6 +1,7 @@
 package edu.columbia.cs.psl.phosphor.maven;
 
 public class TablePrintUtil {
+
     public static void printTable(String title, String[] columnNames, Object[][] data) {
         String[][] dataStrings = new String[data.length][columnNames.length];
         int[] maxWidths = new int[columnNames.length];

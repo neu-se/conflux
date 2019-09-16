@@ -154,6 +154,11 @@ public class FlowBenchmarkMojo extends AbstractMojo {
         return reports;
     }
 
+    /**
+     * Prints table result for each Phosphor configuration that was benchmarked to standard out.
+     * @param configurationNames the names of the configurations that were benchmarked
+     * @param reportLists list of reports for each configuration that was benchmarked
+     */
     private void printResults(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists) {
         String[] columnNames = {
                 "Benchmark",
@@ -186,7 +191,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                     recall = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAverageRecall());
                     f1Score = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAverageF1Score());
                 }
-                data[i] = new Object[]{report.getClassName(), report.getMethodName(), report.getTimeElapsed(), 
+                data[i++] = new Object[]{report.getClassName(), report.getMethodName(), report.getTimeElapsed(),
                         precision, recall, f1Score};
             }
             TablePrintUtil.printTable(title, columnNames, data);
@@ -354,7 +359,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             } else {
                 getLog().info("Using existing Phosphor cache directory: " + cacheDir);
             }
-            File reportFile = new File(reportDirectory, config.name);
+            File reportFile = new File(reportDirectory, config.name + ".json");
             getLog().info("Running flow benchmarks for Phosphor configurations: " + config.name);
             forkBenchmarkRunner(config.instrumentedJVM, phosphorArgLine, reportFile, phosphorJarPath);
             reportFiles.add(reportFile);
