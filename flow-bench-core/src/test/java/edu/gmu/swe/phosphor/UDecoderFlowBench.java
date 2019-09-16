@@ -13,7 +13,7 @@ public class UDecoderFlowBench extends BaseFlowBench {
     @FlowBench
     public FlowBenchResult testUDecoder() throws IOException {
         UEncoder encoder = new UEncoder(UEncoder.SafeCharsSet.DEFAULT);
-        String input = "reserved characters like !*'();:@&=+$,/?#[]";
+        String input = "reserved characters !*'();:@&=+$,/?#[]";
         CharChunk inputChars = encoder.encodeURL(input, 0, input.length());
         input = taintWithIndices(inputChars.toStringInternal());
         ByteChunk bytes = new ByteChunk();
