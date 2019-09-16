@@ -13,6 +13,7 @@
     </parent>
     <properties>
         <inst.jre.cache>${project.basedir}/inst-jre-cache</inst.jre.cache>
+        <tomcat.version>9.0.19</tomcat.version>
     </properties>
     <build>
         <plugins>
@@ -100,6 +101,11 @@
             <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>flow-bench-maven-plugin</artifactId>
             <version>0.0.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>${tomcat.version}</version>
         </dependency>
     </dependencies>
 </project>
