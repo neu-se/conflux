@@ -1,5 +1,6 @@
 package edu.gmu.swe.phosphor;
 
+import edu.columbia.cs.psl.phosphor.maven.FlowBenchResult;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UDecoder;
@@ -22,6 +23,6 @@ public class UDecoderFlowBench extends BaseFlowBench {
         decoder.convert(bytes, true);
         CharChunk chars = encoder.encodeURL(bytes.toStringInternal(), 0, bytes.toStringInternal().length());
         String output = chars.toStringInternal();
-        return calculateMultiLabelResult(getTaints(input), getTaints(output));
+        return FlowBenchResult.calculateMultiLabelResult(getTaints(input), getTaints(output));
     }
 }

@@ -26,3 +26,4 @@ lastClass.txt
 **/inst-jre-cache/*
 
 !**/.gitignore
+/debug/

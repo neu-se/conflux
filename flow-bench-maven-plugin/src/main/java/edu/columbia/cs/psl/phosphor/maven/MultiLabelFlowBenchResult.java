@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor;
+package edu.columbia.cs.psl.phosphor.maven;
 
 import java.util.Arrays;
 

@@ -287,6 +287,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                 getLog().info("Using existing Phosphor cache directory: " + cacheDir);
             }
             File reportFile = new File(reportDirectory, config.name);
+            getLog().info("Running flow benchmarks for Phosphor configurations: " + config.name);
             forkBenchmarkRunner(config.instrumentedJVM, phosphorArgLine, reportFile, phosphorJarPath);
             reportFiles.add(reportFile);
         }
