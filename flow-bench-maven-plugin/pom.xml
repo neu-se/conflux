@@ -45,6 +45,10 @@
                   <pattern>com.google.gson</pattern>
                   <shadedPattern>edu.columbia.cs.psl.phosphor.com.google.gson</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>com.massisframework</pattern>
+                  <shadedPattern>edu.columbia.cs.psl.phosphor.com.massisframework</shadedPattern>
+                </relocation>
               </relocations>
               <filters>
                 <filter>
@@ -93,6 +97,11 @@
       <groupId>edu.gmu.swe.phosphor</groupId>
       <artifactId>phosphor-instrument-maven-plugin</artifactId>
       <version>0.0.4-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.massisframework</groupId>
+      <artifactId>j-text-utils</artifactId>
+      <version>0.3.4</version>
     </dependency>
   </dependencies>
 </project>

@@ -28,7 +28,7 @@ public class ForkedFlowBenchmarkRunner {
             runBenchmarkClass(clazz, reports, testErrors);
         }
         printFooter(reports.size(), testErrors);
-        serializeReports(reports, reportFile);
+        FlowBenchReport.writeJsonToFile(reports, reportFile);
     }
 
     private static void runBenchmarkClass(Class<?> benchClass, List<FlowBenchReport> allReports, List<String> allTestErrors) {
@@ -83,14 +83,16 @@ public class ForkedFlowBenchmarkRunner {
     }
 
     private static void validateTestSignature(Method test) throws Exception {
-        if(test.getParameterCount() != 0) {
-            throw new Exception("Flow benchmark test method should have no parameters");
+        if(test.getParameterCount() != 1 || (!test.getParameterTypes()[0].equals(BinaryFlowBenchResult.class)
+                && !test.getParameterTypes()[0].equals(MultiLabelFlowBenchResult.class))) {
+            throw new Exception("Flow benchmark test method should have exactly one parameter of type BinaryFlowBenchResult " +
+                    "or MultiLabelFlowBenchResult");
         }
         if(Modifier.isStatic(test.getModifiers())) {
             throw new Exception("Flow benchmark test method should not be static");
         }
-        if(!FlowBenchResult.class.isAssignableFrom(test.getReturnType())) {
-            throw new Exception("Flow benchmark test method should return a FlowBenchResult");
+        if(!Void.TYPE.equals(test.getReturnType())) {
+            throw new Exception("Flow benchmark test method should have void return type.");
         }
     }
 
@@ -98,7 +100,13 @@ public class ForkedFlowBenchmarkRunner {
         try {
             validateTestSignature(test);
             Instant start = Instant.now();
-            FlowBenchResult result = (FlowBenchResult)test.invoke(receiver);
+            FlowBenchResult result;
+            if(test.getParameterTypes()[0].equals(MultiLabelFlowBenchResult.class)) {
+                result = MultiLabelFlowBenchResult.class.newInstance();
+            } else {
+                result = BinaryFlowBenchResult.class.newInstance();
+            }
+            test.invoke(receiver, result);
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
             return new FlowBenchReport(test, timeElapsed, result);
@@ -117,7 +125,7 @@ public class ForkedFlowBenchmarkRunner {
 
     private static void printHeader() {
         System.out.println("-------------------------------------------------------");
-        System.out.println("             RUNNING PHOSPHOR FLOW BENCHMARKS          ");
+        System.out.println("            RUNNING PHOSPHOR FLOW BENCHMARKS           ");
         System.out.println("-------------------------------------------------------");
     }
 
@@ -138,10 +146,5 @@ public class ForkedFlowBenchmarkRunner {
             System.out.println();
         }
         System.out.printf("Tests run: %d, Errors: %d\n\n", testsRun, testErrors.size());
-    }
-
-    private static void serializeReports(List<FlowBenchReport> reports, File reportFile) {
-        // TODO serialize reports
-        System.out.println(reports);
     }
 }

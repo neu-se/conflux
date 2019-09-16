@@ -1,7 +1,11 @@
 package edu.columbia.cs.psl.phosphor.maven;
 
-public class ErrorFlowBenchResult implements FlowBenchResult {
+import java.util.Set;
 
-    public ErrorFlowBenchResult() {
+public class ErrorFlowBenchResult extends FlowBenchResult {
+
+    @Override
+    public void check(Set<?> expected, Set<?> actual) {
+
     }
 }

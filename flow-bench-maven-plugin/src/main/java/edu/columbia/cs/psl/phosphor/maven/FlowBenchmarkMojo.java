@@ -1,5 +1,6 @@
 package edu.columbia.cs.psl.phosphor.maven;
 
+import dnl.utils.text.table.TextTable;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -120,9 +121,78 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
             createOrCleanDirectory(reportDirectory);
             List<File> reportFiles = runBenchmarks(reportDirectory, phosphorJarPath);
-            // TODO process report files
+            printResults(getConfigurationNames(), deserializeReports(reportFiles));
         } catch(InterruptedException | IOException e) {
             throw new MojoFailureException("Failed to benchmark configurations", e);
+        }
+    }
+
+    /**
+     * @return list of names for the Phosphor configurations being benchmarked in the order they are benchmarked
+     */
+    private List<String> getConfigurationNames() {
+        List<String> names = new LinkedList<>();
+        for(PhosphorConfig config : phosphorConfigurations) {
+            names.add(config.name);
+        }
+        return names;
+    }
+
+    /**
+     * Reads flow benchmark reports from the files in the specified list.
+     *
+     * @param reportFiles list of files contains benchmark reports for the different configurations in the order the
+     *                    benchmarks were run
+     * @return a list contains the list of benchmark results read from the reportFiles in the order the benchmark lists
+     *                  were run
+     * @throws IOException if an I/O error occurs
+     */
+    private List<? extends List<FlowBenchReport>> deserializeReports(List<File> reportFiles) throws IOException {
+        List<List<FlowBenchReport>> reports = new LinkedList<>();
+        for(File reportFile : reportFiles) {
+            reports.add(FlowBenchReport.readJsonFromFile(reportFile));
+        }
+        return reports;
+    }
+
+    private void printResults(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists) {
+        String[] columnNames = {
+                "Benchmark",
+                "Test",
+                "Elapsed Time",
+                "Precision",
+                "Recall",
+                "F1 Score"
+        };
+        Iterator<? extends List<FlowBenchReport>> reportsIt = reportLists.iterator();
+        for(String name : configurationNames) {
+            System.out.println("-------------------------------------------------------");
+            System.out.printf("%s CONFIGURATION FLOW BENCHMARK RESULTS\n", name.toUpperCase());
+            System.out.println("-------------------------------------------------------");
+            List<FlowBenchReport> reports = reportsIt.next();
+            Object[][] data = new Object[reports.size()][];
+            int i = 0;
+            for(FlowBenchReport report : reports) {
+                String precision = "ERROR";
+                String recall = "ERROR";
+                String f1Score = "ERROR";
+                if(report.getResult() instanceof BinaryFlowBenchResult) {
+                    precision = String.format("%.4f", ((BinaryFlowBenchResult) report.getResult()).precision());
+                    recall = String.format("%.4f", ((BinaryFlowBenchResult) report.getResult()).recall());
+                    f1Score = String.format("%.4f", ((BinaryFlowBenchResult) report.getResult()).f1Score());
+                } else if(report.getResult() instanceof MultiLabelFlowBenchResult) {
+                    precision = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAveragePrecision());
+                    recall = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAverageRecall());
+                    f1Score = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAverageF1Score());
+                }
+                data[i] = new Object[]{report.getClassName(), report.getMethodName(), report.getTimeElapsed(), 
+                        precision, recall, f1Score};
+            }
+            TextTable table = new TextTable(columnNames, data);
+            // sort by the first column
+            table.setSort(0); // Order by first column
+            table.printTable();
+            System.out.println();
         }
     }
 
@@ -237,7 +307,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                 }
             }
         } catch(IOException e) {
-           // False should be returned in this situation as well
+            // False should be returned in this situation as well
         }
         return false;
     }

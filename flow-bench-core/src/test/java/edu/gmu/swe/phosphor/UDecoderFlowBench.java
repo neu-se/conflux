@@ -1,28 +1,30 @@
 package edu.gmu.swe.phosphor;
 
-import edu.columbia.cs.psl.phosphor.maven.FlowBenchResult;
+import edu.columbia.cs.psl.phosphor.maven.MultiLabelFlowBenchResult;
 import org.apache.tomcat.util.buf.ByteChunk;
-import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UDecoder;
-import org.apache.tomcat.util.buf.UEncoder;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 
-@SuppressWarnings("unused")
 public class UDecoderFlowBench extends BaseFlowBench {
 
     @FlowBench
-    public FlowBenchResult testUDecoder() throws IOException {
-        UEncoder encoder = new UEncoder(UEncoder.SafeCharsSet.DEFAULT);
-        String input = "reserved characters !*'();:@&=+$,/?#[]";
-        CharChunk inputChars = encoder.encodeURL(input, 0, input.length());
-        input = taintWithIndices(inputChars.toStringInternal());
+    public void testUDecoder(MultiLabelFlowBenchResult benchResult) throws IOException {
+        // Decode string: reserved characters !*'();:@&=+$,/?#[]
+        String input = taintWithIndices("reserved+characters+!*'()%3b%3a%40%26%3d%2b$,%2f%3f%23%5b%5d");
         ByteChunk bytes = new ByteChunk();
         bytes.setBytes(input.getBytes(), 0, input.getBytes().length);
         UDecoder decoder = new UDecoder();
         decoder.convert(bytes, true);
-        CharChunk chars = encoder.encodeURL(bytes.toStringInternal(), 0, bytes.toStringInternal().length());
-        String output = chars.toStringInternal();
-        return FlowBenchResult.calculateMultiLabelResult(getTaints(input), getTaints(output));
+        String output = bytes.toStringInternal();
+        for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
+            if(input.charAt(inputIndex) == '%') {
+                benchResult.check(Arrays.asList(inputIndex, ++inputIndex, ++inputIndex), output.charAt(outputIndex));
+            } else {
+                benchResult.check(Collections.singletonList(inputIndex), output.charAt(outputIndex));
+            }
+        }
     }
 }
