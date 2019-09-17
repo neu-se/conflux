@@ -25,7 +25,9 @@ public class ForkedFlowBenchmarkRunner {
         List<String> testErrors = new LinkedList<>();
         printHeader();
         for(Class<?> clazz : scanForBenchmarks(benchmarkOutputDir)) {
-            runBenchmarkClass(clazz, reports, testErrors);
+            if(!Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface()) {
+                runBenchmarkClass(clazz, reports, testErrors);
+            }
         }
         printFooter(reports.size(), testErrors);
         reports.sort(new FlowBenchReportComparator());
