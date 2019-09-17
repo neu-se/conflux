@@ -163,7 +163,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
         String[] columnNames = {
                 "Benchmark",
                 "Test",
-                "Elapsed Time",
+                "Elapsed Time (ms)",
                 "Precision",
                 "Recall",
                 "F1 Score"
