@@ -157,7 +157,8 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     }
 
     /**
-     * Prints table result for each Phosphor configuration that was benchmarked to standard out.
+     * Prints table results for benchmarked Phosphor configuration to standard out.
+     *
      * @param configurationNames the names of the configurations that were benchmarked
      * @param reportLists list of reports for each configuration that was benchmarked
      */
