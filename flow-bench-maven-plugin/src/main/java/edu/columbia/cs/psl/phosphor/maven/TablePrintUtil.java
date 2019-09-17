@@ -41,7 +41,7 @@ public class TablePrintUtil {
         return builder.append('|').toString();
     }
 
-    private static String padStringCenter(String s, int width, char padding) {
+    public static String padStringCenter(String s, int width, char padding) {
         if(s.length() > width) {
             throw new IllegalArgumentException();
         }
@@ -51,7 +51,7 @@ public class TablePrintUtil {
         return repeat(padding, left) + s + repeat(padding, right);
     }
 
-    private static String padStringRight(String s, int width, char padding) {
+    public static String padStringRight(String s, int width, char padding) {
         if(s.length() > width) {
             throw new IllegalArgumentException();
         }
@@ -59,7 +59,7 @@ public class TablePrintUtil {
         return repeat(padding, extra) + s;
     }
 
-    private static String repeat(char c, int length) {
+    public static String repeat(char c, int length) {
         StringBuilder builder = new StringBuilder();
         for(int i = 0; i < length; i++) {
             builder.append(c);
@@ -67,7 +67,7 @@ public class TablePrintUtil {
         return builder.toString();
     }
 
-    private static String divider(int[] maxWidths, boolean top) {
+    public static String divider(int[] maxWidths, boolean top) {
         StringBuilder builder = new StringBuilder();
         boolean first = true;
         for(int width : maxWidths) {

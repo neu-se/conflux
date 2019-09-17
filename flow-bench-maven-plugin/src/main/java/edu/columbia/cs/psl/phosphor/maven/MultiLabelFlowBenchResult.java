@@ -1,133 +1,85 @@
 package edu.columbia.cs.psl.phosphor.maven;
 
-import edu.columbia.cs.psl.phosphor.struct.IntSinglyLinkedList;
-
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class MultiLabelFlowBenchResult extends FlowBenchResult {
 
-    private final IntSinglyLinkedList numCorrect = new IntSinglyLinkedList();
-    private final IntSinglyLinkedList numPredicted = new IntSinglyLinkedList();
-    private final IntSinglyLinkedList numExpected = new IntSinglyLinkedList();
+    private final List<SetComparision> comparisons = new LinkedList<>();
 
-    protected IntSinglyLinkedList getNumCorrect() {
-        return numCorrect;
+    public List<SetComparision> getComparisons() {
+        return comparisons;
     }
 
-    protected IntSinglyLinkedList getNumPredicted() {
-        return numPredicted;
+    protected double macroAverageJaccardSimilarity() {
+        double sum = 0;
+        for(SetComparision comparision : comparisons) {
+            sum += comparision.jaccardSimilarity();
+        }
+        return comparisons.size() == 0 ? 1 : sum/comparisons.size();
     }
 
-    protected IntSinglyLinkedList getNumExpected() {
-        return numExpected;
+    protected double subsetAccuracy() {
+        int sum = 0;
+        for(SetComparision comparision : comparisons) {
+            sum += comparision.subsetAccuracy();
+        }
+        return comparisons.size() == 0 ? 1 : (1.0 * sum)/comparisons.size();
+    }
+
+    @Override
+    public void check(Set<?> expected, Set<?> predicted) {
+        boolean exactMatch = expected.equals(predicted);
+        Set<Object> union = new HashSet<>(expected);
+        union.addAll(predicted);
+        Set<Object> intersection = new HashSet<>(expected);
+        intersection.retainAll(predicted);
+        comparisons.add(new SetComparision(exactMatch, expected.size(), predicted.size(), union.size(), intersection.size()));
     }
 
     @Override
     public String toString() {
-        return "MultiLabelFlowBenchResult{" +
-                "numCorrect=" + numCorrect +
-                ", numPredicted=" + numPredicted +
-                ", numExpected=" + numExpected +
-                '}';
+        return "MultiLabelFlowBenchResult{comparisons=" + comparisons + '}';
     }
 
-    protected double macroAveragePrecision() {
-        if(numCorrect.size() == 0) {
-            return 0;
-        }
-        double sum = 0;
-        IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
-        IntSinglyLinkedList.IntListIterator predictedIt = numPredicted.iterator();
-        while(correctIt.hasNext() && predictedIt.hasNext()) {
-            sum += (1.0 * correctIt.nextInt())/predictedIt.nextInt();
-        }
-        return sum/numCorrect.size();
-    }
+    public static class SetComparision {
+        private final boolean exactMatch;
+        private final int predictionSetMagnitude;
+        private final int expectedSetMagnitude;
+        private final int unionMagnitude;
+        private final int intersectionMagnitude;
 
-    protected double microAveragePrecision() {
-        if(numCorrect.size() == 0) {
-            return 0;
-        }
-        int num = 0, denom = 0;
-        IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
-        IntSinglyLinkedList.IntListIterator predictedIt = numPredicted.iterator();
-        while(correctIt.hasNext() && predictedIt.hasNext()) {
-            num += correctIt.nextInt();
-            denom += predictedIt.nextInt();
-        }
-        return (1.0 * num)/denom;
-    }
-
-    protected double macroAverageRecall() {
-        if(numCorrect.size() == 0) {
-            return 0;
-        }
-        double sum = 0;
-        IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
-        IntSinglyLinkedList.IntListIterator expectedIt = numExpected.iterator();
-        while(correctIt.hasNext() && expectedIt.hasNext()) {
-            sum += (1.0 * correctIt.nextInt())/expectedIt.nextInt();
-        }
-        return sum/numCorrect.size();
-    }
-
-    protected double microAverageRecall() {
-        if(numCorrect.size() == 0) {
-            return 0;
-        }
-        int num = 0, denom = 0;
-        IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
-        IntSinglyLinkedList.IntListIterator expectedIt = numExpected.iterator();
-        while(correctIt.hasNext() && expectedIt.hasNext()) {
-            num += correctIt.nextInt();
-            denom += expectedIt.nextInt();
-        }
-        return (1.0 * num)/denom;
-    }
-
-    protected double macroAverageF1Score() {
-        double denom = macroAveragePrecision() + macroAverageRecall();
-        if(denom == 0) {
-            return 0;
-        }
-        return 2 * (macroAveragePrecision() * macroAverageRecall())/denom;
-    }
-
-    protected double microAverageF1Score() {
-        double denom = microAveragePrecision() + microAverageRecall();
-        if(denom == 0) {
-            return 0;
-        }
-        return 2 * (microAveragePrecision() * microAverageRecall())/denom;
-    }
-
-    protected double subSetAccuracy() {
-        if(numCorrect.size() == 0) {
-            return 0;
-        }
-        int count = 0;
-        IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
-        IntSinglyLinkedList.IntListIterator expectedIt = numExpected.iterator();
-        while(correctIt.hasNext() && expectedIt.hasNext()) {
-            if(correctIt.nextInt() == expectedIt.nextInt()) {
-                count++;
+        public SetComparision(boolean exactMatch, int predictionSetMagnitude, int expectedSetMagnitude,
+                              int unionMagnitude, int intersectionMagnitude) {
+            if(predictionSetMagnitude < 0 || expectedSetMagnitude < 0 || unionMagnitude < 0 || intersectionMagnitude < 0) {
+                throw new IllegalArgumentException("Set magnitude must be non-negative");
             }
+            this.exactMatch = exactMatch;
+            this.predictionSetMagnitude = predictionSetMagnitude;
+            this.expectedSetMagnitude = expectedSetMagnitude;
+            this.unionMagnitude = unionMagnitude;
+            this.intersectionMagnitude = intersectionMagnitude;
         }
-        return (1.0 * count) / numCorrect.size();
-    }
 
-    @Override
-    public void check(Set<?> expected, Set<?> actual) {
-        // Treat the empty set as though it is a set containing only the "empty" label to avoid division by zero issues
-        numExpected.enqueue(Math.max(1, expected.size()));
-        numPredicted.enqueue(Math.max(1, actual.size()));
-        if(expected.isEmpty() && actual.isEmpty()) {
-            numCorrect.enqueue(1);
-        } else {
-            Set<Object> intersection = new HashSet<>(expected);
-            intersection.retainAll(actual);
-            numCorrect.enqueue(intersection.size());
+        private double jaccardSimilarity() {
+            return unionMagnitude == 0 ? 1 : (1.0 * intersectionMagnitude)/unionMagnitude;
+        }
+
+        private int subsetAccuracy() {
+            return exactMatch ? 1 : 0;
+        }
+
+        @Override
+        public String toString() {
+            return "SetComparision{" +
+                    "exactMatch=" + exactMatch +
+                    ", predictionSetMagnitude=" + predictionSetMagnitude +
+                    ", expectedSetMagnitude=" + expectedSetMagnitude +
+                    ", unionMagnitude=" + unionMagnitude +
+                    ", intersectionMagnitude=" + intersectionMagnitude +
+                    '}';
         }
     }
 }

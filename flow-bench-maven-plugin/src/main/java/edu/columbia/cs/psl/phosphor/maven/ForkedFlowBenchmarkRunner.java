@@ -118,7 +118,7 @@ public class ForkedFlowBenchmarkRunner {
     }
 
     private static TestsToRun scanForBenchmarks(File benchmarkOutputDir) {
-        DirectoryScanner scanner = new DirectoryScanner( benchmarkOutputDir,
+        DirectoryScanner scanner = new DirectoryScanner(benchmarkOutputDir,
                 new TestListResolver(Arrays.asList("**/FlowBench*.java", "**/*FlowBench.java")));
         DefaultScanResult result = scanner.scan();
         return result.applyFilter(new IdentityFilter(), ClassLoader.getSystemClassLoader());

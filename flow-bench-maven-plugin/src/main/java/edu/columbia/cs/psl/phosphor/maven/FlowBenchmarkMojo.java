@@ -8,6 +8,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.surefire.shade.booter.org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.maven.surefire.shade.booter.org.apache.commons.lang3.tuple.Pair;
 import org.apache.maven.surefire.shade.common.org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -20,7 +22,7 @@ import java.util.*;
 import static edu.gmu.swe.phosphor.maven.PhosphorInstrumentingMojo.PROPERTIES_FILE_NAME;
 
 /**
- * Runs  benchmarks with different Phosphor configurations and reports the results.
+ * Runs benchmarks with different Phosphor configurations and reports the results.
  */
 @SuppressWarnings("unused")
 @Mojo(name = "benchmark", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
@@ -160,41 +162,75 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      * @param reportLists list of reports for each configuration that was benchmarked
      */
     private void printResults(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists) {
-        String[] columnNames = {
-                "Benchmark",
-                "Test",
-                "Elapsed Time (ms)",
-                "Precision",
-                "Recall",
-                "F1 Score"
-        };
+        // Group reports by result type
+        TreeMap<Pair<String, String>, Map<String, FlowBenchReport>> binaryTests = new TreeMap<>();
+        TreeMap<Pair<String, String>, Map<String, FlowBenchReport>> multiLabelTests = new TreeMap<>();
         Iterator<? extends List<FlowBenchReport>> reportsIt = reportLists.iterator();
         for(String name : configurationNames) {
-            String[] split = name.split("\\s+");
-            for(int i = 0; i < split.length; i++) {
-                split[i] = Character.toTitleCase(split[i].charAt(0)) + split[i].substring(1);
-            }
-            String title = String.format("%s Flow Benchmark Results", String.join(" ", split));
             List<FlowBenchReport> reports = reportsIt.next();
-            Object[][] data = new Object[reports.size()][];
-            int i = 0;
             for(FlowBenchReport report : reports) {
-                String precision = "ERROR";
-                String recall = "ERROR";
-                String f1Score = "ERROR";
+                Pair<String, String> test = new ImmutablePair<>(report.getSimpleClassName(), report.getMethodName());
                 if(report.getResult() instanceof BinaryFlowBenchResult) {
-                    precision = String.format("%.4f", ((BinaryFlowBenchResult) report.getResult()).precision());
-                    recall = String.format("%.4f", ((BinaryFlowBenchResult) report.getResult()).recall());
-                    f1Score = String.format("%.4f", ((BinaryFlowBenchResult) report.getResult()).f1Score());
+                    binaryTests.putIfAbsent(test, new HashMap<>());
+                    binaryTests.get(test).put(name, report);
                 } else if(report.getResult() instanceof MultiLabelFlowBenchResult) {
-                    precision = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAveragePrecision());
-                    recall = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAverageRecall());
-                    f1Score = String.format("%.4f", ((MultiLabelFlowBenchResult) report.getResult()).macroAverageF1Score());
+                    multiLabelTests.putIfAbsent(test, new HashMap<>());
+                    multiLabelTests.get(test).put(name, report);
                 }
-                data[i++] = new Object[]{report.getClassName(), report.getMethodName(), report.getTimeElapsed(),
-                        precision, recall, f1Score};
             }
-            TablePrintUtil.printTable(title, columnNames, data);
+        }
+        if(!binaryTests.isEmpty()) {
+            // Create and print a table for binary results
+            GroupedTable table = new GroupedTable("Binary Flow Benchmark Results")
+                    .floatingPointFormat("%.4f")
+                    .addGroup("", "Benchmark", "Test");
+            for(String name : configurationNames) {
+                table.addGroup(name, "Time (ms)", "Precision", "Recall", "F-score");
+            }
+            for(Pair<String, String> test : binaryTests.keySet()) {
+                Map<String, FlowBenchReport> binaryReports = binaryTests.get(test);
+                Object[][] row = new Object[configurationNames.size() + 1][];
+                row[0] = new Object[]{test.getLeft(), test.getRight()};
+                int i = 1;
+                for(String name : configurationNames) {
+                    if(binaryReports.containsKey(name)) {
+                        FlowBenchReport report = binaryReports.get(name);
+                        BinaryFlowBenchResult result = (BinaryFlowBenchResult) report.getResult();
+                        row[i++] = new Object[]{report.getTimeElapsed(), result.precision(), result.recall(), result.f1Score()};
+                    } else {
+                        row[i++] = new Object[]{"Error", "Error", "Error", "Error"};
+                    }
+                }
+                table.addRow(row);
+            }
+            table.printToStream(System.out);
+            System.out.println("\n");
+        }
+        if(!multiLabelTests.isEmpty()) {
+            // Create and print a table for multi-label results
+            GroupedTable table = new GroupedTable("Multi-label Flow Benchmark Results")
+                    .floatingPointFormat("%.4f")
+                    .addGroup("", "Benchmark", "Test");
+            for(String name : configurationNames) {
+                table.addGroup(name, "Time (ms)", "Jaccard Sim.", "Subset Acc.");
+            }
+            for(Pair<String, String> test : multiLabelTests.keySet()) {
+                Map<String, FlowBenchReport> multiLabelReports = multiLabelTests.get(test);
+                Object[][] row = new Object[configurationNames.size() + 1][];
+                row[0] = new Object[]{test.getLeft(), test.getRight()};
+                int i = 1;
+                for(String name : configurationNames) {
+                    if(multiLabelReports.containsKey(name)) {
+                        FlowBenchReport report = multiLabelReports.get(name);
+                        MultiLabelFlowBenchResult result = (MultiLabelFlowBenchResult) report.getResult();
+                        row[i++] = new Object[]{report.getTimeElapsed(), result.macroAverageJaccardSimilarity(), result.subsetAccuracy()};
+                    } else {
+                        row[i++] = new Object[]{"Error", "Error", "Error"};
+                    }
+                }
+                table.addRow(row);
+            }
+            table.printToStream(System.out);
             System.out.println("\n");
         }
     }

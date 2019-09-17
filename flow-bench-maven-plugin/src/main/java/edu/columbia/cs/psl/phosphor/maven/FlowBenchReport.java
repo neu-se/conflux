@@ -3,15 +3,14 @@ package edu.columbia.cs.psl.phosphor.maven;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import edu.columbia.cs.psl.phosphor.struct.IntSinglyLinkedList;
 
 import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class FlowBenchReport {
+
     private final String className;
     private final String methodName;
     private final long timeElapsed;
@@ -26,6 +25,15 @@ public class FlowBenchReport {
 
     public FlowBenchReport(Method benchMethod, long timeElapsed, FlowBenchResult result) {
         this(benchMethod.getDeclaringClass().getName(), benchMethod.getName(), timeElapsed, result);
+    }
+
+    public String getSimpleClassName() {
+        if(className.contains(".")) {
+            String[] split = className.split("[.]");
+            return split[split.length - 1];
+        } else {
+            return className;
+        }
     }
 
     public String getClassName() {
@@ -59,7 +67,7 @@ public class FlowBenchReport {
                 .setPrettyPrinting()
                 .disableHtmlEscaping()
                 .setLenient()
-                .registerTypeAdapter(FlowBenchResult.class, new FlowBenchResultMarshaller())
+                .registerTypeAdapter(FlowBenchResult.class, new SubclassMarshaller<FlowBenchResult>())
                 .create();
         String json = gson.toJson(reports);
         try {
@@ -77,7 +85,7 @@ public class FlowBenchReport {
                 .setPrettyPrinting()
                 .disableHtmlEscaping()
                 .setLenient()
-                .registerTypeAdapter(FlowBenchResult.class, new FlowBenchResultMarshaller())
+                .registerTypeAdapter(FlowBenchResult.class, new SubclassMarshaller<FlowBenchResult>())
                 .create();
         JsonReader reader = new JsonReader(new FileReader(reportFile));
         reader.setLenient(true);
@@ -87,73 +95,28 @@ public class FlowBenchReport {
         return reports;
     }
 
-    protected static class FlowBenchResultMarshaller implements JsonSerializer<FlowBenchResult>, JsonDeserializer<FlowBenchResult> {
+    protected static class SubclassMarshaller<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 
         private static final String CLASS_META_KEY = "_class";
 
         @Override
-        public JsonElement serialize(FlowBenchResult src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject jsonObject;
-            if(src instanceof MultiLabelFlowBenchResult) {
-                jsonObject = new JsonObject();
-                JsonArray correctArray = new JsonArray();
-                JsonArray expectedArray = new JsonArray();
-                JsonArray predictedArray = new JsonArray();
-                for(int i : ((MultiLabelFlowBenchResult) src).getNumCorrect()) {
-                    correctArray.add(i);
-                }
-                for(int i : ((MultiLabelFlowBenchResult) src).getNumPredicted()) {
-                    predictedArray.add(i);
-                }
-                for(int i : ((MultiLabelFlowBenchResult) src).getNumExpected()) {
-                    expectedArray.add(i);
-                }
-                jsonObject.add("numCorrect", correctArray);
-                jsonObject.add("numPredicted", predictedArray);
-                jsonObject.add("numExpected", expectedArray);
-            } else {
-                jsonObject = context.serialize(src, src.getClass()).getAsJsonObject();
-            }
+            jsonObject = context.serialize(src, src.getClass()).getAsJsonObject();
             jsonObject.addProperty(CLASS_META_KEY, src.getClass().getCanonicalName());
             return jsonObject;
         }
 
         @Override
-        public FlowBenchResult deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
+        public T deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject jsonObject = json.getAsJsonObject();
             String className = jsonObject.get(CLASS_META_KEY).getAsString();
             try {
                 Class<?> clz = Class.forName(className);
-                if(clz.equals(MultiLabelFlowBenchResult.class)) {
-                    MultiLabelFlowBenchResult result = new MultiLabelFlowBenchResult();
-                    JsonArray correctArray = jsonObject.getAsJsonArray("numCorrect");
-                    JsonArray predictedArray = jsonObject.getAsJsonArray("numPredicted");
-                    JsonArray expectedArray = jsonObject.getAsJsonArray("numExpected");
-                    correctArray.forEach(new JsonIntArrayConsumer(result.getNumCorrect()));
-                    predictedArray.forEach(new JsonIntArrayConsumer(result.getNumPredicted()));
-                    expectedArray.forEach(new JsonIntArrayConsumer(result.getNumExpected()));
-                    return result;
-                }
                 return context.deserialize(json, clz);
             } catch (ClassNotFoundException e) {
                 throw new JsonParseException(e);
             }
-
-        }
-    }
-
-    private static class JsonIntArrayConsumer implements Consumer<JsonElement> {
-
-        IntSinglyLinkedList list;
-
-        JsonIntArrayConsumer(IntSinglyLinkedList list) {
-            this.list = list;
-        }
-
-        @Override
-        public void accept(JsonElement jsonElement) {
-            list.enqueue(jsonElement.getAsInt());
         }
     }
 }

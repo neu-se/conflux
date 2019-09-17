@@ -1,9 +1,6 @@
 package edu.columbia.cs.psl.phosphor.maven;
 
-import edu.columbia.cs.psl.phosphor.runtime.Taint;
-
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 public class BinaryFlowBenchResult extends FlowBenchResult {
@@ -29,31 +26,35 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
         return falseNegatives;
     }
 
-    @Override
-    public String toString() {
-        return "BinaryFlowBenchResult{" +
-                "truePositives=" + truePositives +
-                ", trueNegatives=" + trueNegatives +
-                ", falsePositives=" + falsePositives +
-                ", falseNegatives=" + falseNegatives +
-                '}';
-    }
-
     protected double precision() {
-        return (1.0 * truePositives)/(truePositives + falsePositives);
+        if(truePositives + falsePositives == 0) {
+            return 1;
+        } else {
+            return (1.0 * truePositives)/(truePositives + falsePositives);
+        }
     }
 
     protected double recall() {
-        return (1.0 * truePositives)/(truePositives + falseNegatives);
+        if(truePositives + falsePositives == 0) {
+            return 1;
+        } else {
+            return (1.0 * truePositives)/(truePositives + falseNegatives);
+        }
     }
     
     protected double f1Score() {
-        return 2 * (precision() * recall())/(precision() + recall());
+        double precision = precision();
+        double recall = recall();
+        if(precision + recall == 0) {
+            return 0;
+        } else {
+            return 2 * (precision * recall)/(precision + recall);
+        }
     }
     
     protected static double macroAveragePrecision(Collection<BinaryFlowBenchResult> results) {
         if(results.size() == 0) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Cannot calculate the average precision of an empty list");
         }
         double sum = 0;
         for(BinaryFlowBenchResult result : results) {
@@ -61,23 +62,10 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
         }
         return sum/results.size();
     }
-    
-    protected static double microAveragePrecision(Collection<BinaryFlowBenchResult> results) {
-        if(results.size() == 0) {
-            throw new IllegalArgumentException();
-        }
-        double num = 0;
-        double denom = 0;
-        for(BinaryFlowBenchResult result : results) {
-            num += result.truePositives;
-            denom += result.truePositives + result.falsePositives;
-        }
-        return (denom == 0) ? 0 : num/denom;
-    }
 
     protected static double macroAverageRecall(Collection<BinaryFlowBenchResult> results) {
         if(results.size() == 0) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Cannot calculate the average recall of an empty list");
         }
         double sum = 0;
         for(BinaryFlowBenchResult result : results) {
@@ -86,41 +74,40 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
         return sum/results.size();
     }
 
-    protected static double microAverageRecall(Collection<BinaryFlowBenchResult> results) {
-        if(results.size() == 0) {
-            throw new IllegalArgumentException();
-        }
-        double num = 0;
-        double denom = 0;
-        for(BinaryFlowBenchResult result : results) {
-            num += result.truePositives;
-            denom += result.truePositives + result.falseNegatives;
-        }
-        return (denom == 0) ? 0 : num/denom;
-    }
-
     protected static double macroAverageF1Score(Collection<BinaryFlowBenchResult> results) {
-        return 2 * (macroAveragePrecision(results) * macroAverageRecall(results))/(macroAveragePrecision(results) + macroAverageRecall(results));
-    }
-
-    protected static double microAverageF1Score(Collection<BinaryFlowBenchResult> results) {
-        return 2 * (microAveragePrecision(results) * microAverageRecall(results))/(microAveragePrecision(results) + microAverageRecall(results));
+        double precision = macroAveragePrecision(results);
+        double recall = macroAverageRecall(results);
+        if(precision + recall == 0) {
+            return 0;
+        } else {
+            return 2 * (precision * recall)/(precision + recall);
+        }
     }
 
     @Override
-    public void check(Set<?> expected, Set<?> actual) {
+    public void check(Set<?> expected, Set<?> predicted) {
         if(expected.isEmpty()) {
-            if(actual.isEmpty()) {
+            if(predicted.isEmpty()) {
                 trueNegatives++;
             } else {
                 falsePositives++;
             }
         } else {
-            if(actual.isEmpty()) {
+            if(predicted.isEmpty()) {
                 falseNegatives++;
             } else {
                 truePositives++;
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "BinaryFlowBenchResult{" +
+                "truePositives=" + truePositives +
+                ", trueNegatives=" + trueNegatives +
+                ", falsePositives=" + falsePositives +
+                ", falseNegatives=" + falseNegatives +
+                '}';
     }
 }

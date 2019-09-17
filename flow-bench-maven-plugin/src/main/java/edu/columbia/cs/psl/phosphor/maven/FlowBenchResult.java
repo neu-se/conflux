@@ -12,7 +12,7 @@ import java.util.Set;
 public abstract class FlowBenchResult {
 
 
-    public abstract void check(Set<?> expected, Set<?> actual);
+    public abstract void check(Set<?> expected, Set<?> predicted);
 
     @SuppressWarnings("unused")
     public void check$$PHOSPHORTAGGED(Collection<?> expected, Object actualData, ControlTaintTagStack ctrl) {
@@ -21,13 +21,13 @@ public abstract class FlowBenchResult {
 
     public void check(Collection<?> expected, Object actualData) {
         Set<?> expectedSet = new HashSet<>(expected);
-        Set<Object> actualSet = new HashSet<>();
+        Set<Object> predictedSet = new HashSet<>();
         if(actualData != null) {
             Taint taint = MultiTainter.getTaint(actualData);
             if(taint != null && !taint.isEmpty()) {
-                actualSet.addAll(Arrays.asList(taint.getLabels()));
+                predictedSet.addAll(Arrays.asList(taint.getLabels()));
             }
         }
-        check(expectedSet, actualSet);
+        check(expectedSet, predictedSet);
     }
 }
