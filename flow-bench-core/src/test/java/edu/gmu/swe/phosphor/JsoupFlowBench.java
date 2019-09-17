@@ -10,8 +10,9 @@ public class JsoupFlowBench extends BaseFlowBench {
 
     @FlowBench
     public void testParserUnescapeEntities(MultiLabelFlowBenchResult benchResult) {
-        int taintedLen = "tainted &quot;&amp;&lt;&gt;".length();
-        String input = taintWithIndices("tainted &quot;&amp;&lt;&gt;") + "untainted &num;&comma;&sol;&semi;";
+        String taintedStr = "tainted &quot;&amp;&lt;&gt;";
+        int taintedLen = taintedStr.length();
+        String input = taintWithIndices(taintedStr) + "untainted &num;&comma;&sol;&semi;";
         String output = Parser.unescapeEntities(input, true);
         for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
             LinkedList<Object> expected = new LinkedList<>();
