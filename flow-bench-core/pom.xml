@@ -35,6 +35,7 @@
                                 <multiTaint/>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
+                                <withArrayIndexTags/>
                             </options>
                         </configuration>
                     </execution>
@@ -50,6 +51,7 @@
                                 <multiTaint/>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
+                                <withArrayIndexTags/>
                             </options>
                         </configuration>
                     </execution>
@@ -71,6 +73,7 @@
                                     <options>
                                         <enum/>
                                         <acmpeq/>
+                                        <arrayindex/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
                                 </phosphorConfiguration>
@@ -80,6 +83,7 @@
                                         <enum/>
                                         <acmpeq/>
                                         <objmethods/>
+                                        <arrayindex/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/data-only</instrumentedJVM>
                                 </phosphorConfiguration>

@@ -2,19 +2,20 @@ package edu.gmu.swe.phosphor;
 
 import edu.columbia.cs.psl.phosphor.maven.MultiLabelFlowBenchResult;
 import org.apache.tomcat.util.buf.ByteChunk;
+import org.apache.tomcat.util.buf.HexUtils;
 import org.apache.tomcat.util.buf.UDecoder;
 import org.apache.tomcat.util.buf.UEncoder;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
 public class TomcatFlowBench extends BaseFlowBench {
 
     @FlowBench
-    public void testUDecoder(MultiLabelFlowBenchResult benchResult) throws IOException {
-        // Decoded string: reserved characters !*'();:@&=+$,/?#[]
+    public void testUDecoderDecode(MultiLabelFlowBenchResult benchResult) throws IOException {
         String encodedStr = "reserved+characters+!*'()%3b%3a%40%26%3d%2b$,%2f%3f%23%5b%5d";
         String input = taintWithIndices(encodedStr);
         input += encodedStr; // Only taint the first half of the string
@@ -40,8 +41,7 @@ public class TomcatFlowBench extends BaseFlowBench {
     }
 
     @FlowBench
-    public void testUEncoder(MultiLabelFlowBenchResult benchResult) throws IOException {
-        // Encoded string: reserved%20characters%20!*'()%3b%3a%40%26%3d%2b$,%2f%3f%23%5b%5d
+    public void testUEncoderEncode(MultiLabelFlowBenchResult benchResult) throws IOException {
         String decodedStr = "reserved characters !*'();:@&=+$,/?#[]";
         String input = taintWithIndices(decodedStr);
         input += decodedStr; // Only taint the first half of the string
@@ -59,6 +59,33 @@ public class TomcatFlowBench extends BaseFlowBench {
                 if(output.charAt(outputIndex) == '%') {
                     outputIndex += 2;
                 }
+            }
+        }
+    }
+
+    @FlowBench
+    public void testHexUtilsToHexString(MultiLabelFlowBenchResult benchResult) {
+        byte[] input = new byte[]{126, 74, -79, 32, 126, 74, -79, 32};
+        input = taintWithIndices(input, 0, 4);
+        String output = HexUtils.toHexString(input);
+        for(int i = 0; i < output.length(); i++) {
+            if(i/2 < input.length/2) {
+                benchResult.check(Collections.singletonList(i/2), output.charAt(i));
+            } else {
+                benchResult.check(new HashSet<>(), output.charAt(i));
+            }
+        }
+    }
+
+    @FlowBench
+    public void testHexUtilsFromHexString(MultiLabelFlowBenchResult benchResult) {
+        String input = taintWithIndices("7e4ab1207e4ab120", 0, 8); // Only taint the first half of the string
+        byte[] output = HexUtils.fromHexString(input);
+        for(int i = 0; i < output.length; i++) {
+            if(i * 2 < input.length()/2) {
+                benchResult.check(Arrays.asList(i*2, i*2+1), output[i]);
+            } else {
+                benchResult.check(new HashSet<>(), output[i]);
             }
         }
     }

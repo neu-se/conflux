@@ -28,6 +28,7 @@ public class ForkedFlowBenchmarkRunner {
             runBenchmarkClass(clazz, reports, testErrors);
         }
         printFooter(reports.size(), testErrors);
+        reports.sort(new FlowBenchReportComparator());
         FlowBenchReport.writeJsonToFile(reports, reportFile);
     }
 

@@ -34,82 +34,83 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
 
     protected double macroAveragePrecision() {
         if(numCorrect.size() == 0) {
-            throw new IllegalArgumentException();
+            return 0;
         }
         double sum = 0;
         IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
         IntSinglyLinkedList.IntListIterator predictedIt = numPredicted.iterator();
-        for(int correct = correctIt.nextInt(), predicted = predictedIt.nextInt();
-            correctIt.hasNext() && predictedIt.hasNext();
-            correct = correctIt.nextInt(), predicted = predictedIt.nextInt()) {
-            sum += (1.0 * correct)/predicted;
+        while(correctIt.hasNext() && predictedIt.hasNext()) {
+            sum += (1.0 * correctIt.nextInt())/predictedIt.nextInt();
         }
         return sum/numCorrect.size();
     }
 
     protected double microAveragePrecision() {
         if(numCorrect.size() == 0) {
-            throw new IllegalArgumentException();
+            return 0;
         }
         int num = 0, denom = 0;
         IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
         IntSinglyLinkedList.IntListIterator predictedIt = numPredicted.iterator();
-        for(int correct = correctIt.nextInt(), predicted = predictedIt.nextInt();
-            correctIt.hasNext() && predictedIt.hasNext();
-            correct = correctIt.nextInt(), predicted = predictedIt.nextInt()) {
-            num += correct;
-            denom += predicted;
+        while(correctIt.hasNext() && predictedIt.hasNext()) {
+            num += correctIt.nextInt();
+            denom += predictedIt.nextInt();
         }
         return (1.0 * num)/denom;
     }
 
     protected double macroAverageRecall() {
         if(numCorrect.size() == 0) {
-            throw new IllegalArgumentException();
+            return 0;
         }
         double sum = 0;
         IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
         IntSinglyLinkedList.IntListIterator expectedIt = numExpected.iterator();
-        for(int correct = correctIt.nextInt(), expected = expectedIt.nextInt();
-            correctIt.hasNext() && expectedIt.hasNext();
-            correct = correctIt.nextInt(), expected = expectedIt.nextInt()) {
-            sum += (1.0 * correct)/expected;
+        while(correctIt.hasNext() && expectedIt.hasNext()) {
+            sum += (1.0 * correctIt.nextInt())/expectedIt.nextInt();
         }
         return sum/numCorrect.size();
     }
 
     protected double microAverageRecall() {
         if(numCorrect.size() == 0) {
-            throw new IllegalArgumentException();
+            return 0;
         }
         int num = 0, denom = 0;
         IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
         IntSinglyLinkedList.IntListIterator expectedIt = numExpected.iterator();
-        for(int correct = correctIt.nextInt(), expected = expectedIt.nextInt();
-            correctIt.hasNext() && expectedIt.hasNext();
-            correct = correctIt.nextInt(), expected = expectedIt.nextInt()) {
-            num += correct;
-            denom += expected;
+        while(correctIt.hasNext() && expectedIt.hasNext()) {
+            num += correctIt.nextInt();
+            denom += expectedIt.nextInt();
         }
         return (1.0 * num)/denom;
     }
 
     protected double macroAverageF1Score() {
-        return 2 * (macroAveragePrecision() * macroAverageRecall())/(macroAveragePrecision() + macroAverageRecall());
+        double denom = macroAveragePrecision() + macroAverageRecall();
+        if(denom == 0) {
+            return 0;
+        }
+        return 2 * (macroAveragePrecision() * macroAverageRecall())/denom;
     }
 
     protected double microAverageF1Score() {
-        return 2 * (microAveragePrecision() * microAverageRecall())/(microAveragePrecision() + microAverageRecall());
+        double denom = microAveragePrecision() + microAverageRecall();
+        if(denom == 0) {
+            return 0;
+        }
+        return 2 * (microAveragePrecision() * microAverageRecall())/denom;
     }
 
     protected double subSetAccuracy() {
+        if(numCorrect.size() == 0) {
+            return 0;
+        }
         int count = 0;
         IntSinglyLinkedList.IntListIterator correctIt = numCorrect.iterator();
         IntSinglyLinkedList.IntListIterator expectedIt = numExpected.iterator();
-        for(int correct = correctIt.nextInt(), expected = expectedIt.nextInt();
-            correctIt.hasNext() && expectedIt.hasNext();
-            correct = correctIt.nextInt(), expected = expectedIt.nextInt()) {
-            if(correct == expected) {
+        while(correctIt.hasNext() && expectedIt.hasNext()) {
+            if(correctIt.nextInt() == expectedIt.nextInt()) {
                 count++;
             }
         }
@@ -124,9 +125,9 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         if(expected.isEmpty() && actual.isEmpty()) {
             numCorrect.enqueue(1);
         } else {
-            Set<Object> union = new HashSet<>(expected);
-            union.retainAll(actual);
-            numCorrect.enqueue(union.size());
+            Set<Object> intersection = new HashSet<>(expected);
+            intersection.retainAll(actual);
+            numCorrect.enqueue(intersection.size());
         }
     }
 }
