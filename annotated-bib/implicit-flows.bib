@@ -6,10 +6,10 @@
     booktitle = {Technical Report {SRI-CSL-98-04}},
     publisher = {Computer Science Laboratory, {SRI} International},
     annote = {
-    Samarati and Sweeney put forward a metric for quantifying the degree to which data is annoymized, k-anonymity.
+    Samarati and Sweeney put forward a metric for quantifying the degree to which data is anonymized, k-anonymity.
     	They establish that certain combinations of attributes can be used to uniquely identify an individual or a small set of individuals.
     	A release of data is said to observe k-anonymity if every combination of ``quasi-identifiers'', \ie controlled attributes, can be matched to at least k individuals.
-    	Although the authors were not discussing privacy in the context of information flow analysis, k-anonymity could be used a metric for quantifying the likelihood that input data can be inferred from output data.
+    	Although the authors were not discussing privacy in the context of information flow analysis, k-anonymity could be used as metric for quantifying the likelihood that input data can be inferred from output data.
     	Thus, it could be used provide a basis for a more flexible privacy-oriented information flow policy than noninterference.
     }
 }
@@ -34,9 +34,9 @@
     annote = {
     Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
 	    They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
-	    The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of the program.
+	    The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of a program.
 	    The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
-	    However, they also briefly discuss more relaxed policies, such as selective declassification which allows the confidentiality of data to be ``downgraded'' by certain entities, and quantitative security which allows a limited amount of information to leak.
+	    However, they also briefly discuss more relaxed policies, such as selective declassification which allows the confidentiality of data to be ``downgraded'' by certain entities and quantitative security which allows a limited amount of information to leak.
 	}
 }
 
@@ -58,15 +58,15 @@
     keywords = {dynamic tainting, general framework, information flow},
     annote = {
     Clause \etal discuss a flexible dynamic tainting framework that could be used for various security and software engineering purposes, such as attack detection, enforcing flow policies for sensitive information, software testing, and debugging.
-        The authors advocate for a flexible dynamic tainting framework that allows user to select taint propagation policies, specify different taint markings, define custom logic for checking taint markings and combining source operand taints on destination values, and choose different taint source and sink locations.
-        They also argue that the dynamic tainting framework should be able to track not only explicit flows due to data dependences, but should also offer the option to track implicit flows where tainted values impact other variables' values indirectly, in particular they discuss implicit flows those due to control dependences.
-        Control dependences are informally defined: ``a statement s\textsubscript{2} is control dependent on a statement s\textsubscript{1} if (1) s\textsubscript{1} contains a predicate, and (2) depending on the outcome of s\textsubscript{1} , s\textsubscript{2} may not to be executed.''
+        The authors advocate for a flexible dynamic tainting framework that allows users to select taint propagation policies, specify different taint markings, define custom logic for checking taint markings, define custom logic for combining source operand taints on destination values, and choose different taint source and sink locations.
+        They also argue that this flexible framework should be able to track not only explicit flows due to data dependences, but also offer the option to track implicit flows where tainted values impact other variables' values indirectly, in particular they discuss implicit flows due to control dependences.
+        Control dependences are informally defined as follows: ``a statement s\textsubscript{2} is control dependent on a statement s\textsubscript{1} if (1) s\textsubscript{1} contains a predicate, and (2) depending on the outcome of s\textsubscript{1} , s\textsubscript{2} may not to be executed.''
         A more formal definition in terms of control flow graphs and post-dominators is also provided.
-        In order to partially address conditional instructions whose branches impact different memory locations, the authors suggest adding identity definitions to ensure that the sets of memory locations impacted by two branches match.
-        Clause \etal implemented and evaluated, Dytan, a flexible dynamic tainting framework implementation for x86 executables.
-        Two techniques from prior studies were replicated using Dytan, an approach for the prevention of overwrite attacks and a positive tainting approach for detecting SQL injection \cite{Halfond:2006:UPT:1181775.1181797}.
+        In order to partially address conditional instructions whose branches impact different memory locations, the authors suggest adding identity definitions to ensure that the sets of memory locations impacted by the branches of a single conditional instruction match.
+        Clause \etal implemented and evaluated Dytan, a flexible dynamic tainting framework implementation for x86 executables.
+        Two techniques from prior studies were replicated using Dytan: an approach for the prevention of overwrite attacks and a positive tainting approach for detecting SQL injection \cite{Halfond:2006:UPT:1181775.1181797}.
         Dytan produced similar results to the original task-specific implementations for both techniques, but Dytan's flexibility impacted its time and space efficiency compared to task-specific implementations.
-        The authors also used Dytan to evaluate the number of tainted bytes for different taint-propagation approaches.
+        The authors also used Dytan to evaluate the number of tainted bytes for different taint-propagation approaches finding that using control flow propagation resulted in significantly more tainted bytes.
         However, the correctness of Dytan's control flow propagation policies was not evaluated.
     }
 }
@@ -89,17 +89,17 @@
     keywords = {dynamic analysis, implicit flow, information-flow analysis},
     annote = {
     McCamant and Ernst measure the maximum flow of secret information with a network flow capacity model instead of using a taint tracking approach.
-	    They reason that it may be acceptable for a portion of private information to leak, \eg the last four digits of a credit card number, thus it is practical to use a quantitative approach information-flow security which detects if number of leaked bits exceeds the acceptable limit placed by a confidentiality policy.
+	    They reason that it may be acceptable for a portion of private information to leak, \eg the last four digits of a credit card number, thus it is practical to use a quantitative approach to information-flow security which detects if the number of leaked bits exceeds an acceptable limit placed by a confidentiality policy.
 	    Their approach observes the execution of a program in order to measure the extent to which private inputs were leaked to public outputs.
-	    Both explicit flows and implicit flows, which they define as those ``in which the value of a variable depends on a previous secret branch condition or pointer value'', are modeled.
+	    Both explicit and implicit flows, which they define as those ``in which the value of a variable depends on a previous secret branch condition or pointer value'', are modeled.
 	    A graph of potential secret flows is constructed with edges representing values, edge weights conveying the number of bits that a value can hold, and nodes representing operations on values.
 	    A source node is used to represent secret inputs and a sink node is used to represent public outputs.
 	    Implicit flows are modeled by adding edges to connect each implicit flow operation to the outputs of enclosed computational regions.
 	    By default an entire program is considered as an enclosed computation.
-	    However, additional enclosure regions for sub-computations can be defined to increase the model's precision.
+	    However, additional ``enclosure regions'' for sub-computations can be defined to increase the model's precision.
 	    The authors' implementation of their approach, Flowcheck, works on x86 executables and uses the Valgrind Framework.
-	    Flowcheck was run on bzip2, a lossless compression tool, and reported a flow that was within pre-calculated expected bounds.
-        Since the bzip2 is a compression tool, the expected bounds for the flow was the size of the program's output minus an approximation of the size of input independent output like headers and progress messages.
+	    Flowcheck was run on bzip2, a lossless compression tool, and reported a flow that was within precalculated expected bounds.
+        Since bzip2 is a compression tool, the expected bounds for the flow was the size of the program's output minus an approximation of the size of input-independent output like headers and progress messages.
 	    Additionally, case studies of confidentiality properties in real programs were conducted using Flowcheck and found a previously unknown bug that violated confidentiality.
 	    McCamant and Ernst offer a unique technique for addressing implicit flows and a practical approach for enforcing confidentiality policies.
     }
@@ -124,11 +124,11 @@
     annote = {
 		The authors introduce the term strict control dependence (SCD) to refer to implicit flows where there is a strong, almost data flow like correlation between statements.
 		They identify such SCDs as a source of improperly tracked information leaks that may cause false negatives in an analysis.
-		A statement is said be strictly control dependent on a predicate if that predicate affects whether the statement will execute, ``the equivalence of the left-hand side and the right-hand side expressions of the predicate can be inferred'', and the predicate is the ``closest'' predicate to the statement for which the first two conditions are met.
+		A statement is said be strictly control dependent on a predicate if that predicate affects whether the statement will execute, ``the equivalence of the left-hand side and the right-hand side expressions of the predicate can be inferred'', and the predicate is the ``closest'' predicate to the statement for which the other two conditions are met.
 		The effectiveness of considering SCDs was evaluated using three analyzer implementations for GCC-4.4.0: one that only considered data flows, one that considered data flows and all control flows, and one that considered data flows and only strict control flows.
         The lineage sets of the outputs of eight different programs were calculated with each implementation.
-        A ground truth lineage set for the outputs of each program was determined by running the program with different values for a particular input.
-        If multiple values for the input led to the same output, the input was determined to not be in the ground truth lineage set of the output.
+        A ground truth lineage set for the outputs of each program was determined by running the program multiple times with different values for a particular input.
+        If different input values led to the same output, the input was determined to not be in the ground truth lineage set of the output.
 		The authors found that the implementation that considered strict control flows had a lower overhead and fewer false positives than the one that considered all control flows and fewer false negatives than the one that considered only data flows.
 	}
     % Note: Paper also discusses branch-not-taken flow - like Dytan they use dummy identity assignments to remedy differences between the branches
@@ -143,11 +143,11 @@
     Similar to Bao \etal \cite{Bao:2010:SCD:1831708.1831711}, Kang \etal propose propagating taints only along select control flows in order to address under-tainting.
     	In particular, they target controls flows associated with ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
         To identify branches related to ``information-preserving'' transformations, they first perform dynamic analysis to collect execution traces.
-        Then, they analyze the execution traces to find control-flow paths that can only be reached by a single input value.
-        Propagation rules are generated to mitigate under-tainting along the branches of these control-flow paths.
+        Then, they analyze the execution traces to find control flow paths that can only be reached by a single input value.
+        Propagation rules are generated to mitigate under-tainting along the branches of these control flow paths.
         Lastly, the dynamic analysis is rerun with the generated rules.
         The authors evaluated an implementation of their approach by tracking the flow of sensitive information in word processing applications and found that it successfully addressed under-tainting in that context.
-		Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along control flows.
+		Kang \etal demonstrate an approach for mitigating a specific form of under-tainting caused by not propagating taints along certain control flows.
         However, they do not generally examine under-tainting from control flows.
         Some mention is made of the issue identified in Clause \etal \cite{Clause:2007:DGD:1273463.1273490} where tainted branches impact different memory locations.
         The authors refer to these situations as ``negative'' implicit flows and present a technique similar to Clause \etal's \cite{Clause:2007:DGD:1273463.1273490} for partially mitigating simple instances of such flows.
@@ -165,11 +165,11 @@
     annote = {
     Jee presents TaintMark, a dynamic data flow tracking evaluation tool for the Android Framework.
     	TaintMark looks at system outputs when given different input values to determine if taints should propagate from the inputs to the outputs.
-    	It tests applications with different tainted input values from sources like GPS device, IMSI, IMEI, and password data.
-    	During the execution, file and network activities performed by the application are logged for analysis.
+    	It tests applications with different tainted input values from sources like the GPS device, international mobile subscriber identity (IMSI), International Mobile Equipment Identity (IMEI), and password data.
+    	During the execution of an application, file and network activities performed are logged for analysis.
     	Logged outputs are compared; differences in the outputs for different input values are interpreted as meaning that taint from the input should have propagated to the output.
-    	Non-deterministic output is addressed by re-testing an application with the same input.
-    	Outputs that vary for the same input are removed and outputs' field that vary for the same input are excluded when comparing outputs.
+    	Non-deterministic outputs are addressed by re-testing an application with the same input.
+    	Outputs that vary for the same input are removed and outputs' fields that vary for the same input are excluded when comparing outputs.
     	TaintMark also provides support for debugging reported inaccuracies.
     }
 }
@@ -194,14 +194,14 @@
     Pauck \etal introduce ReproDroid a framework for comparing Android taint analysis tools using a precise, consistent evaluation target.
         The authors establish that popular micro-benchmarks like DroidBench and ICC-Bench specify only the number of leaks that a should be detected for a particular test not the exact leaks that should be detected.
         As a result, these micro-benchmarks can often have imprecise results.
-        Furthermore evaluations that use real-world apps are hard to reproduce, may not evaluate whether reported leaks represent true flows, and often cannot determine if true leaks were missed.
-        ReproDroid offers a way of converting a tools' results to a standard format, provides a language to describe flows found by a tool, and facilitates the refinement of existing benchmarks through the use of a wizard.
-        This wizard allows users to deselect or combine (in order to unify different definitions used by different tools) considered sources and sinks thereby adding necessary information for identifying exact leaks.
-        Additionally, the wizard assists with manual classification of true positive and negative test cases.
+        Furthermore evaluations that use real-world applications are hard to reproduce, may not evaluate whether reported leaks represent true flows, and often cannot determine if true leaks were missed.
+        ReproDroid offers a way of converting a taint analysis tool's results to a standard format, provides a language to describe flows found by a tool, and facilitates the refinement of existing benchmarks through the use of a wizard.
+        This wizard allows users to deselect or combine (in order to unify different definitions used by various tools) considered sources and sinks thereby adding necessary information for identifying exact leaks.
+        Additionally, the wizard assists with the manual classification of true positive and negative test cases.
         The authors note that this manual determination of the ground truth is necessary because, ``tools that could potentially be used to derive the ground truth are at the same time the tools we want to evaluate.''
-        They extended the TaintDroid framework to add benchmark cases specifically aimed at evaluating features promised by popular Android taint analysis tools and created some benchmark cases from the 30 Real-world apps in DIALDroid-Bench by manually investigating their source code.
-        ReproDroid was used to evaluate whether 6 popular Android taint analysis tools truly supported features that they purported to support, and were truly as accurate as was claimed.
-        ReproDroid determined that generally features promised by the tools were fully supported, but that the tools' F-measures were typically lower than promised values.
+        They extended the DroidBench framework to add benchmark cases specifically aimed at evaluating features promised by popular Android taint analysis tools and created benchmark cases from the 30 real-world applications that are featured in DIALDroid-Bench by manually investigating their source code.
+        ReproDroid was used to evaluate whether six popular Android taint analysis tools truly supported features that they purported to support, and were truly as accurate as was claimed.
+        ReproDroid determined that generally features promised by the tools were fully supported, but that the tools' F-scores were typically lower than promised values.
         Pauck \etal's human-guided approach to benchmark development and refinement contrasts with Jee's automated approach \cite{Jee2015DFT}.
         Furthermore, they provide a strong argument against automated approaches for determining the ground truth of taint analyses.
     }
@@ -214,14 +214,14 @@
     month = aug,
     year = {2018},
     annote = {
-    Luo \etal analyze the conditions under which taint-flows reported by the static taint analysis tool FlowDroid occur.
+    Luo \etal analyze the conditions under which flows reported by the static taint analysis tool FlowDroid occur.
     	They contrast their style of analysis, which they refer to as qualitative, with prior analyses which take a more quantitative approach.
     	To support their analysis they created COVA, an extension to the Soot analysis framework which computes partial path constraints.
-    	COVA can classify leaks, \ie taint flows, based on ``leak-constraints'' formed from conditions which depend on values from an invocation of a predefined ``constraint-API''.
+    	COVA can classify leaks, \ie taint flows, based on ``leak-constraints'' formed from branch conditions which depend on values from an invocation of a predefined ``constraint-API''.
     	A leak-constraint is the logical and of the conditions required for the source of the leak to be executed with the conditions required for the sink of the leak to be executed.
     	COVA was used to analyze the leaks reported by FloidDroid on 1,022 real-world Android applications.
     	By manually inspecting random sampled leaks the authors were able to remove 31% of the leaks due to incorrect sources, incorrect sinks, or source-sink pairs on the same object.
-    	Using leak-constraints, the remaining leaks were classified as being constrained by input/output, user interface or configurations conditions; unconstrained; or infeasible.
+    	Using leak-constraints, the remaining leaks were classified as being constrained by input/output, user interface or configuration conditions; unconstrained; or infeasible.
     	The authors found that at least 20.53% of the leaks were constrained by one of the three conditions types.
         Luo \etal provide an alternative, non-quantitative approach to analyzing taint analysis tools.
     }
@@ -245,10 +245,10 @@
     keywords = {SQL injection, dynamic tainting, runtime monitoring},
     annote = {
     Halfond \etal provide an automated technique for detecting and preventing SQL injection attacks.
-    	Their technique uses ``positive-tainting'' which tracks the flow of trusted values (opposed to the more common approach of ``negative'' tainting which tracks untrusted values).
-    	They prevent SQL injection attack by ensuring that certain syntactic parts of SQL queries are made from trusted values.
-    	The authors' Java implementation of their technique, WASP, was evaluated on 7 web applications using 12,616 SQL injection attacks and 5,602 legitimate accesses.
-    	WASP was able to correctly prevent all of the SQL attacks on the applications without preventing any legitimate accesses.
+    	Their technique uses ``positive-tainting'' which tracks the flow of trusted values opposed to the more common approach of ``negative'' tainting which tracks untrusted values.
+    	They prevent SQL injection attacks by ensuring that certain syntactic parts of SQL queries are made from trusted values.
+    	The authors' Java implementation of their technique, WASP, was evaluated on seven web applications using 12,616 SQL injection attacks and 5,602 legitimate database accesses.
+    	WASP was able to correctly prevent all of the SQL attacks on the applications without preventing any of the legitimate accesses.
     	Halfond \etal do not discuss implicit flows nor do they indicate any design considerations made to address implicit flows.
     }
 }
@@ -270,15 +270,16 @@
     address = {New York, NY, USA},
     keywords = {automated debugging, dynamic information flow, dynamic tainting, failure-relevant inputs},
     annote = {
-    Clause and Orso present a technique for identifying the subset of a failure-inducing program input that is relevant to a failure in order to assist with program debugging.
+    Clause and Orso present a technique for identifying the subset of a failure-inducing input that is relevant to a failure in order to assist with program debugging.
         The authors use data and control flow information to identify ``failure-relevant'' inputs.
         Values from external input sources, like keyboard, network connection, and file system inputs, to a program are tainted.
         Taints are propagated through the program and eventually used to determine which inputs impact data involved in failures.
         This input-centered technique is intended to be applied to programs with large input domains and can be used in conjunction with other debugging techniques in particular those that aim to identify suspect statements.
         The authors' implementation of their approach for x86 binaries, Penumbra, was compared to a delta debugging (a different technique used to identify failure-relevant inputs) tool.
         Five applications from BugBench that the authors identified as having a relatively large number of inputs were selected for testing.
-        For each application, failure-inducing inputs were selected and the location of the induced failures occurred were manually identified.
-        The failure-relevant input sets calculated by Penumbra using only data-flow tracking and the delta debugging tool were roughly the same size and the setup time for Penumbra was less than the delta debugging tool.
+        For each application, failure-inducing inputs were selected and the locations of the failures these input induce were manually identified.
+        The failure-relevant input sets calculated by Penumbra using only data-flow tracking were roughly the same size as those found by the delta debugging tool.
+        However, the setup time for Penumbra was less than the delta debugging tool.
 		The authors noted that using control flow tracking, in addition to data flow tracking, in Penumbra resulted in larger failure-relevant input sets and in the case of one application, resulted in almost all of the program's roughly 15 million inputs being marked as failure-relevant.
 		After conducting a qualitative assessment of the failure-relevant input sets calculated by Penumbra, the authors argue that Penumbra provides useful debugging guidance.
     }
@@ -303,19 +304,19 @@
     annote = {
     Huo and Clause describe their technique for improving test quality by identifying brittle assertions and unused test inputs.
     	The authors define an assertion as being brittle if it depends on values that are derived from input that are not controlled by the test making the assertion.
-    	Brittle assertions, according to the authors, check too much of the program state and are therefore difficult to maintain.
-    	Conversely, unused inputs, values controlled by a test that do not derive a value checked by any of the assertions of the test, check too little of the program state and may as a result fail to find bugs. 
-    	Huo and Clause propose using dynamic taint analysis to the propagation of controlled and uncontrolled input along both data and control flows.
+    	Brittle assertions, according to the authors, check too much of the program state and therefore are difficult to maintain.
+    	Conversely, unused inputs, values controlled by a test that do not derive a value checked by any of the assertions of the test, may imply that too little of the program state is checked and may as a result in a failure to find bugs that the would otherwise be exposed by the test.
+    	Huo and Clause propose using dynamic taint analysis to determine the flow of controlled and uncontrolled input to test assertions along both data and control flows.
     	They taint constants defined in test methods, constants defined in test setup methods, and the return values of no argument methods in test classes with labels indicating that they are controlled values.
-    	Static, mutable field values and non-final test class fields are labeled are uncontrolled values.
+    	Static, mutable field values and non-final test-class field values are labeled as uncontrolled values.
     	When a test assertion is made, the taints of the operands of any comparison operations made by the assertion are checked.
-    	If one of these taints is indicated that the operand was derived from an uncontrolled input, the assertion is marked as brittle.
-    	If a controlled input's taint does not appear on any of the operands of any comparisons executed by any assertion made by the input's test, the input is marked as unused.
-    	Assertions that were incorrectly marked as brittle and input that were incorrectly marked as unused are filtered by re-executing tests and mutating inputs.
+    	If one of these taints indicates that the operand was derived from an uncontrolled input, the assertion is marked as brittle.
+    	If a controlled input's taint does not appear on any of the operands of any comparisons executed by any assertion made by the controlled input's test, the input is marked as unused.
+    	Assertions that were incorrectly marked as brittle and inputs that were incorrectly marked as unused are removed by re-executing tests and mutating inputs.
     	A brittle assertion determination is verified by rerunning the associated test, mutating the associated uncontrolled input, and observing that changing the uncontrolled input impacted the outcome of the test.
     	An unused input determination is verified by rerunning the associated test, mutating the associated controlled input, and observing that changing the controlled input did not impact the outcome of the test.
-    	The author evaluated OraclePolish, their implementation of their technique, capable of analyzing Java tests that use the JUnit testing framework.
-    	They used OraclePolish to analyze over 4,700 tests in 20 real-world Java application from a various domains.
+    	The authors evaluated OraclePolish, their implementation of their technique capable of analyzing Java tests that use the JUnit testing framework.
+    	They used OraclePolish to analyze over 4,700 tests in 20 real-world Java applications from a various domains.
     	OraclePolish detected unused inputs in 1,618 tests and brittle assertions in 164 tests.
     	The authors examine in detail two randomly chosen brittle assertions and two randomly chosen unused inputs reported by OraclePolish.
     }
