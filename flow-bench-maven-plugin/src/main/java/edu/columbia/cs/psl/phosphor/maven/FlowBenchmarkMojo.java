@@ -67,7 +67,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     /**
      * True if "forked" JVMs should wait for a debugger
      */
-    private static final boolean debugForks = Boolean.parseBoolean(System.getProperty("phosphor.flow.bench.debug", "false"));
+    private static final boolean debugForks = Boolean.valueOf("phosphor.flow.bench.debug");
 
     /**
      * Maven build output directory
