@@ -43,7 +43,7 @@
               <relocations>
                 <relocation>
                   <pattern>com.google.gson</pattern>
-                  <shadedPattern>edu.columbia.cs.psl.phosphor.com.google.gson</shadedPattern>
+                  <shadedPattern>edu.gmu.swe.phosphor.ignored.com.google.gson</shadedPattern>
                 </relocation>
               </relocations>
               <filters>

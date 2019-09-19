@@ -1,4 +1,4 @@
-package edu.columbia.cs.psl.phosphor.maven;
+package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.gmu.swe.phosphor.*;

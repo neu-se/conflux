@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor;
 
-import edu.columbia.cs.psl.phosphor.maven.FlowBenchReport;
+import edu.gmu.swe.phosphor.ignored.maven.FlowBenchReport;
 
 import java.util.Comparator;
 

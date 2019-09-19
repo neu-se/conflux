@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.maven;
+package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.Configuration;
 import edu.columbia.cs.psl.phosphor.Instrumenter;

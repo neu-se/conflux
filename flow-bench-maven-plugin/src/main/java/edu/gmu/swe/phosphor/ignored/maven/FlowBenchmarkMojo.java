@@ -1,4 +1,4 @@
-package edu.columbia.cs.psl.phosphor.maven;
+package edu.gmu.swe.phosphor.ignored.maven;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 
-import static edu.gmu.swe.phosphor.maven.PhosphorInstrumentingMojo.PROPERTIES_FILE_NAME;
+import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentingMojo.PROPERTIES_FILE_NAME;
 
 /**
  * Runs benchmarks with different Phosphor configurations and reports the results.
@@ -67,7 +67,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     /**
      * True if "forked" JVMs should wait for a debugger
      */
-    private static final boolean debugForks = Boolean.valueOf("phosphor.flow.bench.debug");
+    private static final boolean debugForks = Boolean.getBoolean("phosphor.flow.bench.debug");
 
     /**
      * Maven build output directory
@@ -224,7 +224,11 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                     if(multiLabelReports.containsKey(name)) {
                         FlowBenchReport report = multiLabelReports.get(name);
                         MultiLabelFlowBenchResult result = (MultiLabelFlowBenchResult) report.getResult();
-                        row[i++] = new Object[]{report.getTimeElapsed(), result.macroAverageJaccardSimilarity(), result.subsetAccuracy()};
+                        if(result.hasComparisions()) {
+                            row[i++] = new Object[]{report.getTimeElapsed(), result.macroAverageJaccardSimilarity(), result.subsetAccuracy()};
+                        } else {
+                            row[i++] = new Object[]{report.getTimeElapsed(), "------", "------"};
+                        }
                     } else {
                         row[i++] = new Object[]{"Error", "Error", "Error"};
                     }
@@ -427,7 +431,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             commands.add(DEBUG_ARG);
         }
         commands.add(ForkedFlowBenchmarkRunner.class.getName());
-        commands.add(testClassesDirectory.getAbsolutePath());
+        commands.add(classesDirectory.getAbsolutePath());
         commands.add(reportFile.getAbsolutePath());
         Process process = new ProcessBuilder(commands).inheritIO().start();
         if(process.waitFor() != 0) {

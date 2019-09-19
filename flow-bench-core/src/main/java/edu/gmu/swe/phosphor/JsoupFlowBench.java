@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor;
 
-import edu.columbia.cs.psl.phosphor.maven.MultiLabelFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.maven.MultiLabelFlowBenchResult;
 import org.jsoup.parser.Parser;
 
 import java.util.HashSet;

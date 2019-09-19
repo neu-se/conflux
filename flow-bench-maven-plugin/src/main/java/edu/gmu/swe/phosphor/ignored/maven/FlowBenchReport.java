@@ -1,4 +1,4 @@
-package edu.columbia.cs.psl.phosphor.maven;
+package edu.gmu.swe.phosphor.ignored.maven;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;

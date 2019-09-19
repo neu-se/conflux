@@ -1,4 +1,4 @@
-package edu.columbia.cs.psl.phosphor.maven;
+package edu.gmu.swe.phosphor.ignored.maven;
 
 import java.util.Collection;
 import java.util.Set;
@@ -35,7 +35,7 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
     }
 
     protected double recall() {
-        if(truePositives + falsePositives == 0) {
+        if(truePositives + falseNegatives == 0) {
             return 1;
         } else {
             return (1.0 * truePositives)/(truePositives + falseNegatives);

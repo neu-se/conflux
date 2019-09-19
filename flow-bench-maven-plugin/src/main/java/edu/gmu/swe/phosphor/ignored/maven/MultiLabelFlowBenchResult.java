@@ -1,9 +1,6 @@
-package edu.columbia.cs.psl.phosphor.maven;
+package edu.gmu.swe.phosphor.ignored.maven;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class MultiLabelFlowBenchResult extends FlowBenchResult {
 
@@ -13,20 +10,34 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         return comparisons;
     }
 
-    protected double macroAverageJaccardSimilarity() {
+    double macroAverageJaccardSimilarity() {
+        if(comparisons.size() == 0) {
+            throw new IllegalStateException("Cannot compute average Jaccard similarity of zero set comparision.");
+        }
         double sum = 0;
         for(SetComparision comparision : comparisons) {
             sum += comparision.jaccardSimilarity();
         }
-        return comparisons.size() == 0 ? 1 : sum/comparisons.size();
+        return sum/comparisons.size();
     }
 
-    protected double subsetAccuracy() {
+    double subsetAccuracy() {
+        if(comparisons.size() == 0) {
+            throw new IllegalStateException("Cannot compute the subset accuracy of zero set comparision.");
+        }
         int sum = 0;
         for(SetComparision comparision : comparisons) {
             sum += comparision.subsetAccuracy();
         }
-        return comparisons.size() == 0 ? 1 : (1.0 * sum)/comparisons.size();
+        return (1.0 * sum)/comparisons.size();
+    }
+
+    /**
+     *
+     * @return true if at least one set comparision was recorded for this result
+     */
+    boolean hasComparisions() {
+        return !comparisons.isEmpty();
     }
 
     @Override
@@ -51,10 +62,10 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         private final int unionMagnitude;
         private final int intersectionMagnitude;
 
-        public SetComparision(boolean exactMatch, int predictionSetMagnitude, int expectedSetMagnitude,
-                              int unionMagnitude, int intersectionMagnitude) {
+        SetComparision(boolean exactMatch, int predictionSetMagnitude, int expectedSetMagnitude,
+                       int unionMagnitude, int intersectionMagnitude) {
             if(predictionSetMagnitude < 0 || expectedSetMagnitude < 0 || unionMagnitude < 0 || intersectionMagnitude < 0) {
-                throw new IllegalArgumentException("Set magnitude must be non-negative");
+                throw new IllegalArgumentException("Set magnitudes must be non-negative");
             }
             this.exactMatch = exactMatch;
             this.predictionSetMagnitude = predictionSetMagnitude;

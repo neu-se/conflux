@@ -40,6 +40,22 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>data-array-index</id>
+                        <goals>
+                            <goal>instrument</goal>
+                        </goals>
+                        <configuration>
+                            <targetBaseDir>${inst.jre.cache}</targetBaseDir>
+                            <name>data-array-index</name>
+                            <options>
+                                <multiTaint/>
+                                <forceUnboxAcmpEq/>
+                                <withEnumsByValue/>
+                                <withArrayIndexTags/>
+                            </options>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>data-only</id>
                         <goals>
                             <goal>instrument</goal>
@@ -51,7 +67,6 @@
                                 <multiTaint/>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
-                                <withArrayIndexTags/>
                             </options>
                         </configuration>
                     </execution>
@@ -78,12 +93,21 @@
                                     <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
                                 </phosphorConfiguration>
                                 <phosphorConfiguration>
-                                    <name>data-only</name>
+                                    <name>data-array-index</name>
                                     <options>
                                         <enum/>
                                         <acmpeq/>
                                         <objmethods/>
                                         <arrayindex/>
+                                    </options>
+                                    <instrumentedJVM>${inst.jre.cache}/data-array-index</instrumentedJVM>
+                                </phosphorConfiguration>
+                                <phosphorConfiguration>
+                                    <name>data-only</name>
+                                    <options>
+                                        <enum/>
+                                        <acmpeq/>
+                                        <objmethods/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/data-only</instrumentedJVM>
                                 </phosphorConfiguration>

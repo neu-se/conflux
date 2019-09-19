@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.maven;
+package edu.gmu.swe.phosphor.ignored.maven;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
