@@ -224,7 +224,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                     if(multiLabelReports.containsKey(name)) {
                         FlowBenchReport report = multiLabelReports.get(name);
                         MultiLabelFlowBenchResult result = (MultiLabelFlowBenchResult) report.getResult();
-                        if(result.hasComparisions()) {
+                        if(result.hasComparisons()) {
                             row[i++] = new Object[]{report.getTimeElapsed(), result.macroAverageJaccardSimilarity(), result.subsetAccuracy()};
                         } else {
                             row[i++] = new Object[]{report.getTimeElapsed(), "------", "------"};

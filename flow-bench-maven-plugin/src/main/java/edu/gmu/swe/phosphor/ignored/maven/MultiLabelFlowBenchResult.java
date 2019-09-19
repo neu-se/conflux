@@ -36,7 +36,7 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
      *
      * @return true if at least one set comparision was recorded for this result
      */
-    boolean hasComparisions() {
+    boolean hasComparisons() {
         return !comparisons.isEmpty();
     }
 
