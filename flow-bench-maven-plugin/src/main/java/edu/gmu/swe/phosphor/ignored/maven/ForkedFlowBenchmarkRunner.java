@@ -2,6 +2,10 @@ package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.gmu.swe.phosphor.*;
+import edu.gmu.swe.phosphor.ignored.runtime.BinaryFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.ErrorFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.util.DefaultScanResult;
@@ -46,12 +50,13 @@ public class ForkedFlowBenchmarkRunner {
             try {
                 receiver = benchClass.newInstance();
                 for(Method test : tests) {
-                    FlowBenchReport report = runTest(receiver, test, errors);
-                    reports.add(report);
-                    if(report.getResult() instanceof ErrorFlowBenchResult) {
-                        long timeElapsed = Duration.between(start, Instant.now()).toMillis();
-                        errorMessages.add(getErrorMessages(test.getName(), benchClass.getName(),
-                                benchClass.getSimpleName(), timeElapsed, errors.getLast()));
+                    for(FlowBenchReport report : runTest(receiver, test, errors)) {
+                        reports.add(report);
+                        if(report.getResult() instanceof ErrorFlowBenchResult) {
+                            long timeElapsed = Duration.between(start, Instant.now()).toMillis();
+                            errorMessages.add(getErrorMessages(test.getName(), benchClass.getName(),
+                                    benchClass.getSimpleName(), timeElapsed, errors.getLast()));
+                        }
                     }
                 }
             } catch (InstantiationException | IllegalAccessException e) {
@@ -86,37 +91,53 @@ public class ForkedFlowBenchmarkRunner {
     }
 
     private static void validateTestSignature(Method test) throws Exception {
-        if(test.getParameterCount() != 1 || (!test.getParameterTypes()[0].equals(BinaryFlowBenchResult.class)
-                && !test.getParameterTypes()[0].equals(MultiLabelFlowBenchResult.class))) {
-            throw new Exception("Flow benchmark test method should have exactly one parameter of type BinaryFlowBenchResult " +
-                    "or MultiLabelFlowBenchResult");
-        }
         if(Modifier.isStatic(test.getModifiers())) {
             throw new Exception("Flow benchmark test method should not be static");
         }
         if(!Void.TYPE.equals(test.getReturnType())) {
             throw new Exception("Flow benchmark test method should have void return type.");
         }
+        boolean validParams = false;
+        if(test.getParameterCount() == 1 || test.getParameterCount() == 2) {
+            Class<?> firstParam = test.getParameterTypes()[0];
+            if(firstParam.equals(BinaryFlowBenchResult.class) || firstParam.equals(MultiLabelFlowBenchResult.class)) {
+                if(test.getParameterCount() == 1 || test.getParameterTypes()[1].equals(TaintedPortionPolicy.class)) {
+                    validParams = true;
+                }
+            }
+        }
+        if(!validParams) {
+            throw new Exception("Flow benchmark test method should have one parameter of type BinaryFlowBenchResult " +
+                    "or MultiLabelFlowBenchResult and may optionally have a second  parameter of type TaintedPortionPolicy");
+        }
     }
 
-    private static FlowBenchReport runTest(Object receiver, Method test, List<Throwable> errors) {
+    private static List<FlowBenchReport> runTest(Object receiver, Method test, List<Throwable> errors) {
+        List<FlowBenchReport> reports = new LinkedList<>();
         try {
             validateTestSignature(test);
-            Instant start = Instant.now();
-            FlowBenchResult result;
-            if(test.getParameterTypes()[0].equals(MultiLabelFlowBenchResult.class)) {
-                result = MultiLabelFlowBenchResult.class.newInstance();
+            if(test.getParameterCount() == 2) {
+                for(TaintedPortionPolicy portion : TaintedPortionPolicy.values()) {
+                    FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
+                    Instant start = Instant.now();
+                    test.invoke(receiver, result, portion);
+                    Instant finish = Instant.now();
+                    long timeElapsed = Duration.between(start, finish).toMillis();
+                    reports.add(new FlowBenchReport(test, portion, timeElapsed, result));
+                }
             } else {
-                result = BinaryFlowBenchResult.class.newInstance();
+                FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
+                Instant start = Instant.now();
+                test.invoke(receiver, result);
+                Instant finish = Instant.now();
+                long timeElapsed = Duration.between(start, finish).toMillis();
+                reports.add(new FlowBenchReport(test, timeElapsed, result));
             }
-            test.invoke(receiver, result);
-            Instant finish = Instant.now();
-            long timeElapsed = Duration.between(start, finish).toMillis();
-            return new FlowBenchReport(test, timeElapsed, result);
         } catch(Throwable t) {
             errors.add(t);
-            return new FlowBenchReport(test, -1, new ErrorFlowBenchResult());
+            reports.add(new FlowBenchReport(test, -1, new ErrorFlowBenchResult()));
         }
+        return reports;
     }
 
     private static TestsToRun scanForBenchmarks(File benchmarkOutputDir) {

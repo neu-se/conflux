@@ -3,6 +3,8 @@ package edu.gmu.swe.phosphor.ignored.maven;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+import edu.gmu.swe.phosphor.TaintedPortionPolicy;
+import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -21,6 +23,10 @@ public class FlowBenchReport {
         this.methodName = methodName;
         this.timeElapsed = timeElapsed;
         this.result = result;
+    }
+
+    public FlowBenchReport(Method benchMethod, TaintedPortionPolicy portion, long timeElapsed, FlowBenchResult result) {
+        this(benchMethod.getDeclaringClass().getName(), benchMethod.getName() + "-" +  portion.getDesc(), timeElapsed, result);
     }
 
     public FlowBenchReport(Method benchMethod, long timeElapsed, FlowBenchResult result) {

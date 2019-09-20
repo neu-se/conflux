@@ -1,78 +1,71 @@
 package edu.gmu.swe.phosphor;
 
-import edu.gmu.swe.phosphor.ignored.maven.MultiLabelFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
 
 import java.util.*;
+
+import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 
 /**
  * Tests implicit flows found in the package java.util
  */
-public class UtilFlowBench extends BaseFlowBench {
+public class UtilFlowBench {
 
-    @FlowBench
-    public void testBase64Encode(MultiLabelFlowBenchResult benchResult) {
+    /**
+     * Base64 encodes and then decodes a string using java.util.Base64. Checks that the output is labeled the same as
+     * the input.
+     */
+    @FlowBench(requiresBitLevelPrecision = true)
+    public void testBase64RoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
         String value = "Lorem ipsum dolor sit amett"; // Note: length of value is divisible by 3
-        byte[] input = (value + value).getBytes();
-        int taintedLen = input.length/2;
-        taintWithIndices(input, 0, taintedLen);// Only taint half of the input
-        Base64.Encoder encoder = Base64.getEncoder();
-        byte[] output = encoder.encode(input);
-        for(int outputIndex = 0; outputIndex < output.length; outputIndex++) {
-            Collection<Object> expected;
-            int block = outputIndex / 4;
-            if(block * 3 < taintedLen) {
-                int blockIndex = outputIndex % 4;
-                switch(blockIndex) {
-                    case 0:
-                        expected = Collections.singletonList(block * 3);
-                        break;
-                    case 1:
-                        expected = Arrays.asList(block * 3, block * 3 + 1);
-                        break;
-                    case 2:
-                        expected = Arrays.asList(block * 3 + 1, block * 3 + 2);
-                        break;
-                    default:
-                        expected = Collections.singletonList(block * 3 + 2);
-                }
+        byte[] input = taintWithIndices((value + value).getBytes(), policy);
+        byte[] output = Base64.getDecoder().decode(Base64.getEncoder().encode(input.clone()));
+        for(int inputIndex = 0; inputIndex < input.length; inputIndex++) {
+            if(policy.inTaintedRange(inputIndex, input.length)) {
+                benchResult.check(Collections.singletonList(inputIndex), output[inputIndex]);
             } else {
-                expected = new HashSet<>();
+                benchResult.check(Collections.emptyList(), output[inputIndex]);
             }
-            // Ideally this is what you would want to see, but the way the code is written, I'm not sure its feasible to
-            // have it work out this way
-            benchResult.check(expected, output[outputIndex]);
         }
     }
 
+    /**
+     * Base64 encodes a string using java.util.Base64. Checks that the union of the tags on groups of four output
+     * characters match the tags on the three input characters that were used to create the output group.
+     */
     @FlowBench
-    public void testBase64Decode(MultiLabelFlowBenchResult benchResult) {
-        String value = "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXR0";
-        byte[] input = (value + value).getBytes();
-        int taintedLen = input.length/2;
-        taintWithIndices(input, 0, taintedLen);// Only taint half of the input
-        Base64.Decoder decoder = Base64.getDecoder();
-        byte[] output = decoder.decode(input);
-        for(int outputIndex = 0; outputIndex < output.length; outputIndex++) {
-            Collection<Object> expected;
-            int block = outputIndex / 3;
-            if(block * 4 < taintedLen) {
-                int blockIndex = outputIndex % 3;
-                switch(blockIndex) {
-                    case 0:
-                        expected = Arrays.asList(block * 4, block * 4 + 1);
-                        break;
-                    case 1:
-                        expected = Arrays.asList(block * 4 + 1, block * 4 + 2);
-                        break;
-                    default:
-                        expected = Arrays.asList(block * 4 + 2, block * 4 + 3);
-                }
+    public void testBase64Encode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        String value = "Lorem ipsum dolor sit amett"; // Note: length of value is divisible by 3
+        byte[] input = taintWithIndices((value + value).getBytes(), policy);
+        byte[] output = Base64.getEncoder().encode(input);
+        for(int inputIndex = 0; inputIndex < input.length; inputIndex+=3) {
+            byte[] outputGroup = new byte[4];
+            System.arraycopy(output, inputIndex/3 * 4, outputGroup, 0, outputGroup.length);
+            if(policy.inTaintedRange(inputIndex, input.length)) {
+                benchResult.check(Arrays.asList(inputIndex, inputIndex + 1, inputIndex + 2), outputGroup);
             } else {
-                expected = new HashSet<>();
+                benchResult.check(Collections.emptyList(), outputGroup);
             }
-            // Ideally this is what you would want to see, but the way the code is written, I'm not sure its feasible to
-            // have it work out this way
-            benchResult.check(expected, output[outputIndex]);
+        }
+    }
+
+    /**
+     * Base64 decodes a string using java.util.Base64. Checks that the union of the tags on groups of three output
+     * characters match the tags on the four input characters that were used to create the output group.
+     */
+    @FlowBench
+    public void testBase64Decode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        String value = "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXR0";
+        byte[] input = taintWithIndices((value + value).getBytes(), policy);
+        byte[] output = Base64.getDecoder().decode(input);
+        for(int inputIndex = 0; inputIndex < input.length; inputIndex+=4) {
+            byte[] outputGroup = new byte[3];
+            System.arraycopy(output, inputIndex/4 * 3, outputGroup, 0, outputGroup.length);
+            if(policy.inTaintedRange(inputIndex, input.length)) {
+                benchResult.check(Arrays.asList(inputIndex, inputIndex + 1, inputIndex + 2, inputIndex + 3), outputGroup);
+            } else {
+                benchResult.check(Collections.emptyList(), outputGroup);
+            }
         }
     }
 }

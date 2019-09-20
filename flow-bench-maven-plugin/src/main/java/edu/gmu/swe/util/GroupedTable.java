@@ -53,7 +53,7 @@ public class GroupedTable {
     private String[] getRowGroups(String[][] row, int[][] colWidths) {
         String[] rowGroups = new String[groups.size()];
         for(int i = 0; i < rowGroups.length; i++) {
-            rowGroups[i] = createElementString(row[i], colWidths[i], ' ', true);
+            rowGroups[i] = createElementString(row[i], colWidths[i], ' ', false);
         }
         return rowGroups;
     }

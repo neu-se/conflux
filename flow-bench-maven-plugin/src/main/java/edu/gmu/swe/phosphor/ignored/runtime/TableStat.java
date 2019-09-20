@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.maven;
+package edu.gmu.swe.phosphor.ignored.runtime;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -8,6 +8,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Retention(RUNTIME)
 @Target(METHOD)
-@interface TableStat {
+public @interface TableStat {
     String name();
 }

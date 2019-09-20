@@ -3,8 +3,49 @@ package edu.gmu.swe.phosphor;
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 
-public abstract class BaseFlowBench {
+public class FlowBenchUtil {
 
+    public static String taintWithIndices(String input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length()), policy.getTaintedRangeEnd(input.length()));
+    }
+
+    public static <T> T[] taintWithIndices(T[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+
+    }
+
+    public static boolean[] taintWithIndices(boolean[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+
+    public static byte[] taintWithIndices(byte[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+
+    public static char[] taintWithIndices(char[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+
+    public static double[] taintWithIndices(double[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+
+    public static float[] taintWithIndices(float[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+
+    public static int[] taintWithIndices(int[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+
+    public static long[] taintWithIndices(long[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+
+    public static short[] taintWithIndices(short[] input, TaintedPortionPolicy policy) {
+        return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
+    }
+    
     public static String taintWithIndices(String input) {
         return taintWithIndices(input, 0, input.length());
     }

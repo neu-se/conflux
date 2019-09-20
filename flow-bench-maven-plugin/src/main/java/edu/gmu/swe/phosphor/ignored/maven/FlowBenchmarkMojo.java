@@ -1,5 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.maven;
 
+import edu.gmu.swe.phosphor.ignored.runtime.BinaryFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.TableStat;
 import edu.gmu.swe.util.GroupedTable;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
@@ -196,7 +200,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             }
             for(Pair<String, String> test : tests.keySet()) {
                 Object[][] row = new Object[configurationNames.size() + 1][];
-                row[0] = new String[]{test.getLeft(), test.getLeft()};
+                row[0] = new String[]{test.getLeft(), test.getRight()};
                 Map<String, FlowBenchReport> reports = tests.get(test);
                 int i = 1;
                 for(String name : configurationNames) {
@@ -232,6 +236,12 @@ public class FlowBenchmarkMojo extends AbstractMojo {
 
     }
 
+    /**
+     * Gathers method annotated with the TableStat annotation from the specified class.
+     *
+     * @param resultType class whose methods are checked
+     * @return mapping from TableStat annotation names to the methods they annotate
+     */
     private Map<String, Method> getTableStatMethods(Class<? extends FlowBenchResult> resultType) {
         Map<String, Method> statMethods = new TreeMap<>();
         for(Class<?> clazz = resultType; clazz != FlowBenchResult.class; clazz = clazz.getSuperclass()) {

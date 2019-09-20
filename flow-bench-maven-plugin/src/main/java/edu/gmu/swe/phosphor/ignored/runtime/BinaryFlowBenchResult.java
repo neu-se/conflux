@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.maven;
+package edu.gmu.swe.phosphor.ignored.runtime;
 
 import java.util.Collection;
 import java.util.Set;
