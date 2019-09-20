@@ -1,5 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.maven;
 
+import edu.gmu.swe.util.GroupedTable;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -122,7 +124,8 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
             createOrCleanDirectory(reportDirectory);
             List<File> reportFiles = runBenchmarks(reportDirectory, phosphorJarPath);
-            printResults(getConfigurationNames(), deserializeReports(reportFiles));
+            printResultsTable(getConfigurationNames(), deserializeReports(reportFiles), BinaryFlowBenchResult.class);
+            printResultsTable(getConfigurationNames(), deserializeReports(reportFiles), MultiLabelFlowBenchResult.class);
         } catch(InterruptedException | IOException e) {
             throw new MojoFailureException("Failed to benchmark configurations", e);
         }
@@ -157,87 +160,89 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     }
 
     /**
-     * Prints table results for benchmarked Phosphor configuration to standard out.
+     * Prints a table of benchmark results of the specified type for the various Phosphor configurations.
      *
      * @param configurationNames the names of the configurations that were benchmarked
      * @param reportLists list of reports for each configuration that was benchmarked
+     * @param resultType type of results that should be reported
      */
-    private void printResults(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists) {
-        // Group reports by result type
-        TreeMap<Pair<String, String>, Map<String, FlowBenchReport>> binaryTests = new TreeMap<>();
-        TreeMap<Pair<String, String>, Map<String, FlowBenchReport>> multiLabelTests = new TreeMap<>();
+    private void printResultsTable(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists,
+                                   Class<? extends FlowBenchResult> resultType) {
+        TreeMap<Pair<String, String>, Map<String, FlowBenchReport>> tests = new TreeMap<>();
         Iterator<? extends List<FlowBenchReport>> reportsIt = reportLists.iterator();
+        String benchmarkTypeDesc = null;
         for(String name : configurationNames) {
             List<FlowBenchReport> reports = reportsIt.next();
             for(FlowBenchReport report : reports) {
                 Pair<String, String> test = new ImmutablePair<>(report.getSimpleClassName(), report.getMethodName());
-                if(report.getResult() instanceof BinaryFlowBenchResult) {
-                    binaryTests.putIfAbsent(test, new HashMap<>());
-                    binaryTests.get(test).put(name, report);
-                } else if(report.getResult() instanceof MultiLabelFlowBenchResult) {
-                    multiLabelTests.putIfAbsent(test, new HashMap<>());
-                    multiLabelTests.get(test).put(name, report);
+                if(resultType.isInstance(report.getResult())) {
+                    tests.putIfAbsent(test, new HashMap<>());
+                    tests.get(test).put(name, report);
+                    if(benchmarkTypeDesc == null) {
+                        benchmarkTypeDesc = report.getResult().getBenchmarkTypeDesc();
+                    }
                 }
             }
         }
-        if(!binaryTests.isEmpty()) {
-            // Create and print a table for binary results
-            GroupedTable table = new GroupedTable("Binary Flow Benchmark Results")
-                    .floatingPointFormat("%.4f")
+        if(!tests.isEmpty()) {
+            Map<String, Method> tableStatMethods = getTableStatMethods(resultType);
+            List<String> statsPerConfig = new LinkedList<>();
+            statsPerConfig.add("Time (ms)");
+            statsPerConfig.addAll(tableStatMethods.keySet());
+            GroupedTable table = new GroupedTable(benchmarkTypeDesc + " Results")
                     .addGroup("", "Benchmark", "Test");
             for(String name : configurationNames) {
-                table.addGroup(name, "Time (ms)", "Precision", "Recall", "F-score");
+                table.addGroup(name, statsPerConfig.toArray(new String[0]));
             }
-            for(Pair<String, String> test : binaryTests.keySet()) {
-                Map<String, FlowBenchReport> binaryReports = binaryTests.get(test);
+            for(Pair<String, String> test : tests.keySet()) {
                 Object[][] row = new Object[configurationNames.size() + 1][];
-                row[0] = new Object[]{test.getLeft(), test.getRight()};
+                row[0] = new String[]{test.getLeft(), test.getLeft()};
+                Map<String, FlowBenchReport> reports = tests.get(test);
                 int i = 1;
                 for(String name : configurationNames) {
-                    if(binaryReports.containsKey(name)) {
-                        FlowBenchReport report = binaryReports.get(name);
-                        BinaryFlowBenchResult result = (BinaryFlowBenchResult) report.getResult();
-                        row[i++] = new Object[]{report.getTimeElapsed(), result.precision(), result.recall(), result.f1Score()};
+                    List<String> rowData = new LinkedList<>();
+                    if(reports.containsKey(name)) {
+                        FlowBenchReport report = reports.get(name);
+                        FlowBenchResult result = report.getResult();
+                        rowData.add(String.format("%d", report.getTimeElapsed()));
+                        tableStatMethods.forEach((k, v) -> {
+                            v.setAccessible(true);
+                            try {
+                                Object value = v.invoke(result);
+                                if(value instanceof Float || value instanceof Double) {
+                                    rowData.add(String.format("%.4f", value));
+                                } else {
+                                    rowData.add(value.toString());
+                                }
+                            } catch(Exception e) {
+                                rowData.add("------");
+                            }
+                        });
                     } else {
-                        row[i++] = new Object[]{"Error", "Error", "Error", "Error"};
+                        rowData.add("Error"); // Time column
+                        tableStatMethods.forEach((k, v) -> rowData.add("Error"));
                     }
+                    row[i++] = rowData.toArray();
                 }
                 table.addRow(row);
             }
             table.printToStream(System.out);
             System.out.println("\n");
         }
-        if(!multiLabelTests.isEmpty()) {
-            // Create and print a table for multi-label results
-            GroupedTable table = new GroupedTable("Multi-label Flow Benchmark Results")
-                    .floatingPointFormat("%.4f")
-                    .addGroup("", "Benchmark", "Test");
-            for(String name : configurationNames) {
-                table.addGroup(name, "Time (ms)", "Jaccard Sim.", "Subset Acc.");
-            }
-            for(Pair<String, String> test : multiLabelTests.keySet()) {
-                Map<String, FlowBenchReport> multiLabelReports = multiLabelTests.get(test);
-                Object[][] row = new Object[configurationNames.size() + 1][];
-                row[0] = new Object[]{test.getLeft(), test.getRight()};
-                int i = 1;
-                for(String name : configurationNames) {
-                    if(multiLabelReports.containsKey(name)) {
-                        FlowBenchReport report = multiLabelReports.get(name);
-                        MultiLabelFlowBenchResult result = (MultiLabelFlowBenchResult) report.getResult();
-                        if(result.hasComparisons()) {
-                            row[i++] = new Object[]{report.getTimeElapsed(), result.macroAverageJaccardSimilarity(), result.subsetAccuracy()};
-                        } else {
-                            row[i++] = new Object[]{report.getTimeElapsed(), "------", "------"};
-                        }
-                    } else {
-                        row[i++] = new Object[]{"Error", "Error", "Error"};
-                    }
+
+    }
+
+    private Map<String, Method> getTableStatMethods(Class<? extends FlowBenchResult> resultType) {
+        Map<String, Method> statMethods = new TreeMap<>();
+        for(Class<?> clazz = resultType; clazz != FlowBenchResult.class; clazz = clazz.getSuperclass()) {
+            for(Method method : resultType.getDeclaredMethods()) {
+                if(method.isAnnotationPresent(TableStat.class)) {
+                    String statName = method.getAnnotation(TableStat.class).name();
+                    statMethods.put(statName, method);
                 }
-                table.addRow(row);
             }
-            table.printToStream(System.out);
-            System.out.println("\n");
         }
+        return statMethods;
     }
 
     /**

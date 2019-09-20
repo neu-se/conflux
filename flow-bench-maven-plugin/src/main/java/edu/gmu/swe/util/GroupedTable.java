@@ -1,14 +1,13 @@
-package edu.gmu.swe.phosphor.ignored.maven;
+package edu.gmu.swe.util;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-class GroupedTable {
+public class GroupedTable {
     private String title = "";
     private final List<Group> groups = new ArrayList<>();
     private final List<Object[][]> rows = new ArrayList<>();
-    private String floatingPointFormat = null;
 
     public GroupedTable(String title) {
         this.title = title;
@@ -33,27 +32,22 @@ class GroupedTable {
         return this;
     }
 
-    public GroupedTable floatingPointFormat(String floatingPointFormat) {
-        this.floatingPointFormat = floatingPointFormat;
-        return this;
-    }
-
     public void printToStream(PrintStream stream) {
         validate();
         String[][][] rowStrings = createRowStrings();
         int[][] colWidths = calculateColumnWidths(rowStrings);
         int[] groupWidths = calculateGroupWidths(colWidths);
         int tableWidth = calculateTableWidth(groupWidths);
-        stream.println(TablePrintUtil.divider(groupWidths, true));
-        stream.println('|' + TablePrintUtil.padStringCenter(title, tableWidth - 2, ' ') + '|');
-        stream.println(TablePrintUtil.divider(groupWidths, false));
+        stream.println(divider(groupWidths, true));
+        stream.println('|' + padStringCenter(title, tableWidth - 2, ' ') + '|');
+        stream.println(divider(groupWidths, false));
         stream.println('|' + createElementString(getGroupNames(), groupWidths, '|', true)+ '|');
         stream.println('|' + createElementString(getGroupHeaderStrings(colWidths), groupWidths, '|', true)+ '|');
-        stream.println(TablePrintUtil.divider(groupWidths, false));
+        stream.println(divider(groupWidths, false));
         for(String[][] row : rowStrings) {
             stream.println('|' + createElementString(getRowGroups(row, colWidths), groupWidths, '|', true)+ '|');
         }
-        stream.println(TablePrintUtil.divider(groupWidths, false));
+        stream.println(divider(groupWidths, false));
     }
 
     private String[] getRowGroups(String[][] row, int[][] colWidths) {
@@ -84,9 +78,9 @@ class GroupedTable {
         String[] padded = new String[elements.length];
         for(int i = 0; i < padded.length; i++) {
             if(center) {
-                padded[i] = TablePrintUtil.padStringCenter(elements[i], elementWidths[i], ' ');
+                padded[i] = padStringCenter(elements[i], elementWidths[i], ' ');
             } else {
-                padded[i] = TablePrintUtil.padStringRight(elements[i], elementWidths[i], ' ');
+                padded[i] = padStringRight(elements[i], elementWidths[i], ' ');
             }
         }
         return String.join(separator + "", padded);
@@ -123,9 +117,6 @@ class GroupedTable {
                 rowStrings[i][j] = new String[groups.get(j).headers.length];
                 for(int k = 0; k < rowStrings[i][j].length; k++) {
                     Object data = rows.get(i)[j][k];
-                    if(floatingPointFormat != null && (data instanceof Float || data instanceof Double)) {
-                        data = String.format(floatingPointFormat, data);
-                    }
                     rowStrings[i][j][k] = data == null ? "" : data.toString();
                 }
             }
@@ -149,7 +140,7 @@ class GroupedTable {
 
     private void validate() {
         if(groups.size() == 0) {
-            throw new IllegalStateException("GroupedTable must have atleast one group");
+            throw new IllegalStateException("GroupedTable must have at least one group");
         }
         for(Object[][] row : rows) {
             if(row.length < groups.size()) {
@@ -163,6 +154,42 @@ class GroupedTable {
                 }
             }
         }
+    }
+
+    public static String padStringCenter(String s, int width, char padding) {
+        if(s.length() > width) {
+            throw new IllegalArgumentException();
+        }
+        int extra = width - s.length();
+        int left = (extra + 1)/2;
+        int right = extra/2;
+        return repeat(padding, left) + s + repeat(padding, right);
+    }
+
+    public static String padStringRight(String s, int width, char padding) {
+        if(s.length() > width) {
+            throw new IllegalArgumentException();
+        }
+        int extra = width - s.length();
+        return repeat(padding, extra) + s;
+    }
+
+    public static String repeat(char c, int length) {
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < length; i++) {
+            builder.append(c);
+        }
+        return builder.toString();
+    }
+
+    public static String divider(int[] maxWidths, boolean top) {
+        StringBuilder builder = new StringBuilder();
+        boolean first = true;
+        for(int width : maxWidths) {
+            builder.append(top && !first ? '-' : '+').append(repeat('-', width));
+            first = false;
+        }
+        return builder.append('+').toString();
     }
 
     private static class Group {

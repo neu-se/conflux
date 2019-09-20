@@ -11,6 +11,7 @@ import java.util.Set;
 
 public abstract class FlowBenchResult {
 
+    public abstract String getBenchmarkTypeDesc();
 
     public abstract void check(Set<?> expected, Set<?> predicted);
 

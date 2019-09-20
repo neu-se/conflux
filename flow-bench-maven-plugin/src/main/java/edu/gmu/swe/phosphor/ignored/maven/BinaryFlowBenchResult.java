@@ -10,6 +10,11 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
     private int falsePositives = 0;
     private int falseNegatives = 0;
 
+    @Override
+    public String getBenchmarkTypeDesc() {
+        return "Binary Flow Benchmark";
+    }
+
     protected int getTruePositives() {
         return truePositives;
     }
@@ -26,6 +31,7 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
         return falseNegatives;
     }
 
+    @TableStat(name = "Precision")
     protected double precision() {
         if(truePositives + falsePositives == 0) {
             return 1;
@@ -34,6 +40,7 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
         }
     }
 
+    @TableStat(name = "Recall")
     protected double recall() {
         if(truePositives + falseNegatives == 0) {
             return 1;
@@ -41,7 +48,8 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
             return (1.0 * truePositives)/(truePositives + falseNegatives);
         }
     }
-    
+
+    @TableStat(name = "F-score")
     protected double f1Score() {
         double precision = precision();
         double recall = recall();

@@ -6,10 +6,16 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
 
     private final List<SetComparision> comparisons = new LinkedList<>();
 
+    @Override
+    public String getBenchmarkTypeDesc() {
+        return "Multi-label Flow Benchmark";
+    }
+
     public List<SetComparision> getComparisons() {
         return comparisons;
     }
 
+    @TableStat(name = "Jaccard Sim.")
     double macroAverageJaccardSimilarity() {
         if(comparisons.size() == 0) {
             throw new IllegalStateException("Cannot compute average Jaccard similarity of zero set comparision.");
@@ -21,6 +27,7 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         return sum/comparisons.size();
     }
 
+    @TableStat(name = "Subset Acc.")
     double subsetAccuracy() {
         if(comparisons.size() == 0) {
             throw new IllegalStateException("Cannot compute the subset accuracy of zero set comparision.");
@@ -30,14 +37,6 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
             sum += comparision.subsetAccuracy();
         }
         return (1.0 * sum)/comparisons.size();
-    }
-
-    /**
-     *
-     * @return true if at least one set comparision was recorded for this result
-     */
-    boolean hasComparisons() {
-        return !comparisons.isEmpty();
     }
 
     @Override
