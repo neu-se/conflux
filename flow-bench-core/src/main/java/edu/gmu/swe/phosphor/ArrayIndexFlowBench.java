@@ -1,15 +1,51 @@
 package edu.gmu.swe.phosphor;
 
 import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import org.apache.tomcat.util.buf.HexUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
 
 import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 
-/**
- * Tests implicit flows found in the package java.util
- */
-public class UtilFlowBench {
+public class ArrayIndexFlowBench {
+
+    /**
+     * Converts an array of bytes into a string of hexadecimal digits using Tomcat's HexUtils class. Translation is done
+     * by using values derived from the input as indices into an array.
+     */
+    @FlowBench
+    public void testHexUtilsToHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        byte[] input = taintWithIndices(new byte[]{126, 74, -79, 32, 126, 74, -79, 32}, policy);
+        String output = HexUtils.toHexString(input);
+        for(int i = 0; i < input.length; i++) {
+            if(policy.inTaintedRange(i, input.length)) {
+                benchResult.check(Collections.singletonList(i), output.charAt(i * 2));
+                benchResult.check(Collections.singletonList(i), output.charAt(i * 2 + 1));
+            } else {
+                benchResult.checkEmpty(output.charAt(i * 2));
+                benchResult.checkEmpty(output.charAt(i * 2 + 1));
+            }
+        }
+    }
+
+    /**
+     * Converts a string of hexadecimal digits to an array of bytes using Tomcat's HexUtils class. Translation is done
+     * by using values derived from the input as indices into an array.
+     */
+    @FlowBench
+    public void testHexUtilsFromHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        String input = taintWithIndices("7e4ab1207e4ab120", policy);
+        byte[] output = HexUtils.fromHexString(input);
+        for(int i = 0; i < input.length(); i+=2) {
+            if(policy.inTaintedRange(i, input.length())) {
+                benchResult.check(Arrays.asList(i, i+1), output[i/2]);
+            } else {
+                benchResult.checkEmpty(output[i/2]);
+            }
+        }
+    }
 
     /**
      * Base64 encodes and then decodes a string using java.util.Base64. Checks that the output is labeled the same as

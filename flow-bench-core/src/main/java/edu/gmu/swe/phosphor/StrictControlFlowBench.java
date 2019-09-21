@@ -1,17 +1,45 @@
 package edu.gmu.swe.phosphor;
 
 import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
-import org.apache.tomcat.util.buf.*;
+import org.apache.tomcat.util.buf.CharChunk;
+import org.apache.tomcat.util.buf.UDecoder;
+import org.apache.tomcat.util.buf.UEncoder;
+import org.jsoup.parser.Parser;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 
-/**
- * Tests implicit flows found in Apache Tomcat
- */
-public class TomcatFlowBench {
+public class StrictControlFlowBench {
+
+    /**
+     * Unescapes HTML named character entities using jsoup's Parser class. There is a control flow, but not a data flow
+     * between escaped entities and the unescaped values produced from them.
+     */
+    @FlowBench
+    public void testParserUnescapeEntities(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        String input = "eget nullam &quot;&amp;&lt;&gt; non nisi est ";
+        input = taintWithIndices(input + input, policy);
+        String output = Parser.unescapeEntities(input, true);
+        for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
+            LinkedList<Object> expected = new LinkedList<>();
+            expected.add(inputIndex);
+            if(input.charAt(inputIndex) == '&') {
+                while(input.charAt(inputIndex) != ';') {
+                    expected.add(++inputIndex);
+                }
+            }
+            if(policy.inTaintedRange(inputIndex, input.length())) {
+                benchResult.check(expected, output.charAt(outputIndex));
+            } else {
+                benchResult.checkEmpty(output.charAt(outputIndex));
+            }
+        }
+    }
 
     /**
      * Decodes percent encoded bytes and spaces encoded as plus signs using Tomcat's UDecoder class. There is a control
@@ -62,42 +90,6 @@ public class TomcatFlowBench {
             if(output.charAt(outputIndex) == '%') {
                 benchResult.check(expected, output.charAt(++outputIndex));
                 benchResult.check(expected, output.charAt(++outputIndex));
-            }
-        }
-    }
-
-    /**
-     * Converts an array of bytes into a string of hexadecimal digits using Tomcat's HexUtils class. Translation is done
-     * by using values derived from the input as indices into an array.
-     */
-    @FlowBench
-    public void testHexUtilsToHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
-        byte[] input = taintWithIndices(new byte[]{126, 74, -79, 32, 126, 74, -79, 32}, policy);
-        String output = HexUtils.toHexString(input);
-        for(int i = 0; i < input.length; i++) {
-            if(policy.inTaintedRange(i, input.length)) {
-                benchResult.check(Collections.singletonList(i), output.charAt(i * 2));
-                benchResult.check(Collections.singletonList(i), output.charAt(i * 2 + 1));
-            } else {
-                benchResult.checkEmpty(output.charAt(i * 2));
-                benchResult.checkEmpty(output.charAt(i * 2 + 1));
-            }
-        }
-    }
-
-    /**
-     * Converts a string of hexadecimal digits to an array of bytes using Tomcat's HexUtils class. Translation is done
-     * by using values derived from the input as indices into an array.
-     */
-    @FlowBench
-    public void testHexUtilsFromHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
-        String input = taintWithIndices("7e4ab1207e4ab120", policy);
-        byte[] output = HexUtils.fromHexString(input);
-        for(int i = 0; i < input.length(); i+=2) {
-            if(policy.inTaintedRange(i, input.length())) {
-                benchResult.check(Arrays.asList(i, i+1), output[i/2]);
-            } else {
-                benchResult.checkEmpty(output[i/2]);
             }
         }
     }
