@@ -1,10 +1,18 @@
 package edu.gmu.swe.phosphor;
 
 import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorInputStream;
+import org.apache.commons.compress.compressors.lz4.BlockLZ4CompressorOutputStream;
+import org.apache.commons.compress.compressors.lzma.LZMACompressorInputStream;
+import org.apache.commons.compress.compressors.lzma.LZMACompressorOutputStream;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,18 +26,20 @@ import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 public class CompressionFlowBench {
 
     /**
-     * Compresses the specified input bytes using bzip2. Returns the compressed bytes.
+     * Compresses the specified input bytes using the specified compressor class. Returns the compressed bytes.
      */
-    private byte[] bzip2Compress(byte[] input) throws IOException {
+    private byte[] compressBytes(byte[] input, Class<? extends CompressorOutputStream> compressorType)
+            throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         try(InputStream in = new ByteArrayInputStream(input)) {
             try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                try(BZip2CompressorOutputStream bzOut = new BZip2CompressorOutputStream(out)) {
+                Constructor<? extends CompressorOutputStream> compressorCons = compressorType.getConstructor(OutputStream.class);
+                try(CompressorOutputStream compressorOut = compressorCons.newInstance(out)) {
                     final byte[] buffer = new byte[1024];
                     int n;
                     while(-1 != (n = in.read(buffer))) {
-                        bzOut.write(buffer, 0, n);
+                        compressorOut.write(buffer, 0, n);
                     }
-                    bzOut.close();
+                    compressorOut.close();
                     in.close();
                     return out.toByteArray();
                 }
@@ -38,17 +48,21 @@ public class CompressionFlowBench {
     }
 
     /**
-     * Decompresses the specified input bytes using bzip2. Returns the decompressed bytes.
+     * Decompresses the specified input bytes using the specified decompressor class. Returns the decompressed bytes.
      */
-    private byte[] bzip2Decompress(byte[] input) throws IOException {
+    private byte[] decompressBytes(byte[] input, Class<? extends CompressorInputStream> decompressorType)
+            throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         try(InputStream in = new ByteArrayInputStream(input)) {
-            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                try (BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in)) {
+            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                Constructor<? extends CompressorInputStream> compressorCons = decompressorType.getConstructor(InputStream.class);
+                try(CompressorInputStream compressorIn = compressorCons.newInstance(in)) {
                     final byte[] buffer2 = new byte[1024];
                     int n;
-                    while (-1 != (n = bzIn.read(buffer2))) {
+                    while(-1 != (n = compressorIn.read(buffer2))) {
                         out.write(buffer2, 0, n);
                     }
+                    out.close();
+                    compressorIn.close();
                     return out.toByteArray();
                 }
             }
@@ -56,14 +70,14 @@ public class CompressionFlowBench {
     }
 
     /**
-     * Compresses then decompresses a byte array using Apache Commons' bzip2 compressor and decompressor. Checks that
+     * Compresses then decompresses a byte array using the specified compressor and decompressor types. Checks that
      * the output is labeled the same as the input.
      */
-    @FlowBench(requiresBitLevelPrecision = true)
-    public void testBzip2RoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws IOException {
+    private void checkCompressionRoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy, Class<? extends CompressorOutputStream> compressorType,
+                                           Class<? extends CompressorInputStream> decompressorType) throws Exception {
         String value = "Porttttttttitor leo a diam       tempor";
         byte[] input = taintWithIndices((value + value).getBytes(), policy);
-        byte[] output = bzip2Decompress(bzip2Compress(input));
+        byte[] output = decompressBytes(compressBytes(input, compressorType), decompressorType);
         for(int i = 0; i < input.length; i++) {
             if(policy.inTaintedRange(i, input.length)) {
                 benchResult.check(Collections.singletonList(i), output[i]);
@@ -74,14 +88,61 @@ public class CompressionFlowBench {
     }
 
     /**
-     * Compresses a byte array using Apache Commons' bzip2 compressor. Checks that all of the labels present on the
+     * Compresses a byte array using the specified compressor type. Checks that all of the labels present on the
      * input are present on the output.
      */
-    @FlowBench
-    public void testBzip2Compress(MultiLabelFlowBenchResult benchResult) throws IOException {
+    private void checkCompression(MultiLabelFlowBenchResult benchResult, Class<? extends CompressorOutputStream> compressorType) throws Exception {
         byte[] input = taintWithIndices("Porttttttttitor leo a diam       tempor".getBytes());
-        byte[] output = bzip2Compress(input);
+        byte[] output = compressBytes(input, compressorType);
         List<Integer> expected = IntStream.range(0, input.length).boxed().collect(Collectors.toList());
         benchResult.check(expected, output);
+    }
+
+    /**
+     * Checks round-trip compression using Apache Commons' bzip2 compressor and decompressor.
+     */
+    @FlowBench(requiresBitLevelPrecision = true)
+    public void testBZip2RoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws Exception {
+        checkCompressionRoundTrip(benchResult, policy, BZip2CompressorOutputStream.class, BZip2CompressorInputStream.class);
+    }
+
+    /**
+     * Checks one-way compression using Apache Commons' bzip2 compressor
+     */
+    @FlowBench
+    public void testBZip2Compress(MultiLabelFlowBenchResult benchResult) throws Exception {
+        checkCompression(benchResult, BZip2CompressorOutputStream.class);
+    }
+
+    /**
+     * Checks round-trip compression using Tukaani's lzma compressor and decompressor.
+     */
+    @FlowBench(requiresBitLevelPrecision = true)
+    public void testLZMARoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws Exception {
+        checkCompressionRoundTrip(benchResult, policy, LZMACompressorOutputStream.class, LZMACompressorInputStream.class);
+    }
+
+    /**
+     * Checks one-way compression using Tukaani's lzma compressor
+     */
+    @FlowBench
+    public void testLZMACompress(MultiLabelFlowBenchResult benchResult) throws Exception {
+        checkCompression(benchResult, LZMACompressorOutputStream.class);
+    }
+
+    /**
+     * Checks round-trip compression using Apache Commons' block LZ4 compressor and decompressor.
+     */
+    @FlowBench(requiresBitLevelPrecision = true)
+    public void testBlockLZ4RoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws Exception {
+        checkCompressionRoundTrip(benchResult, policy, BlockLZ4CompressorOutputStream.class, BlockLZ4CompressorInputStream.class);
+    }
+
+    /**
+     * Checks one-way compression using Apache Commons' block LZ4 compressor
+     */
+    @FlowBench
+    public void testBlockLZ4Compress(MultiLabelFlowBenchResult benchResult) throws Exception {
+        checkCompression(benchResult, BlockLZ4CompressorOutputStream.class);
     }
 }
