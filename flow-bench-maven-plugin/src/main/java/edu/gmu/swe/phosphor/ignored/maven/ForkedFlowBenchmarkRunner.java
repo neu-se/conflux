@@ -1,6 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.TaintUtils;
+import edu.columbia.cs.psl.phosphor.struct.PowerSetTree;
 import edu.gmu.swe.phosphor.*;
 import edu.gmu.swe.phosphor.ignored.runtime.BinaryFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.ErrorFlowBenchResult;
@@ -118,6 +119,7 @@ public class ForkedFlowBenchmarkRunner {
             validateTestSignature(test);
             if(test.getParameterCount() == 2) {
                 for(TaintedPortionPolicy portion : TaintedPortionPolicy.values()) {
+                    PowerSetTree.getInstance().reset();
                     FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
                     Instant start = Instant.now();
                     test.invoke(receiver, result, portion);
@@ -126,6 +128,7 @@ public class ForkedFlowBenchmarkRunner {
                     reports.add(new FlowBenchReport(test, portion, timeElapsed, result));
                 }
             } else {
+                PowerSetTree.getInstance().reset();
                 FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
                 Instant start = Instant.now();
                 test.invoke(receiver, result);
