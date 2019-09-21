@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 
 /**
- * Tests implicit flows found in Apache Common Compress
+ * Tests implicit flows found in compression and decompression methods.
  */
 public class CompressionFlowBench {
 
@@ -68,7 +68,7 @@ public class CompressionFlowBench {
             if(policy.inTaintedRange(i, input.length)) {
                 benchResult.check(Collections.singletonList(i), output[i]);
             } else {
-                benchResult.check(Collections.emptyList(), output[i]);
+                benchResult.checkEmpty(output[i]);
             }
         }
     }

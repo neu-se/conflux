@@ -59,7 +59,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      */
     private static final String[] BOOLEAN_VALUED_PHOSPHOR_OPTIONS = new String[]{
             "acmpeq", "enum", "objmethods", "arraylength, lightImplicit", "arrayindex", "serialization",
-            "implicitExceptions", "withoutBranchNotTaken"
+            "implicitExceptions", "withoutBranchNotTaken", "reenableCaches"
     };
 
     /**

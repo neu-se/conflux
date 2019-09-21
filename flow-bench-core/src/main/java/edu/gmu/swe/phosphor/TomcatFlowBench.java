@@ -38,7 +38,7 @@ public class TomcatFlowBench {
             if(policy.inTaintedRange(inputIndex, input.length)) {
                 benchResult.check(expected, output.charAt(outputIndex));
             } else {
-                benchResult.check(Collections.emptyList(), output.charAt(outputIndex));
+                benchResult.checkEmpty(output.charAt(outputIndex));
             }
         }
     }
@@ -79,8 +79,8 @@ public class TomcatFlowBench {
                 benchResult.check(Collections.singletonList(i), output.charAt(i * 2));
                 benchResult.check(Collections.singletonList(i), output.charAt(i * 2 + 1));
             } else {
-                benchResult.check(Collections.emptyList(), output.charAt(i * 2));
-                benchResult.check(Collections.emptyList(), output.charAt(i * 2 + 1));
+                benchResult.checkEmpty(output.charAt(i * 2));
+                benchResult.checkEmpty(output.charAt(i * 2 + 1));
             }
         }
     }
@@ -97,7 +97,7 @@ public class TomcatFlowBench {
             if(policy.inTaintedRange(i, input.length())) {
                 benchResult.check(Arrays.asList(i, i+1), output[i/2]);
             } else {
-                benchResult.check(Collections.emptyList(), output[i/2]);
+                benchResult.checkEmpty(output[i/2]);
             }
         }
     }

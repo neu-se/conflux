@@ -24,7 +24,7 @@ public class UtilFlowBench {
             if(policy.inTaintedRange(inputIndex, input.length)) {
                 benchResult.check(Collections.singletonList(inputIndex), output[inputIndex]);
             } else {
-                benchResult.check(Collections.emptyList(), output[inputIndex]);
+                benchResult.checkEmpty(output[inputIndex]);
             }
         }
     }
@@ -44,7 +44,7 @@ public class UtilFlowBench {
             if(policy.inTaintedRange(inputIndex, input.length)) {
                 benchResult.check(Arrays.asList(inputIndex, inputIndex + 1, inputIndex + 2), outputGroup);
             } else {
-                benchResult.check(Collections.emptyList(), outputGroup);
+                benchResult.checkEmpty(outputGroup);
             }
         }
     }
@@ -64,7 +64,7 @@ public class UtilFlowBench {
             if(policy.inTaintedRange(inputIndex, input.length)) {
                 benchResult.check(Arrays.asList(inputIndex, inputIndex + 1, inputIndex + 2, inputIndex + 3), outputGroup);
             } else {
-                benchResult.check(Collections.emptyList(), outputGroup);
+                benchResult.checkEmpty(outputGroup);
             }
         }
     }

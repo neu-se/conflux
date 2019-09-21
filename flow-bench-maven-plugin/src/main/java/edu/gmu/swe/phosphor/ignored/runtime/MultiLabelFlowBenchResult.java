@@ -46,7 +46,7 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         int truePositives = truePositives();
         int falsePositives = falsePositives();
         if(truePositives + falsePositives == 0) {
-            return 1;
+            throw new IllegalStateException("Cannot compute precision when no positives were predicted");
         } else {
             return (1.0 * truePositives)/(truePositives + falsePositives);
         }
@@ -59,7 +59,7 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         int truePositives = truePositives();
         int falseNegatives = falseNegatives();
         if(truePositives + falseNegatives == 0) {
-            return 1;
+            throw new IllegalStateException("Cannot compute recall when no positives were expected");
         } else {
             return (1.0 * truePositives)/(truePositives + falseNegatives);
         }

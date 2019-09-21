@@ -33,7 +33,7 @@ public class JsoupFlowBench {
             if(policy.inTaintedRange(inputIndex, input.length())) {
                 benchResult.check(expected, output.charAt(outputIndex));
             } else {
-                benchResult.check(Collections.emptyList(), output.charAt(outputIndex));
+                benchResult.checkEmpty(output.charAt(outputIndex));
             }
         }
     }

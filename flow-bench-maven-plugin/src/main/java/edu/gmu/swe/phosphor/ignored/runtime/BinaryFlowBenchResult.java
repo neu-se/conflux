@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.runtime;
 
+import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
+import edu.columbia.cs.psl.phosphor.runtime.Taint;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -34,7 +37,7 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
     @TableStat(name = "Precision")
     protected double precision() {
         if(truePositives + falsePositives == 0) {
-            return 1;
+            throw new IllegalStateException("Cannot compute precision when no positives were predicted");
         } else {
             return (1.0 * truePositives)/(truePositives + falsePositives);
         }
@@ -43,7 +46,7 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
     @TableStat(name = "Recall")
     protected double recall() {
         if(truePositives + falseNegatives == 0) {
-            return 1;
+            throw new IllegalStateException("Cannot compute recall when no positives were expected");
         } else {
             return (1.0 * truePositives)/(truePositives + falseNegatives);
         }
@@ -59,7 +62,7 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
             return 2 * (precision * recall)/(precision + recall);
         }
     }
-    
+
     protected static double macroAveragePrecision(Collection<BinaryFlowBenchResult> results) {
         if(results.size() == 0) {
             throw new IllegalArgumentException("Cannot calculate the average precision of an empty list");
@@ -117,5 +120,23 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
                 ", falsePositives=" + falsePositives +
                 ", falseNegatives=" + falseNegatives +
                 '}';
+    }
+
+    public void checkNonEmpty(Object actualData) {
+        if(actualData != null) {
+            Taint taint = actualData instanceof Taint ? (Taint) actualData : MultiTainter.getMergedTaint(actualData);
+            if(taint != null && !taint.isEmpty()) {
+                truePositives++;
+            } else {
+                falseNegatives++;
+            }
+        } else {
+            falseNegatives++;
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void checkNonEmpty$$PHOSPHORTAGGED(Object actualData) {
+        checkNonEmpty(actualData);
     }
 }
