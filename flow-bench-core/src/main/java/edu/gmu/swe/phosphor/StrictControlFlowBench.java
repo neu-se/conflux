@@ -1,10 +1,12 @@
 package edu.gmu.swe.phosphor;
 
 import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UDecoder;
 import org.apache.tomcat.util.buf.UEncoder;
 import org.jsoup.parser.Parser;
+import org.springframework.web.util.HtmlUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -17,8 +19,8 @@ import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 public class StrictControlFlowBench {
 
     /**
-     * Unescapes HTML named character entities using jsoup's Parser class. There is a control flow, but not a data flow
-     * between escaped entities and the unescaped values produced from them.
+     * Unescapes HTML named character entities using org.jsoup.parser.Parser. There is a control flow, but not a data
+     * flow between escaped entities and the unescaped values produced from them.
      */
     @FlowBench
     public void testParserUnescapeEntities(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
@@ -42,9 +44,9 @@ public class StrictControlFlowBench {
     }
 
     /**
-     * Decodes percent encoded bytes and spaces encoded as plus signs using Tomcat's UDecoder class. There is a control
-     * flow, but not a data flow between values decoded from percent encoded bytes and the percent signs. There is a
-     * control flow, but not a data flow between decoded spaces and the plus signs they were decoded from.
+     * Decodes percent encoded bytes and spaces encoded as plus signs using org.apache.tomcat.util.buf.UDecoder. There
+     * is a control flow, but not a data flow between values decoded from percent encoded bytes and the percent signs.
+     * There is a control flow, but not a data flow between decoded spaces and the plus signs they were decoded from.
      */
     @FlowBench
     public void testUDecoderDecode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws IOException {
@@ -72,8 +74,8 @@ public class StrictControlFlowBench {
     }
 
     /**
-     * Percent encodes URL reserved characters using Tomcat's UEncoder class. There is a control flow, but not a data
-     * flow between the percent sign of percent encoded characters and the original, reserved character that is encoded.
+     * Percent encodes URL reserved characters using org.apache.tomcat.util.buf.UEncoder. There is a control flow, but
+     * not a data flow between the percent sign of percent encoded characters and the original, reserved character that is encoded.
      */
     @FlowBench
     public void testUEncoderEncode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws IOException {
@@ -91,6 +93,62 @@ public class StrictControlFlowBench {
                 benchResult.check(expected, output.charAt(++outputIndex));
                 benchResult.check(expected, output.charAt(++outputIndex));
             }
+        }
+    }
+
+    /**
+     * Escapes HTML reserved characters using org.apache.commons.text.StringEscapeUtils. There is a control flow, but
+     * not a data flow between reserved characters and the escaped values produced from them.
+     */
+    @FlowBench
+    public void testEscapeHtml4(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        String input = "eget nullam \"&<> non nisi est ";
+        input = taintWithIndices(input + input, policy);
+        String output = StringEscapeUtils.escapeHtml4(input);
+        for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
+            int endOfRange = outputIndex;
+            if(output.charAt(outputIndex) == '&') {
+                while(output.charAt(endOfRange) != ';') {
+                    endOfRange++;
+                }
+            }
+            for(int i = outputIndex; i <= endOfRange; i++) {
+                if(policy.inTaintedRange(inputIndex, input.length())) {
+                    benchResult.check(Collections.singletonList(inputIndex), output.charAt(i));
+                } else {
+                    benchResult.checkEmpty(output.charAt(i));
+                }
+            }
+            outputIndex = endOfRange;
+        }
+    }
+
+
+    /**
+     * Escapes HTML reserved characters using org.springframework.web.util.HtmlUtils. There is a control flow, but
+     * not a data flow between reserved characters and the escaped values produced from them. Control flow uses a switch
+     * statement.
+     */
+    @FlowBench
+    public void testHtmlUtilEscape(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        String input = "eget nullam \"&<> non nisi est ";
+        input = taintWithIndices(input + input, policy);
+        String output = HtmlUtils.htmlEscape(input);
+        for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
+            int endOfRange = outputIndex;
+            if(output.charAt(outputIndex) == '&') {
+                while(output.charAt(endOfRange) != ';') {
+                    endOfRange++;
+                }
+            }
+            for(int i = outputIndex; i <= endOfRange; i++) {
+                if(policy.inTaintedRange(inputIndex, input.length())) {
+                    benchResult.check(Collections.singletonList(inputIndex), output.charAt(i));
+                } else {
+                    benchResult.checkEmpty(output.charAt(i));
+                }
+            }
+            outputIndex = endOfRange;
         }
     }
 }
