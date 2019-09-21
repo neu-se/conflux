@@ -14,7 +14,7 @@ import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 public class CacheFlowBench {
 
     /**
-     * TODO finish description - note Cache + implicit flow probably in parseExpression
+     * Compiles OGNL expressions using com.opensymphony.xwork2.ognl.OgnlUtil which caches OGNL expressions.
      */
     @FlowBench
     public void testOgnlExpressionCache(BinaryFlowBenchResult benchResult) throws OgnlException {

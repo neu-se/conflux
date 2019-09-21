@@ -123,13 +123,9 @@ public class BinaryFlowBenchResult extends FlowBenchResult {
     }
 
     public void checkNonEmpty(Object actualData) {
-        if(actualData != null) {
-            Taint taint = actualData instanceof Taint ? (Taint) actualData : MultiTainter.getMergedTaint(actualData);
-            if(taint != null && !taint.isEmpty()) {
-                truePositives++;
-            } else {
-                falseNegatives++;
-            }
+        Taint taint = getTaint(actualData);
+        if(taint != null && !taint.isEmpty()) {
+            truePositives++;
         } else {
             falseNegatives++;
         }

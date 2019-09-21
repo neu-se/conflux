@@ -24,16 +24,33 @@ public abstract class FlowBenchResult {
     public void check(Collection<?> expected, Object actualData) {
         Set<?> expectedSet = new HashSet<>(expected);
         Set<Object> predictedSet = new HashSet<>();
-        if(actualData != null) {
-            Taint taint = actualData instanceof Taint ? (Taint) actualData : MultiTainter.getMergedTaint(actualData);
-            if(taint != null && !taint.isEmpty()) {
-                predictedSet.addAll(Arrays.asList(taint.getLabels()));
-            }
+        Taint taint = getTaint(actualData);
+        if(taint != null && !taint.isEmpty()) {
+            predictedSet.addAll(Arrays.asList(taint.getLabels()));
         }
         check(expectedSet, predictedSet);
     }
 
     public void checkEmpty(Object actualData) {
         check(Collections.emptyList(), actualData);
+    }
+
+    @SuppressWarnings("unchecked")
+    Taint getTaint(Object actualData) {
+        if(actualData == null) {
+            return null;
+        } else if(actualData instanceof Taint) {
+            return (Taint) actualData;
+        } else if(actualData instanceof String) {
+            Taint charsTaint = Taint.combineTaintArray(MultiTainter.getStringCharTaints((String) actualData));
+            if(charsTaint == null) {
+                return MultiTainter.getTaint(actualData);
+            } else {
+                charsTaint.addDependency(MultiTainter.getTaint(actualData));
+                return charsTaint;
+            }
+        } else {
+            return MultiTainter.getMergedTaint(actualData);
+        }
     }
 }
