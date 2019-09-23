@@ -123,7 +123,6 @@ public class StrictControlFlowBench {
         }
     }
 
-
     /**
      * Escapes HTML reserved characters using org.springframework.web.util.HtmlUtils. There is a control flow, but
      * not a data flow between reserved characters and the escaped values produced from them. Control flow uses a switch

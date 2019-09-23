@@ -52,6 +52,7 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         }
     }
 
+    @TableStat(name = "Recall")
     double recall() {
         if(comparisons.size() == 0) {
             throw new IllegalStateException("Cannot compute the recall of zero set comparisons");
