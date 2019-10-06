@@ -56,17 +56,20 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>data-only</id>
+                        <id>binding-control</id>
                         <goals>
                             <goal>instrument</goal>
                         </goals>
                         <configuration>
                             <targetBaseDir>${inst.jre.cache}</targetBaseDir>
-                            <name>data-only</name>
+                            <name>binding-control</name>
                             <options>
+                                <controlTrack/>
+                                <bindingControlTracking/>
                                 <multiTaint/>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
+                                <withArrayIndexTags/>
                             </options>
                         </configuration>
                     </execution>
@@ -105,14 +108,16 @@
                                     <instrumentedJVM>${inst.jre.cache}/data-array-index</instrumentedJVM>
                                 </phosphorConfiguration>
                                 <phosphorConfiguration>
-                                    <name>data-only</name>
+                                    <name>binding-control</name>
                                     <options>
-                                        <enum/>
-                                        <acmpeq/>
-                                        <objmethods/>
-                                        <reenableCaches/>
+                                        <controlTrack/>
+                                        <bindingControlTracking/>
+                                        <multiTaint/>
+                                        <forceUnboxAcmpEq/>
+                                        <withEnumsByValue/>
+                                        <withArrayIndexTags/>
                                     </options>
-                                    <instrumentedJVM>${inst.jre.cache}/data-only</instrumentedJVM>
+                                    <instrumentedJVM>${inst.jre.cache}/binding-control</instrumentedJVM>
                                 </phosphorConfiguration>
                             </phosphorConfigurations>
                         </configuration>

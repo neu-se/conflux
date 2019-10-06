@@ -42,7 +42,8 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 			"multiTaint", "controlTrack", "lightControlTrack", "controlTrackExceptions", "withoutDataTrack",
 			"generateUninstStubs", "withArrayLengthTags","withoutFieldHiding", "withoutPropogation", "withEnumsByValue",
 			"forceUnboxAcmpEq", "disableJumpOptimizations", "readAndSaveBCIs", "withArrayIndexTags",
-			"withoutBranchNotTaken","skipLocals", "alwaysCheckForFrames", "implicitHeadersNoTracking"
+			"withoutBranchNotTaken", "skipLocals", "alwaysCheckForFrames", "implicitHeadersNoTracking",
+			"bindingControlTracking"
 	};
 
 	/**
@@ -202,7 +203,8 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 			throw new IOException("Failed to create target directory for Phosphor-instrumented: " + instJVMDir);
 		}
 		// Set-up Phosphor's configuration options
-		Configuration.IMPLICIT_TRACKING = "true".equals(options.getProperty("controlTrack"));
+		Configuration.BINDING_CONTROL_FLOWS_ONLY = "true".equals(options.getProperty("bindingControlTracking"));
+		Configuration.IMPLICIT_TRACKING = "true".equals(options.getProperty("controlTrack")) || Configuration.BINDING_CONTROL_FLOWS_ONLY;
 		Configuration.MULTI_TAINTING = "true".equals(options.getProperty("multiTaint")) || Configuration.MULTI_TAINTING;
 		Configuration.IMPLICIT_LIGHT_TRACKING = "true".equals(options.getProperty("lightControlTrack"));
 		Configuration.IMPLICIT_EXCEPTION_FLOW = "true".equals(options.getProperty("controlTrackExceptions"));
