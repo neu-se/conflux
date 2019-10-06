@@ -31,12 +31,14 @@ public class CacheFlowBench {
         String taintedExpression = taintWithIndices(expression);
         // Tainted value put into cache first
         OgnlUtil ognl1 = new OgnlUtil();
+        ognl1.setEnableExpressionCache("true");
         ASTConst taintedCompiledConst1 = (ASTConst)((ASTProperty) ognl1.compile(taintedExpression)).jjtGetChild(0);
         benchResult.check(IntStream.range(0, expression.length()).boxed().collect(Collectors.toList()), taintedCompiledConst1.getValue());
         ASTConst compiledConst1 = (ASTConst)((ASTProperty) ognl1.compile(expression)).jjtGetChild(0);
         benchResult.checkEmpty(compiledConst1.getValue());
         // Non-tainted value put into cache first
         OgnlUtil ognl2 = new OgnlUtil();
+        ognl2.setEnableExpressionCache("true");
         ASTConst compiledConst2 = (ASTConst)((ASTProperty) ognl2.compile(expression)).jjtGetChild(0);
         benchResult.checkEmpty(compiledConst2.getValue());
         ASTConst taintedCompiledConst2 = (ASTConst)((ASTProperty) ognl2.compile(taintedExpression)).jjtGetChild(0);

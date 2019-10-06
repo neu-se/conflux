@@ -36,6 +36,7 @@
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
+                                <reenableCaches/>
                             </options>
                         </configuration>
                     </execution>
@@ -52,6 +53,7 @@
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
+                                <reenableCaches/>
                             </options>
                         </configuration>
                     </execution>
@@ -70,6 +72,7 @@
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
+                                <reenableCaches/>
                             </options>
                         </configuration>
                     </execution>
@@ -116,6 +119,7 @@
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
+                                        <reenableCaches/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/binding-control</instrumentedJVM>
                                 </phosphorConfiguration>
