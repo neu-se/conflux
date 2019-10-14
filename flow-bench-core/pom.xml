@@ -37,6 +37,7 @@
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
                                 <reenableCaches/>
+                                <withoutBranchNotTaken/>
                             </options>
                         </configuration>
                     </execution>
@@ -73,6 +74,7 @@
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
                                 <reenableCaches/>
+                                <withoutBranchNotTaken/>
                             </options>
                         </configuration>
                     </execution>
