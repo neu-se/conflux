@@ -6,7 +6,7 @@
     booktitle = {Technical Report {SRI-CSL-98-04}},
     publisher = {Computer Science Laboratory, {SRI} International},
     annote = {
-    Samarati and Sweeney put forward a metric for quantifying the degree to which data is anonymized, k-anonymity.
+    	Samarati and Sweeney put forward a metric for quantifying the degree to which data is anonymized, k-anonymity.
     	They establish that certain combinations of attributes can be used to uniquely identify an individual or a small set of individuals.
     	A release of data is said to observe k-anonymity if every combination of ``quasi-identifiers'', \ie controlled attributes, can be matched to at least k individuals.
     	Although the authors were not discussing privacy in the context of information flow analysis, k-anonymity could be used as metric for quantifying the likelihood that input data can be inferred from output data.
@@ -32,7 +32,7 @@
     publisher = {IEEE Press},
     address = {Piscataway, NJ, USA},
     annote = {
-    Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
+    	Sabelfeld and Myers explore approaches to security-type systems and semantics-based security models for enforcing information-flow confidentiality policies.
 	    They contend that since confidentiality is property of all the execution paths of a program, it is more viable to prove that confidentiality policies are enforced with static type-checking approaches than dynamic enforcement.
 	    The authors describe implicit flows as a form of ``convert'' channel through which confidential information may be leaked as a result of the control structure of a program.
 	    The paper focuses on a noninterference policy for confidentiality in which confidential data is prohibited from causing an observable difference in output.
@@ -57,7 +57,7 @@
     address = {New York, NY, USA},
     keywords = {dynamic tainting, general framework, information flow},
     annote = {
-    Clause \etal discuss a flexible dynamic tainting framework that could be used for various security and software engineering purposes, such as attack detection, enforcing flow policies for sensitive information, software testing, and debugging.
+    	Clause \etal discuss a flexible dynamic tainting framework that could be used for various security and software engineering purposes, such as attack detection, 	enforcing flow policies for sensitive information, software testing, and debugging.
         The authors advocate for a flexible dynamic tainting framework that allows users to select taint propagation policies, specify different taint markings, define custom logic for checking taint markings, define custom logic for combining source operand taints on destination values, and choose different taint source and sink locations.
         They also argue that this flexible framework should be able to track not only explicit flows due to data dependences, but also offer the option to track implicit flows where tainted values impact other variables' values indirectly, in particular they discuss implicit flows due to control dependences.
         Control dependences are informally defined as follows: ``a statement s\textsubscript{2} is control dependent on a statement s\textsubscript{1} if (1) s\textsubscript{1} contains a predicate, and (2) depending on the outcome of s\textsubscript{1} , s\textsubscript{2} may not to be executed.''
@@ -88,7 +88,7 @@
     address = {New York, NY, USA},
     keywords = {dynamic analysis, implicit flow, information-flow analysis},
     annote = {
-    McCamant and Ernst measure the maximum flow of secret information with a network flow capacity model instead of using a taint tracking approach.
+    	McCamant and Ernst measure the maximum flow of secret information with a network flow capacity model instead of using a taint tracking approach.
 	    They reason that it may be acceptable for a portion of private information to leak, \eg the last four digits of a credit card number, thus it is practical to use a quantitative approach to information-flow security which detects if the number of leaked bits exceeds an acceptable limit placed by a confidentiality policy.
 	    Their approach observes the execution of a program in order to measure the extent to which private inputs were leaked to public outputs.
 	    Both explicit and implicit flows, which they define as those ``in which the value of a variable depends on a previous secret branch condition or pointer value'', are modeled.
@@ -140,7 +140,7 @@
     booktitle = {NDSS},
     year = {2011},
     annote = {
-    Similar to Bao \etal \cite{Bao:2010:SCD:1831708.1831711}, Kang \etal propose propagating taints only along select control flows in order to address under-tainting.
+    	Similar to Bao \etal \cite{Bao:2010:SCD:1831708.1831711}, Kang \etal propose propagating taints only along select control flows in order to address under-tainting.
     	In particular, they target controls flows associated with ``information-preserving'' transformations, which are defined as being transformations that have the properties of an injective function.
         To identify branches related to ``information-preserving'' transformations, they first perform dynamic analysis to collect execution traces.
         Then, they analyze the execution traces to find control flow paths that can only be reached by a single input value.
@@ -163,7 +163,7 @@
     url = {https://doi.org/10.7916/D8MG7P9D},
     pages = content,
     annote = {
-    Jee presents TaintMark, a dynamic data flow tracking evaluation tool for the Android Framework.
+    	Jee presents TaintMark, a dynamic data flow tracking evaluation tool for the Android Framework.
     	TaintMark looks at system outputs when given different input values to determine if taints should propagate from the inputs to the outputs.
     	It tests applications with different tainted input values from sources like the GPS device, international mobile subscriber identity (IMSI), International Mobile Equipment Identity (IMEI), and password data.
     	During the execution of an application, file and network activities performed are logged for analysis.
@@ -191,7 +191,7 @@
     address = {New York, NY, USA},
     keywords = {Android Taint Analysis, Benchmarks, Empirical Studies, Reproducibility, Tools},
     annote = {
-    Pauck \etal introduce ReproDroid a framework for comparing Android taint analysis tools using a precise, consistent evaluation target.
+    	Pauck \etal introduce ReproDroid a framework for comparing Android taint analysis tools using a precise, consistent evaluation target.
         The authors establish that popular micro-benchmarks like DroidBench and ICC-Bench specify only the number of leaks that a should be detected for a particular test not the exact leaks that should be detected.
         As a result, these micro-benchmarks can often have imprecise results.
         Furthermore evaluations that use real-world applications are hard to reproduce, may not evaluate whether reported leaks represent true flows, and often cannot determine if true leaks were missed.
@@ -214,7 +214,7 @@
     month = aug,
     year = {2018},
     annote = {
-    Luo \etal analyze the conditions under which flows reported by the static taint analysis tool FlowDroid occur.
+    	Luo \etal analyze the conditions under which flows reported by the static taint analysis tool FlowDroid occur.
     	They contrast their style of analysis, which they refer to as qualitative, with prior analyses which take a more quantitative approach.
     	To support their analysis they created COVA, an extension to the Soot analysis framework which computes partial path constraints.
     	COVA can classify leaks, \ie taint flows, based on ``leak-constraints'' formed from branch conditions which depend on values from an invocation of a predefined ``constraint-API''.
@@ -244,7 +244,7 @@
     address = {New York, NY, USA},
     keywords = {SQL injection, dynamic tainting, runtime monitoring},
     annote = {
-    Halfond \etal provide an automated technique for detecting and preventing SQL injection attacks.
+    	Halfond \etal provide an automated technique for detecting and preventing SQL injection attacks.
     	Their technique uses ``positive-tainting'' which tracks the flow of trusted values opposed to the more common approach of ``negative'' tainting which tracks untrusted values.
     	They prevent SQL injection attacks by ensuring that certain syntactic parts of SQL queries are made from trusted values.
     	The authors' Java implementation of their technique, WASP, was evaluated on seven web applications using 12,616 SQL injection attacks and 5,602 legitimate database accesses.
@@ -270,7 +270,7 @@
     address = {New York, NY, USA},
     keywords = {automated debugging, dynamic information flow, dynamic tainting, failure-relevant inputs},
     annote = {
-    Clause and Orso present a technique for identifying the subset of a failure-inducing input that is relevant to a failure in order to assist with program debugging.
+    	Clause and Orso present a technique for identifying the subset of a failure-inducing input that is relevant to a failure in order to assist with program debugging.
         The authors use data and control flow information to identify ``failure-relevant'' inputs.
         Values from external input sources, like keyboard, network connection, and file system inputs, to a program are tainted.
         Taints are propagated through the program and eventually used to determine which inputs impact data involved in failures.
@@ -302,7 +302,7 @@
     address = {New York, NY, USA},
     keywords = {Brittleness, Dynamic tainting, Improving oracles, Mutation, Unit testing, Unused inputs},
     annote = {
-    Huo and Clause describe their technique for improving test quality by identifying brittle assertions and unused test inputs.
+    	Huo and Clause describe their technique for improving test quality by identifying brittle assertions and unused test inputs.
     	The authors define an assertion as being brittle if it depends on values that are derived from input that are not controlled by the test making the assertion.
     	Brittle assertions, according to the authors, check too much of the program state and therefore are difficult to maintain.
     	Conversely, unused inputs, values controlled by a test that do not derive a value checked by any of the assertions of the test, may imply that too little of the program state is checked and may as a result in a failure to find bugs that the would otherwise be exposed by the test.
@@ -328,7 +328,7 @@
     booktitle={NDSS},
     year={2017},
     annote = {
-    Rawat \etal's fuzzing strategy leverages control and data flow information to generate ``interesting'' inputs capable of finding bugs deep in a program's execution.
+    	Rawat \etal's fuzzing strategy leverages control and data flow information to generate ``interesting'' inputs capable of finding bugs deep in a program's execution.
         The authors argue that blind fuzzing is ineffective for discovering bugs deep in a program's execution particularly if the program uses complex input formats.
         Additionally, they contend that fuzzing approaches that use symbolic execution have difficultly scaling.
         They propose using taint analysis to produce high quality inputs without the use of symbolic execution.
@@ -355,6 +355,48 @@
     publisher = {ACM},
     address = {New York, NY, USA},
     annote = {
-        TODO
+        Staicu \etal consider the prevalence of implicit flows and criticality of detecting implicit flows when using dynamic taint tracking to enforce security and privacy policies in JavaScript applications.
+        They delineate between implicit flows that result from the execution of a branch and those that result from a branch not being executed by referring to them as observable implicit flows and hidden implicit flows respectively.
+        The authors looked at known vulnerabilities from four different classes (injection, regular expression denial-of-service, buffer, and device fingerprinting and history sniffing) in 56 real-world JavaScript programs.
+        The number of micro flows, i.e., flows resulting from a single operation, were counted for explicit, observable implicit, and hidden implicit flows found in each of the applications.
+        Explicit flows, the most common type of flow, were found in almost all of the applications, whereas hidden implicit flows were found in only five of the applications.
+        The authors also looked at the efficacy of three different security modes: taint tracking (which considers explicit flows only), observable tracking (which considers explicit and observable implicit flows) and permissive upgrade (which considers explicit, observable implicit, and hidden implicit flows).
+        For each of these security modes, the authors reported the number of unique source-to-sink flows that were detected.
+        Staicu \etal concluded that it was sufficient to consider only explicit flows in order to detect security-related source-to-sink flows, but in order to discover privacy-related source-to-sink flows, observable implicit flows also needed to be considered.
     }
 }
+
+@inproceedings{Chandra:2007,
+    author={D. {Chandra} and M. {Franz}},
+    booktitle={Twenty-Third Annual Computer Security Applications Conference (ACSAC 2007)},
+    title={Fine-Grained Information Flow Analysis and Enforcement in a Java Virtual Machine},
+    year={2007},
+    pages={463-475},
+    keywords={data flow analysis;Java;security of data;virtual machines;information flow analysis;Java virtual machine;control flow;policy enforcement;policy change;static analysis;backward compatibility;Java class files;system protection;Information analysis;Java;Virtual machining;Information security;Protection;Safety;Automata;Invasive software;Computer security;Application software},
+    doi={10.1109/ACSAC.2007.37},
+    month={Dec},
+    annote = {
+    	Chandra and Franz TODO
+    }
+}
+
+@inproceedings{King:2008:IFC:1496255.1496261,
+	author = {King, Dave and Hicks, Boniface and Hicks, Michael and Jaeger, Trent},
+	title = {Implicit Flows: Can't Live with `Em, Can't Live Without `Em},
+	booktitle = {Proceedings of the 4th International Conference on Information Systems Security},
+	series = {ICISS '08},
+	year = {2008},
+	isbn = {978-3-540-89861-0},
+	location = {Hyderabad, India},
+	pages = {56--70},
+	numpages = {15},
+	url = {http://dx.doi.org/10.1007/978-3-540-89862-7_4},
+	doi = {10.1007/978-3-540-89862-7_4},
+	acmid = {1496261},
+	publisher = {Springer-Verlag},
+	address = {Berlin, Heidelberg},
+	annote = {
+		King \etal TODO
+	}
+} 
+
