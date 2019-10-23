@@ -39,11 +39,10 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 	 * Options considered by Phosphor that have boolean values.
 	 */
 	private static final String[] BOOLEAN_VALUED_PHOSPHOR_OPTIONS = new String[]{
-			"multiTaint", "controlTrack", "lightControlTrack", "controlTrackExceptions", "withoutDataTrack",
-			"generateUninstStubs", "withArrayLengthTags","withoutFieldHiding", "withoutPropogation", "withEnumsByValue",
-			"forceUnboxAcmpEq", "disableJumpOptimizations", "readAndSaveBCIs", "withArrayIndexTags",
-			"withoutBranchNotTaken", "skipLocals", "alwaysCheckForFrames", "implicitHeadersNoTracking",
-			"bindingControlTracking"
+			"controlTrack", "lightControlTrack", "controlTrackExceptions", "withoutDataTrack", "withArrayLengthTags",
+			"withoutFieldHiding", "withoutPropagation", "withEnumsByValue", "forceUnboxAcmpEq", "disableJumpOptimizations",
+			"readAndSaveBCIs", "withArrayIndexTags", "withoutBranchNotTaken", "skipLocals", "alwaysCheckForFrames",
+			"implicitHeadersNoTracking", "bindingControlTracking"
 	};
 
 	/**
@@ -205,14 +204,12 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 		// Set-up Phosphor's configuration options
 		Configuration.BINDING_CONTROL_FLOWS_ONLY = "true".equals(options.getProperty("bindingControlTracking"));
 		Configuration.IMPLICIT_TRACKING = "true".equals(options.getProperty("controlTrack")) || Configuration.BINDING_CONTROL_FLOWS_ONLY;
-		Configuration.MULTI_TAINTING = "true".equals(options.getProperty("multiTaint")) || Configuration.MULTI_TAINTING;
 		Configuration.IMPLICIT_LIGHT_TRACKING = "true".equals(options.getProperty("lightControlTrack"));
 		Configuration.IMPLICIT_EXCEPTION_FLOW = "true".equals(options.getProperty("controlTrackExceptions"));
 		Configuration.DATAFLOW_TRACKING = !"true".equals(options.getProperty("withoutDataTrack"));
-		Configuration.GENERATE_UNINST_STUBS = "true".equals(options.getProperty("generateUninstStubs"));
 		Configuration.ARRAY_LENGTH_TRACKING = "true".equals(options.getProperty("withArrayLengthTags"));
 		Configuration.WITHOUT_FIELD_HIDING = "true".equals(options.getProperty("withoutFieldHiding"));
-		Configuration.WITHOUT_PROPOGATION = "true".equals(options.getProperty("withoutPropogation"));
+		Configuration.WITHOUT_PROPAGATION = "true".equals(options.getProperty("withoutPropAgation"));
 		Configuration.WITH_ENUM_BY_VAL = "true".equals(options.getProperty("withEnumsByValue"));
 		Configuration.WITH_UNBOX_ACMPEQ = "true".equals(options.getProperty("forceUnboxAcmpEq"));
 		Configuration.WITH_TAGS_FOR_JUMPS = "true".equals(options.getProperty("disableJumpOptimizations"));

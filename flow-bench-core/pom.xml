@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>flow-bench-core</artifactId>
@@ -9,7 +9,7 @@
         <groupId>edu.gmu.swe.phosphor</groupId>
         <artifactId>flow-bench-parent</artifactId>
         <relativePath>../</relativePath>
-        <version>0.0.4-SNAPSHOT</version>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
     <properties>
         <inst.jre.cache>${project.basedir}/inst-jre-cache</inst.jre.cache>
@@ -20,7 +20,7 @@
             <plugin>
                 <groupId>edu.gmu.swe.phosphor</groupId>
                 <artifactId>phosphor-instrument-maven-plugin</artifactId>
-                <version>0.0.4-SNAPSHOT</version>
+                <version>0.0.1-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <id>control</id>
@@ -67,14 +67,12 @@
                             <targetBaseDir>${inst.jre.cache}</targetBaseDir>
                             <name>binding-control</name>
                             <options>
-                                <controlTrack/>
                                 <bindingControlTracking/>
                                 <multiTaint/>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
                                 <reenableCaches/>
-                                <withoutBranchNotTaken/>
                             </options>
                         </configuration>
                     </execution>
@@ -83,13 +81,14 @@
             <plugin>
                 <groupId>edu.gmu.swe.phosphor</groupId>
                 <artifactId>flow-bench-maven-plugin</artifactId>
-                <version>0.0.4-SNAPSHOT</version>
+                <version>0.0.1-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>benchmark</goal>
                         </goals>
                         <configuration>
+                            <phosphorVersion>${phosphor.version}</phosphorVersion>
                             <phosphorConfigurations>
                                 <phosphorConfiguration>
                                     <name>control</name>
@@ -115,9 +114,7 @@
                                 <phosphorConfiguration>
                                     <name>binding-control</name>
                                     <options>
-                                        <controlTrack/>
                                         <bindingControlTracking/>
-                                        <multiTaint/>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
@@ -136,12 +133,12 @@
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>phosphor-instrument-maven-plugin</artifactId>
-            <version>0.0.4-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>flow-bench-maven-plugin</artifactId>
-            <version>0.0.4-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>

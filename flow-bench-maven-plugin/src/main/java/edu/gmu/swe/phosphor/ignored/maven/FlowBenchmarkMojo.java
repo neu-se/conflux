@@ -45,11 +45,6 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     private static final String PHOSPHOR_ARGS_CACHE_FILE = "phosphor-cache-args";
 
     /**
-     * Version of Phosphor dependency
-     */
-    private static final String PHOSPHOR_VERSION = "0.0.4-SNAPSHOT";
-
-    /**
      * String argument used to tell "forked" JVMs to wait for a debugger
      */
     private static final String DEBUG_ARG = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
@@ -74,6 +69,13 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      * True if "forked" JVMs should wait for a debugger
      */
     private static final boolean debugForks = Boolean.getBoolean("phosphor.flow.bench.debug");
+
+    /**
+     * Version of Phosphor dependency
+     */
+    @Parameter(property = "phosphorVersion", readonly = true, required = true)
+    private String phosphorVersion;
+
 
     /**
      * Maven build output directory
@@ -119,9 +121,11 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoFailureException {
         String phosphorJarPath = localRepository.getAbsolutePath() + "/edu/gmu/swe/phosphor/Phosphor/" +
-                PHOSPHOR_VERSION + "/Phosphor-" + PHOSPHOR_VERSION + ".jar";
+                phosphorVersion + "/Phosphor-" + phosphorVersion + ".jar";
         if(!new File(phosphorJarPath).isFile()) {
             throw new MojoFailureException("Failed to find Phosphor jar: " + phosphorJarPath);
+        } else {
+            getLog().info("Using Phosphor version: " + phosphorVersion);
         }
         validatePhosphorConfigurations();
         try {
