@@ -16,7 +16,7 @@ import java.util.List;
 
 import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 
-public class StrictControlFlowBench {
+public class GeneralControlFlowBench {
 
     /**
      * Unescapes HTML named character entities using org.jsoup.parser.Parser. There is a control flow, but not a data
