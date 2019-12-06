@@ -1,6 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.runtime;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class MultiLabelFlowBenchResult extends FlowBenchResult {
 
@@ -15,87 +18,62 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
         return comparisons;
     }
 
-    @TableStat(name = "Jaccard Sim.")
-    double macroAverageJaccardSimilarity() {
+    double jaccardSimilarity() {
         if(comparisons.size() == 0) {
-            throw new IllegalStateException("Cannot compute average Jaccard similarity of zero set comparisons");
+            throw new IllegalStateException("No samples were evaluated");
         }
         double sum = 0;
         for(SetComparison comparison : comparisons) {
             sum += comparison.jaccardSimilarity();
         }
-        return sum/comparisons.size();
+        return sum / comparisons.size();
     }
 
-    @TableStat(name = "Subset Acc.")
     double subsetAccuracy() {
         if(comparisons.size() == 0) {
-            throw new IllegalStateException("Cannot compute the subset accuracy of zero set comparisons");
+            throw new IllegalStateException("No samples were evaluated");
         }
         int sum = 0;
         for(SetComparison comparison : comparisons) {
             sum += comparison.subsetAccuracy();
         }
-        return (1.0 * sum)/comparisons.size();
+        return (1.0 * sum) / comparisons.size();
     }
 
+    @TableStat(name = "Precision")
     double precision() {
         if(comparisons.size() == 0) {
-            throw new IllegalStateException("Cannot compute the precision of zero set comparisons");
+            throw new IllegalStateException("No samples were evaluated");
         }
-        int truePositives = truePositives();
-        int falsePositives = falsePositives();
-        if(truePositives + falsePositives == 0) {
-            throw new IllegalStateException("Cannot compute precision when no positives were predicted");
-        } else {
-            return (1.0 * truePositives)/(truePositives + falsePositives);
+        double sum = 0;
+        for(SetComparison comparison : comparisons) {
+            sum += comparison.precision();
         }
+        return sum / comparisons.size();
     }
 
     @TableStat(name = "Recall")
     double recall() {
         if(comparisons.size() == 0) {
-            throw new IllegalStateException("Cannot compute the recall of zero set comparisons");
+            throw new IllegalStateException("No samples were evaluated");
         }
-        int truePositives = truePositives();
-        int falseNegatives = falseNegatives();
-        if(truePositives + falseNegatives == 0) {
-            throw new IllegalStateException("Cannot compute recall when no positives were expected");
-        } else {
-            return (1.0 * truePositives)/(truePositives + falseNegatives);
+        double sum = 0;
+        for(SetComparison comparison : comparisons) {
+            sum += comparison.recall();
         }
+        return sum / comparisons.size();
     }
 
-    private int truePositives() {
-        int sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.truePositives();
+    @TableStat(name = "F1")
+    double f1Score() {
+        if(comparisons.size() == 0) {
+            throw new IllegalStateException("No samples were evaluated");
         }
-        return sum;
-    }
-
-    private int trueNegatives() {
-        int sum = 0;
+        double sum = 0;
         for(SetComparison comparison : comparisons) {
-            sum += comparison.trueNegatives();
+            sum += comparison.f1Score();
         }
-        return sum;
-    }
-
-    private int falsePositives() {
-        int sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.falsePositives();
-        }
-        return sum;
-    }
-
-    private int falseNegatives() {
-        int sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.falseNegatives();
-        }
-        return sum;
+        return sum / comparisons.size();
     }
 
     @Override
@@ -115,52 +93,60 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
 
     private static class SetComparison {
         private final boolean exactMatch;
-        private final int predictionSetMagnitude;
+        private final int predictedSetMagnitude;
         private final int expectedSetMagnitude;
         private final int unionMagnitude;
         private final int intersectionMagnitude;
 
-        SetComparison(boolean exactMatch, int expectedSetMagnitude, int predictionSetMagnitude, int unionMagnitude,
+        SetComparison(boolean exactMatch, int expectedSetMagnitude, int predictedSetMagnitude, int unionMagnitude,
                       int intersectionMagnitude) {
-            if(predictionSetMagnitude < 0 || expectedSetMagnitude < 0 || unionMagnitude < 0 || intersectionMagnitude < 0) {
+            if(predictedSetMagnitude < 0 || expectedSetMagnitude < 0 || unionMagnitude < 0 || intersectionMagnitude < 0) {
                 throw new IllegalArgumentException("Set magnitudes must be non-negative");
             }
             this.exactMatch = exactMatch;
-            this.predictionSetMagnitude = predictionSetMagnitude;
+            this.predictedSetMagnitude = predictedSetMagnitude;
             this.expectedSetMagnitude = expectedSetMagnitude;
             this.unionMagnitude = unionMagnitude;
             this.intersectionMagnitude = intersectionMagnitude;
         }
 
         private double jaccardSimilarity() {
-            return unionMagnitude == 0 ? 1 : (1.0 * intersectionMagnitude)/unionMagnitude;
+            return unionMagnitude == 0 ? 1 : (1.0 * intersectionMagnitude) / unionMagnitude;
         }
 
         private int subsetAccuracy() {
             return exactMatch ? 1 : 0;
         }
 
-        private int truePositives() {
-            return expectedSetMagnitude > 0 && predictionSetMagnitude > 0 ? 1 : 0;
+        private double precision() {
+            if(predictedSetMagnitude == 0) {
+                return 1;
+            } else {
+                return (1.0 * intersectionMagnitude) / predictedSetMagnitude;
+            }
         }
 
-        private int trueNegatives() {
-            return expectedSetMagnitude == 0 && predictionSetMagnitude == 0 ? 1 : 0;
+        private double recall() {
+            if(expectedSetMagnitude == 0) {
+                return 1;
+            } else {
+                return (1.0 * intersectionMagnitude) / expectedSetMagnitude;
+            }
         }
 
-        private int falsePositives() {
-            return expectedSetMagnitude == 0 && predictionSetMagnitude > 0 ? 1 : 0;
-        }
-
-        private int falseNegatives() {
-            return expectedSetMagnitude > 0 && predictionSetMagnitude == 0 ? 1 : 0;
+        private double f1Score() {
+            if(predictedSetMagnitude + expectedSetMagnitude == 0) {
+                return 1;
+            } else {
+                return (2.0 * intersectionMagnitude)/(predictedSetMagnitude + expectedSetMagnitude);
+            }
         }
 
         @Override
         public String toString() {
             return "SetComparison{" +
                     "exactMatch=" + exactMatch +
-                    ", predictionSetMagnitude=" + predictionSetMagnitude +
+                    ", predictionSetMagnitude=" + predictedSetMagnitude +
                     ", expectedSetMagnitude=" + expectedSetMagnitude +
                     ", unionMagnitude=" + unionMagnitude +
                     ", intersectionMagnitude=" + intersectionMagnitude +

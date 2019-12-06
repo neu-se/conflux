@@ -129,10 +129,37 @@ public class GeneralControlFlowBench {
      * statement.
      */
     @FlowBench
-    public void testHtmlUtilEscape(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testHtmlUtilEscapeUTF8(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
         String input = "eget nullam \"&<> non nisi est ";
         input = taintWithIndices(input + input, policy);
-        String output = HtmlUtils.htmlEscape(input);
+        String output = HtmlUtils.htmlEscape(input, "UTF-8");
+        for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
+            int endOfRange = outputIndex;
+            if(output.charAt(outputIndex) == '&') {
+                while(output.charAt(endOfRange) != ';') {
+                    endOfRange++;
+                }
+            }
+            for(int i = outputIndex; i <= endOfRange; i++) {
+                if(policy.inTaintedRange(inputIndex, input.length())) {
+                    benchResult.check(Collections.singletonList(inputIndex), output.charAt(i));
+                } else {
+                    benchResult.checkEmpty(output.charAt(i));
+                }
+            }
+            outputIndex = endOfRange;
+        }
+    }
+
+    /**
+     * Escapes HTML reserved characters using org.springframework.web.util.HtmlUtils. Characters are escaped by
+     * indexing into an array of Strings.
+     */
+    @FlowBench
+    public void testHtmlUtilEscapeISO(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+        String input = "eget nullam \"&<> non nisi est ";
+        input = taintWithIndices(input + input, policy);
+        String output = HtmlUtils.htmlEscape(input, "ISO-8859-1");
         for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
             int endOfRange = outputIndex;
             if(output.charAt(outputIndex) == '&') {

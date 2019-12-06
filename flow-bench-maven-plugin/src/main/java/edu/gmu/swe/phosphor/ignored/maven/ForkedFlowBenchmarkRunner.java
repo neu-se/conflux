@@ -118,15 +118,16 @@ public class ForkedFlowBenchmarkRunner {
         try {
             validateTestSignature(test);
             if(test.getParameterCount() == 2) {
+                FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
+                long timeElapsed = 0;
                 for(TaintedPortionPolicy portion : TaintedPortionPolicy.values()) {
                     PowerSetTree.getInstance().reset();
-                    FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
                     Instant start = Instant.now();
                     test.invoke(receiver, result, portion);
                     Instant finish = Instant.now();
-                    long timeElapsed = Duration.between(start, finish).toMillis();
-                    reports.add(new FlowBenchReport(test, portion, timeElapsed, result));
+                    timeElapsed += Duration.between(start, finish).toMillis();
                 }
+                reports.add(new FlowBenchReport(test, timeElapsed, result));
             } else {
                 PowerSetTree.getInstance().reset();
                 FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();

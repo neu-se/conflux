@@ -23,6 +23,22 @@
                 <version>0.0.1-SNAPSHOT</version>
                 <executions>
                     <execution>
+                        <id>data-array-index</id>
+                        <goals>
+                            <goal>instrument</goal>
+                        </goals>
+                        <configuration>
+                            <targetBaseDir>${inst.jre.cache}</targetBaseDir>
+                            <name>data-array-index</name>
+                            <options>
+                                <forceUnboxAcmpEq/>
+                                <withEnumsByValue/>
+                                <withArrayIndexTags/>
+                                <reenableCaches/>
+                            </options>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>control</id>
                         <goals>
                             <goal>instrument</goal>
@@ -32,29 +48,11 @@
                             <name>control</name>
                             <options>
                                 <controlTrack/>
-                                <multiTaint/>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
                                 <reenableCaches/>
                                 <withoutBranchNotTaken/>
-                            </options>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>data-array-index</id>
-                        <goals>
-                            <goal>instrument</goal>
-                        </goals>
-                        <configuration>
-                            <targetBaseDir>${inst.jre.cache}</targetBaseDir>
-                            <name>data-array-index</name>
-                            <options>
-                                <multiTaint/>
-                                <forceUnboxAcmpEq/>
-                                <withEnumsByValue/>
-                                <withArrayIndexTags/>
-                                <reenableCaches/>
                             </options>
                         </configuration>
                     </execution>
@@ -68,7 +66,6 @@
                             <name>binding-control</name>
                             <options>
                                 <bindingControlTracking/>
-                                <multiTaint/>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
@@ -91,16 +88,6 @@
                             <phosphorVersion>${phosphor.version}</phosphorVersion>
                             <phosphorConfigurations>
                                 <phosphorConfiguration>
-                                    <name>control</name>
-                                    <options>
-                                        <enum/>
-                                        <acmpeq/>
-                                        <arrayindex/>
-                                        <reenableCaches/>
-                                    </options>
-                                    <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
-                                </phosphorConfiguration>
-                                <phosphorConfiguration>
                                     <name>data-array-index</name>
                                     <options>
                                         <enum/>
@@ -110,6 +97,16 @@
                                         <reenableCaches/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/data-array-index</instrumentedJVM>
+                                </phosphorConfiguration>
+                                <phosphorConfiguration>
+                                    <name>control</name>
+                                    <options>
+                                        <enum/>
+                                        <acmpeq/>
+                                        <arrayindex/>
+                                        <reenableCaches/>
+                                    </options>
+                                    <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
                                 </phosphorConfiguration>
                                 <phosphorConfiguration>
                                     <name>binding-control</name>
