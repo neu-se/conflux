@@ -129,7 +129,7 @@ public class GeneralControlFlowBench {
      * statement.
      */
     @FlowBench
-    public void testHtmlUtilEscapeUTF8(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testHtmlUtilsEscapeUTF8(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
         String input = "eget nullam \"&<> non nisi est ";
         input = taintWithIndices(input + input, policy);
         String output = HtmlUtils.htmlEscape(input, "UTF-8");
@@ -156,7 +156,7 @@ public class GeneralControlFlowBench {
      * indexing into an array of Strings.
      */
     @FlowBench
-    public void testHtmlUtilEscapeISO(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testHtmlUtilsEscapeISO(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
         String input = "eget nullam \"&<> non nisi est ";
         input = taintWithIndices(input + input, policy);
         String output = HtmlUtils.htmlEscape(input, "ISO-8859-1");

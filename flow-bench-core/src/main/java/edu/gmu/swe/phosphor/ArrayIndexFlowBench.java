@@ -12,8 +12,8 @@ import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 public class ArrayIndexFlowBench {
 
     /**
-     * Converts an array of bytes into a string of hexadecimal digits using Tomcat's HexUtils class. Translation is done
-     * by using values derived from the input as indices into an array.
+     * Converts an array of bytes into a string of hexadecimal digits using org.apache.tomcat.util.buf.HexUtils.
+     * This conversion is done by using values derived from the input as indices into an array.
      */
     @FlowBench
     public void testHexUtilsToHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
@@ -31,8 +31,8 @@ public class ArrayIndexFlowBench {
     }
 
     /**
-     * Converts a string of hexadecimal digits to an array of bytes using Tomcat's HexUtils class. Translation is done
-     * by using values derived from the input as indices into an array.
+     * Converts a string of hexadecimal digits to an array of bytes using org.apache.tomcat.util.buf.HexUtils.
+     * This conversion is done by using values derived from the input as indices into an array.
      */
     @FlowBench
     public void testHexUtilsFromHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {

@@ -23,7 +23,7 @@ import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 public class CacheFlowBench {
 
     /**
-     * Compiles OGNL expressions using com.opensymphony.xwork2.ognl.OgnlUtil which caches OGNL expressions.
+     * Compiles OGNL expressions using com.opensymphony.xwork2.ognl.OgnlUtil instances which cache OGNL expressions.
      */
     @FlowBench
     public void testOgnlExpressionCache(MultiLabelFlowBenchResult benchResult) throws OgnlException {
@@ -32,28 +32,28 @@ public class CacheFlowBench {
         // Tainted value put into cache first
         OgnlUtil ognl1 = new OgnlUtil();
         ognl1.setEnableExpressionCache("true");
-        ASTConst taintedCompiledConst1 = (ASTConst)((ASTProperty) ognl1.compile(taintedExpression)).jjtGetChild(0);
+        ASTConst taintedCompiledConst1 = (ASTConst) ((ASTProperty) ognl1.compile(taintedExpression)).jjtGetChild(0);
         benchResult.check(IntStream.range(0, expression.length()).boxed().collect(Collectors.toList()), taintedCompiledConst1.getValue());
-        ASTConst compiledConst1 = (ASTConst)((ASTProperty) ognl1.compile(expression)).jjtGetChild(0);
+        ASTConst compiledConst1 = (ASTConst) ((ASTProperty) ognl1.compile(expression)).jjtGetChild(0);
         benchResult.checkEmpty(compiledConst1.getValue());
         // Non-tainted value put into cache first
         OgnlUtil ognl2 = new OgnlUtil();
         ognl2.setEnableExpressionCache("true");
-        ASTConst compiledConst2 = (ASTConst)((ASTProperty) ognl2.compile(expression)).jjtGetChild(0);
+        ASTConst compiledConst2 = (ASTConst) ((ASTProperty) ognl2.compile(expression)).jjtGetChild(0);
         benchResult.checkEmpty(compiledConst2.getValue());
-        ASTConst taintedCompiledConst2 = (ASTConst)((ASTProperty) ognl2.compile(taintedExpression)).jjtGetChild(0);
+        ASTConst taintedCompiledConst2 = (ASTConst) ((ASTProperty) ognl2.compile(taintedExpression)).jjtGetChild(0);
         benchResult.check(IntStream.range(0, expression.length()).boxed().collect(Collectors.toList()), taintedCompiledConst2.getValue());
     }
 
     /**
-     * Gets sun.util.locale.BaseLocale instances. sun.util.locale.BaseLocale caches BaseLocale instances.
-     * sun.util.locale.BaseLocale also interns BaseLocales' fields when constructing them.
+     * Gets sun.util.locale.BaseLocale instances. The BaseLocale class caches BaseLocale instances. BaseLocale also
+     * interns BaseLocales' string fields when constructing them.
      */
     @FlowBench
     public void testBaseLocaleCache(MultiLabelFlowBenchResult benchResult) {
         // Tainted value put into cache first
         String lang1 = "zzzzzzzz";
-        BaseLocale taintedZLocale = BaseLocale.getInstance(taintWithIndices(lang1),"ZZ", "", "");
+        BaseLocale taintedZLocale = BaseLocale.getInstance(taintWithIndices(lang1), "ZZ", "", "");
         benchResult.check(IntStream.range(0, lang1.length()).boxed().collect(Collectors.toList()), taintedZLocale.getLanguage());
         BaseLocale zLocale = BaseLocale.getInstance(lang1, "ZZ", "", "");
         benchResult.checkEmpty(zLocale.getLanguage());
@@ -85,7 +85,7 @@ public class CacheFlowBench {
     }
 
     /**
-     * Gets Buffers from org.mortbay.io.BufferCache instances which caches Buffer instances.
+     * Gets Buffers from org.mortbay.io.BufferCache instances which cache Buffer instances.
      */
     @FlowBench
     public void testBufferCache(MultiLabelFlowBenchResult benchResult) {

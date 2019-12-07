@@ -107,7 +107,7 @@ public class CompressionFlowBench {
     }
 
     /**
-     * Checks one-way compression using Apache Commons' bzip2 compressor
+     * Checks one-way compression using Apache Commons' bzip2 compressor.
      */
     @FlowBench
     public void testBZip2Compress(MultiLabelFlowBenchResult benchResult) throws Exception {
@@ -115,7 +115,7 @@ public class CompressionFlowBench {
     }
 
     /**
-     * Checks round-trip compression using Tukaani's lzma compressor and decompressor.
+     * Checks round-trip compression using Tukaani's LZMA compressor and decompressor.
      */
     @FlowBench(requiresBitLevelPrecision = true)
     public void testLZMARoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws Exception {
@@ -123,7 +123,7 @@ public class CompressionFlowBench {
     }
 
     /**
-     * Checks one-way compression using Tukaani's lzma compressor
+     * Checks one-way compression using Tukaani's LZMA compressor.
      */
     @FlowBench
     public void testLZMACompress(MultiLabelFlowBenchResult benchResult) throws Exception {
@@ -139,7 +139,7 @@ public class CompressionFlowBench {
     }
 
     /**
-     * Checks one-way compression using Apache Commons' block LZ4 compressor
+     * Checks one-way compression using Apache Commons' block LZ4 compressor.
      */
     @FlowBench
     public void testBlockLZ4Compress(MultiLabelFlowBenchResult benchResult) throws Exception {
