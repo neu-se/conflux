@@ -366,7 +366,7 @@
     }
 }
 
-@inproceedings{Chandra:2007,
+@comment{Chandra:2007,
     author={D. {Chandra} and M. {Franz}},
     booktitle={Twenty-Third Annual Computer Security Applications Conference (ACSAC 2007)},
     title={Fine-Grained Information Flow Analysis and Enforcement in a Java Virtual Machine},
@@ -396,11 +396,18 @@
 	publisher = {Springer-Verlag},
 	address = {Berlin, Heidelberg},
 	annote = {
-		King \etal TODO
-	}
+		King \etal examine explicit and implicit flows that are reported by a security-typed language enforcing noninterference.
+		The authors used JLift, an interprocedural extension of the security-typed language Jif, to search for information leaks in Java cryptographic and authentication methods.
+		Cryptographic and authentication methods were chosen for analysis because the authors felt that these methods were likely to contain illegal implicit flows.
+        They configured JLift to identify when sensitive data like passwords and cryptographic keys was leaked to public output channels.
+        Each path reported by JLift as a violation was marked as a false positive if it was infeasible at runtime and otherwise marked as a true positive since it represented a feasible violation of noninterference.
+	    King \etal found that implicit flows caused 145 out of the 162 true positives and 725 out of the 725 false positives reported by JLift.
+        Additionally, 706 out of the 757 exception-induced flows due to unchecked exceptions were false alarms that could not occur at runtime.
+        The authors conclude that JLift's conservative handling of unchecked exception was a significant source of false positive and that the tool could heavily benefit from using a more sophisticated analysis for determining whether a runtime exception can occur.
+    }
 }
 
-@article{Toro:2018:TGS:3292525.3229061,
+@comment{Toro:2018:TGS:3292525.3229061,
     author = {Toro, Mat\'{i}as and Garcia, Ronald and Tanter, \'{E}ric},
     title = {Type-Driven Gradual Security with References},
     journal = {ACM Trans. Program. Lang. Syst.},
