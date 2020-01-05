@@ -6,100 +6,83 @@ import edu.columbia.cs.psl.phosphor.struct.TaintedPrimitiveWithObjTag;
 
 import java.util.*;
 
+@SuppressWarnings({"unused", "unchecked", "rawtypes"})
 public abstract class FlowBenchResult {
 
     public abstract String getBenchmarkTypeDesc();
 
     public abstract void check(Set<?> expected, Set<?> predicted);
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Object actualData) {
-        check(expected, actualData);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, Object actualData, Taint actualDataTag) {
+        check(expected, Taint.combineTags(actualDataTag, getTaint(actualData)));
     }
 
-    @SuppressWarnings("unused")
-    public void checkEmpty$$PHOSPHORTAGGED(Object actualData) {
-        checkEmpty(actualData);
+    public void checkEmpty$$PHOSPHORTAGGED(Taint thisTag, Object actualData, Taint actualDataTag) {
+        checkEmpty(Taint.combineTags(actualDataTag, getTaint(actualData)));
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, boolean actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, byte actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, char actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, double actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, float actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, int actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, long actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
     public void check(Collection<?> expected, short actualData) {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, boolean  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, boolean actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, byte  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, byte actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, char  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, char actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, double  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, double actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, float  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, float actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, int  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, int actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, long  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, long actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
-    @SuppressWarnings("unused")
-    public void check$$PHOSPHORTAGGED(Collection<?> expected, Taint tag, short  actualData) {
-        check(expected, tag);
+    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, short actualData, Taint actualDataTag) {
+        check(expected, actualDataTag);
     }
 
     public void check(Collection<?> expected, Object actualData) {
@@ -125,13 +108,7 @@ public abstract class FlowBenchResult {
         } else if(actualData instanceof TaintedPrimitiveWithObjTag) {
             return ((TaintedPrimitiveWithObjTag) actualData).taint;
         } if(actualData instanceof String) {
-            Taint charsTaint = Taint.combineTaintArray(MultiTainter.getStringCharTaints((String) actualData));
-            if(charsTaint == null) {
-                return MultiTainter.getTaint(actualData);
-            } else {
-                charsTaint.addDependency(MultiTainter.getTaint(actualData));
-                return charsTaint;
-            }
+            return Taint.combineTaintArray(MultiTainter.getStringCharTaints((String) actualData));
         } else {
             return MultiTainter.getMergedTaint(actualData);
         }

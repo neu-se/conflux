@@ -1,6 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.runtime;
 
-import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 
 import java.util.Collection;

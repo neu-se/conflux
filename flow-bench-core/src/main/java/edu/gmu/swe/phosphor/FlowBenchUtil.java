@@ -96,7 +96,7 @@ public class FlowBenchUtil {
 
     public static <T> T[] taintWithIndices(T[] input, int start, int len) {
         for(int i = start; i < len; i++) {
-            MultiTainter.taintedObject(input[i], new Taint<>(i));
+            MultiTainter.taintedReference(input[i], Taint.withLabel(i));
         }
         return input;
     }

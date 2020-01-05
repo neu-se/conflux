@@ -207,7 +207,6 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
 		Configuration.IMPLICIT_LIGHT_TRACKING = "true".equals(options.getProperty("lightControlTrack"));
 		Configuration.IMPLICIT_EXCEPTION_FLOW = "true".equals(options.getProperty("controlTrackExceptions"));
 		Configuration.DATAFLOW_TRACKING = !"true".equals(options.getProperty("withoutDataTrack"));
-		Configuration.ARRAY_LENGTH_TRACKING = "true".equals(options.getProperty("withArrayLengthTags"));
 		Configuration.WITHOUT_FIELD_HIDING = "true".equals(options.getProperty("withoutFieldHiding"));
 		Configuration.WITHOUT_PROPAGATION = "true".equals(options.getProperty("withoutPropAgation"));
 		Configuration.WITH_ENUM_BY_VAL = "true".equals(options.getProperty("withEnumsByValue"));
