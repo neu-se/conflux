@@ -11,7 +11,7 @@ public enum TaintedPortionPolicy {
 
     private final String desc;
 
-    private TaintedPortionPolicy(String desc) {
+    TaintedPortionPolicy(String desc) {
         this.desc = desc;
     }
 

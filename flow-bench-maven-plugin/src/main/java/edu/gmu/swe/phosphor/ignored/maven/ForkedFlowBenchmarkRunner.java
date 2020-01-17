@@ -2,7 +2,10 @@ package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.columbia.cs.psl.phosphor.struct.PowerSetTree;
-import edu.gmu.swe.phosphor.*;
+import edu.gmu.swe.phosphor.FlowBench;
+import edu.gmu.swe.phosphor.FlowBenchReportComparator;
+import edu.gmu.swe.phosphor.IdentityFilter;
+import edu.gmu.swe.phosphor.TaintedPortionPolicy;
 import edu.gmu.swe.phosphor.ignored.runtime.BinaryFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.ErrorFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
@@ -22,6 +25,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ForkedFlowBenchmarkRunner {
+
+    private ForkedFlowBenchmarkRunner() {
+
+    }
 
     public static void main(String[] args) {
         File benchmarkOutputDir = new File(args[0]);
@@ -60,7 +67,7 @@ public class ForkedFlowBenchmarkRunner {
                         }
                     }
                 }
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch(InstantiationException | IllegalAccessException e) {
                 Throwable t = new Exception("Benchmark class should have exactly one public zero-argument constructor");
                 long timeElapsed = Duration.between(start, Instant.now()).toMillis();
                 errorMessages.add(getErrorMessages("initializationError", benchClass.getName(),

@@ -107,7 +107,8 @@ public abstract class FlowBenchResult {
             return (Taint) actualData;
         } else if(actualData instanceof TaintedPrimitiveWithObjTag) {
             return ((TaintedPrimitiveWithObjTag) actualData).taint;
-        } if(actualData instanceof String) {
+        }
+        if(actualData instanceof String) {
             return Taint.combineTaintArray(MultiTainter.getStringCharTaints((String) actualData));
         } else {
             return MultiTainter.getMergedTaint(actualData);

@@ -9,7 +9,7 @@
         <groupId>edu.gmu.swe.phosphor</groupId>
         <artifactId>flow-bench-parent</artifactId>
         <relativePath>../</relativePath>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <properties>
         <inst.jre.cache>${project.basedir}/inst-jre-cache</inst.jre.cache>
@@ -20,7 +20,7 @@
             <plugin>
                 <groupId>edu.gmu.swe.phosphor</groupId>
                 <artifactId>phosphor-instrument-maven-plugin</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>1.0.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <id>data-array-index</id>
@@ -35,6 +35,7 @@
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
                                 <reenableCaches/>
+                                <quiet/>
                             </options>
                         </configuration>
                     </execution>
@@ -53,6 +54,7 @@
                                 <withArrayIndexTags/>
                                 <reenableCaches/>
                                 <withoutBranchNotTaken/>
+                                <quiet/>
                             </options>
                         </configuration>
                     </execution>
@@ -65,11 +67,12 @@
                             <targetBaseDir>${inst.jre.cache}</targetBaseDir>
                             <name>binding-control</name>
                             <options>
-                                <bindingControlTracking/>
+                                <controlFlowManager>edu.columbia.cs.psl.phosphor.control.binding.BindingControlFlowManager</controlFlowManager>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
                                 <reenableCaches/>
+                                <quiet/>
                             </options>
                         </configuration>
                     </execution>
@@ -78,7 +81,7 @@
             <plugin>
                 <groupId>edu.gmu.swe.phosphor</groupId>
                 <artifactId>flow-bench-maven-plugin</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>1.0.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
@@ -90,10 +93,11 @@
                                 <phosphorConfiguration>
                                     <name>data-array-index</name>
                                     <options>
-                                        <enum/>
-                                        <acmpeq/>
+                                        <quiet/>
                                         <objmethods/>
-                                        <arrayindex/>
+                                        <forceUnboxAcmpEq/>
+                                        <withEnumsByValue/>
+                                        <withArrayIndexTags/>
                                         <reenableCaches/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/data-array-index</instrumentedJVM>
@@ -101,17 +105,21 @@
                                 <phosphorConfiguration>
                                     <name>control</name>
                                     <options>
-                                        <enum/>
-                                        <acmpeq/>
-                                        <arrayindex/>
+                                        <quiet/>
+                                        <controlTrack/>
+                                        <forceUnboxAcmpEq/>
+                                        <withEnumsByValue/>
+                                        <withArrayIndexTags/>
                                         <reenableCaches/>
+                                        <withoutBranchNotTaken/>
                                     </options>
                                     <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
                                 </phosphorConfiguration>
                                 <phosphorConfiguration>
                                     <name>binding-control</name>
                                     <options>
-                                        <bindingControlTracking/>
+                                        <quiet/>
+                                        <controlFlowManager>edu.columbia.cs.psl.phosphor.control.binding.BindingControlFlowManager</controlFlowManager>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>

@@ -5,6 +5,10 @@ import edu.columbia.cs.psl.phosphor.runtime.Taint;
 
 public class FlowBenchUtil {
 
+    private FlowBenchUtil() {
+
+    }
+
     public static String taintWithIndices(String input, TaintedPortionPolicy policy) {
         return taintWithIndices(input, policy.getTaintedRangeStart(input.length()), policy.getTaintedRangeEnd(input.length()));
     }
@@ -45,7 +49,7 @@ public class FlowBenchUtil {
     public static short[] taintWithIndices(short[] input, TaintedPortionPolicy policy) {
         return taintWithIndices(input, policy.getTaintedRangeStart(input.length), policy.getTaintedRangeEnd(input.length));
     }
-    
+
     public static String taintWithIndices(String input) {
         return taintWithIndices(input, 0, input.length());
     }

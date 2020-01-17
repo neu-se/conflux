@@ -26,7 +26,7 @@ public class FlowBenchReport {
     }
 
     public FlowBenchReport(Method benchMethod, TaintedPortionPolicy portion, long timeElapsed, FlowBenchResult result) {
-        this(benchMethod.getDeclaringClass().getName(), benchMethod.getName() + "-" +  portion.getDesc(), timeElapsed, result);
+        this(benchMethod.getDeclaringClass().getName(), benchMethod.getName() + "-" + portion.getDesc(), timeElapsed, result);
     }
 
     public FlowBenchReport(Method benchMethod, long timeElapsed, FlowBenchResult result) {
@@ -80,7 +80,7 @@ public class FlowBenchReport {
             PrintWriter out = new PrintWriter(reportFile);
             out.println(json);
             out.close();
-        } catch (FileNotFoundException e) {
+        } catch(FileNotFoundException e) {
             System.out.println("Failed to write benchmark report to: " + reportFile);
             e.printStackTrace();
         }
@@ -95,7 +95,8 @@ public class FlowBenchReport {
                 .create();
         JsonReader reader = new JsonReader(new FileReader(reportFile));
         reader.setLenient(true);
-        Type listOfFlowBenchReport = new TypeToken<List<FlowBenchReport>>(){}.getType();
+        Type listOfFlowBenchReport = new TypeToken<List<FlowBenchReport>>() {
+        }.getType();
         List<FlowBenchReport> reports = gson.fromJson(reader, listOfFlowBenchReport);
         reader.close();
         return reports;
@@ -120,7 +121,7 @@ public class FlowBenchReport {
             try {
                 Class<?> clz = Class.forName(className);
                 return context.deserialize(json, clz);
-            } catch (ClassNotFoundException e) {
+            } catch(ClassNotFoundException e) {
                 throw new JsonParseException(e);
             }
         }

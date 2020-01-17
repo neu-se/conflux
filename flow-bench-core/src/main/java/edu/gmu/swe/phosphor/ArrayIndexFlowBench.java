@@ -38,11 +38,11 @@ public class ArrayIndexFlowBench {
     public void testHexUtilsFromHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
         String input = taintWithIndices("7e4ab1207e4ab120", policy);
         byte[] output = HexUtils.fromHexString(input);
-        for(int i = 0; i < input.length(); i+=2) {
+        for(int i = 0; i < input.length(); i += 2) {
             if(policy.inTaintedRange(i, input.length())) {
-                benchResult.check(Arrays.asList(i, i+1), output[i/2]);
+                benchResult.check(Arrays.asList(i, i + 1), output[i / 2]);
             } else {
-                benchResult.checkEmpty(output[i/2]);
+                benchResult.checkEmpty(output[i / 2]);
             }
         }
     }
@@ -74,9 +74,9 @@ public class ArrayIndexFlowBench {
         String value = "Lorem ipsum dolor sit amett"; // Note: length of value is divisible by 3
         byte[] input = taintWithIndices((value + value).getBytes(), policy);
         byte[] output = Base64.getEncoder().encode(input);
-        for(int inputIndex = 0; inputIndex < input.length; inputIndex+=3) {
+        for(int inputIndex = 0; inputIndex < input.length; inputIndex += 3) {
             byte[] outputGroup = new byte[4];
-            System.arraycopy(output, inputIndex/3 * 4, outputGroup, 0, outputGroup.length);
+            System.arraycopy(output, inputIndex / 3 * 4, outputGroup, 0, outputGroup.length);
             if(policy.inTaintedRange(inputIndex, input.length)) {
                 benchResult.check(Arrays.asList(inputIndex, inputIndex + 1, inputIndex + 2), outputGroup);
             } else {
@@ -94,9 +94,9 @@ public class ArrayIndexFlowBench {
         String value = "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXR0";
         byte[] input = taintWithIndices((value + value).getBytes(), policy);
         byte[] output = Base64.getDecoder().decode(input);
-        for(int inputIndex = 0; inputIndex < input.length; inputIndex+=4) {
+        for(int inputIndex = 0; inputIndex < input.length; inputIndex += 4) {
             byte[] outputGroup = new byte[3];
-            System.arraycopy(output, inputIndex/4 * 3, outputGroup, 0, outputGroup.length);
+            System.arraycopy(output, inputIndex / 4 * 3, outputGroup, 0, outputGroup.length);
             if(policy.inTaintedRange(inputIndex, input.length)) {
                 benchResult.check(Arrays.asList(inputIndex, inputIndex + 1, inputIndex + 2, inputIndex + 3), outputGroup);
             } else {
