@@ -106,7 +106,6 @@
                                     <name>control</name>
                                     <options>
                                         <quiet/>
-                                        <controlTrack/>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
@@ -138,12 +137,12 @@
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>phosphor-instrument-maven-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>flow-bench-maven-plugin</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>

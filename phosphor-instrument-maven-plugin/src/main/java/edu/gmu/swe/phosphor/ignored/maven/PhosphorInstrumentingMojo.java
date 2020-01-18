@@ -17,7 +17,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
 
@@ -33,10 +36,15 @@ import java.util.Set;
 public class PhosphorInstrumentingMojo extends AbstractMojo {
 
     /**
-     * Constant name of phosphor-properties files used to store information about the configuration options that were
-     * used by Phosphor when instrumenting a JVM.
+     * Constant name of the file used to store information about the configuration options that were used by Phosphor
+     * when instrumenting a JVM.
      */
     public static final String PROPERTIES_FILE_NAME = "phosphor-properties";
+
+    /**
+     * Constant name of the file used to store the checksum of the Phosphor jar used to instrument a JVM.
+     */
+    public static final String CHECKSUM_FILE_NAME = "phosphor-checksum.md5sum";
 
     /**
      * Path to a directory in which the target location for the instrumented JVM should be placed.
@@ -62,6 +70,23 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
     @Parameter(property = "baseJVMDir", readonly = true)
     private String baseJVMDir;
 
+    @Parameter(property = "invalidateBasedOnChecksum", readonly = true, defaultValue = "true")
+    private boolean invalidateBasedOnChecksum;
+
+    /**
+     * MD5 MessageDigest instance used for generating checksums.
+     */
+    private MessageDigest md5Inst;
+
+    public PhosphorInstrumentingMojo() {
+        try {
+            md5Inst = MessageDigest.getInstance("MD5");
+        } catch(Exception e) {
+            System.err.println("Failed to create MD5 MessageDigest.");
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Creates a Phosphor-instrumented JVM at a target location
      *
@@ -72,41 +97,69 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
         Properties canonicalOptions = canonicalizeProperties(options, false);
         File jvmDir = getJVMDir();
         File instJVMDir = new File(targetBaseDir, name);
-        if(!checkForExistingInstrumentedJVM(instJVMDir, canonicalOptions)) {
+        byte[] checksum;
+        try {
+            checksum = generateChecksumForPhosphorJar();
+        } catch(IOException e) {
+            throw new MojoFailureException("Failed to generate checksum for Phosphor jar");
+        }
+        if(!checkForExistingInstrumentedJVM(instJVMDir, canonicalOptions, checksum)) {
             getLog().info(String.format("Generating Phosphor-instrumented JVM %s with options: %s", instJVMDir, canonicalOptions));
             try {
-                generateInstrumentedJVM(jvmDir, instJVMDir, canonicalOptions);
+                generateInstrumentedJVM(jvmDir, instJVMDir, canonicalOptions, checksum);
             } catch(IOException e) {
                 throw new MojoFailureException("Failed to create instrumented JVM", e);
             }
         } else {
             getLog().info(String.format("No generation necessary: existing Phosphor-instrumented JVM %s with correct " +
-                    "properties(%s) found", instJVMDir, canonicalOptions));
+                    "properties(%s) and checksum found", instJVMDir, canonicalOptions));
         }
     }
 
     /**
      * Checks whether the specified file is a directory containing a phosphor-properties file whose properties match
-     * the specified desired properties.
+     * the specified desired properties and a phosphor-checksum file whose bytes match the specified checksum
+     * (if invalidating invalidateBasedOnChecksum is true).
      *
      * @param instJVMDir        path to be checked for an existing instrumented JVM
      * @param desiredProperties the properties that the existing instrumented JVM must have
+     * @param checksum          the checksum that existing instrumented JVM must have associated with it
      * @return true if instJVMDir is a directory that contains a phosphor-properties file that matches desiredProperties
+     * and a phosphor-checksum file whose bytes match the specified checksum (if invalidating
+     * invalidateBasedOnChecksum is true).
      */
-    private boolean checkForExistingInstrumentedJVM(File instJVMDir, Properties desiredProperties) {
+    private boolean checkForExistingInstrumentedJVM(File instJVMDir, Properties desiredProperties, byte[] checksum) {
         if(instJVMDir.isDirectory()) {
             File propFile = new File(instJVMDir, PROPERTIES_FILE_NAME);
             if(propFile.isFile()) {
                 try {
                     Properties existingProperties = new Properties();
                     existingProperties.load(new FileReader(propFile));
-                    return desiredProperties.equals(existingProperties);
+                    if(!desiredProperties.equals(existingProperties)) {
+                        return false;
+                    }
                 } catch(IllegalArgumentException | IOException e) {
+                    return false;
+                }
+            }
+            if(invalidateBasedOnChecksum) {
+                try {
+                    byte[] existingChecksum = Files.readAllBytes(new File(instJVMDir, CHECKSUM_FILE_NAME).toPath());
+                    return Arrays.equals(checksum, existingChecksum);
+                } catch(IOException e) {
                     return false;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * @return the checksum of the jar file for Phosphor
+     */
+    private byte[] generateChecksumForPhosphorJar() throws IOException {
+        byte[] jarBytes = Files.readAllBytes(getPhosphorJarFile().toPath());
+        return md5Inst.digest(jarBytes);
     }
 
     /**
@@ -219,9 +272,10 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
      * @param jvmDir     the source directory where the JDK or JRE is installed
      * @param instJVMDir the target directory where the Phosphor-instrumented JVM should be created
      * @param properties canonicalized properties that specify the Phosphor configuration options that should be used
+     * @param checksum   the checksum of the Phosphor jar that will be used to instrument the JVM
      * @throws IOException if an I/O error occurs
      */
-    private static void generateInstrumentedJVM(File jvmDir, File instJVMDir, Properties properties) throws IOException {
+    private static void generateInstrumentedJVM(File jvmDir, File instJVMDir, Properties properties, byte[] checksum) throws IOException {
         if(instJVMDir.exists()) {
             // Delete existing directory or file if necessary
             Files.walkFileTree(instJVMDir.toPath(), new DeletingFileVisitor());
@@ -236,12 +290,26 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
         // Add phosphor-properties file to directory
         File propsFile = new File(instJVMDir, PROPERTIES_FILE_NAME);
         properties.store(new FileWriter(propsFile), null);
+        // Add phosphor-checksum file to directory
+        File checksumFile = new File(instJVMDir, CHECKSUM_FILE_NAME);
+        Files.write(checksumFile.toPath(), checksum);
         // Set execute permissions
         Files.walkFileTree(new File(instJVMDir, "bin").toPath(), new ExecutePermissionAssigningFileVisitor());
         Files.walkFileTree(new File(instJVMDir, "lib").toPath(), new ExecutePermissionAssigningFileVisitor());
         if(new File(instJVMDir, "jre").exists()) {
             Files.walkFileTree(new File(instJVMDir, "jre" + File.separator + "bin").toPath(), new ExecutePermissionAssigningFileVisitor());
             Files.walkFileTree(new File(instJVMDir, "jre" + File.separator + "lib").toPath(), new ExecutePermissionAssigningFileVisitor());
+        }
+    }
+
+    /**
+     * @return a File object pointing to the jar file for Phosphor
+     */
+    private static File getPhosphorJarFile() {
+        try {
+            return new File(Instrumenter.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        } catch(URISyntaxException e) {
+            throw new AssertionError();
         }
     }
 }

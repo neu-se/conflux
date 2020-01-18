@@ -61,10 +61,6 @@
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
-                    <excludes>
-                        **/java/lang/**/*.java,**/java/util/**/*.java,**/sun/misc/**/*.java,
-                        **/struct/harmony/**/*.java, **/org/objectweb/asm/**/*.java
-                    </excludes>
                 </configuration>
                 <dependencies>
                     <dependency>

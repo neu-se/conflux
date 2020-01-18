@@ -36,7 +36,7 @@ import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentingMojo.PROPE
 public class FlowBenchmarkMojo extends AbstractMojo {
 
     /**
-     * Name of the option used by Phosphor to specify a cache directory for instrumented files
+     * Option name used by Phosphor to specify a cache directory for instrumented files
      */
     private static final String phosphorCacheDirectoryOptionName = PhosphorOption.CACHE_DIR.createOption().getOpt();
 
