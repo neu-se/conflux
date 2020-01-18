@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>phosphor-instrument-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <description>Phosphor-instrumented JVM Creating Maven Plugin</description>
+    <description>A Maven Plugin for Creating Phosphor-instrumented JVMs</description>
     <parent>
         <groupId>edu.gmu.swe.phosphor</groupId>
         <artifactId>flow-bench-parent</artifactId>

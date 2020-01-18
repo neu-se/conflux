@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor;
 
-import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tomcat.util.buf.CharChunk;
 import org.apache.tomcat.util.buf.UDecoder;
@@ -23,7 +23,7 @@ public class GeneralControlFlowBench {
      * flow between escaped entities and the unescaped values produced from them.
      */
     @FlowBench
-    public void testParserUnescapeEntities(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testParserUnescapeEntities(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String input = "eget nullam &quot;&amp;&lt;&gt; non nisi est ";
         input = taintWithIndices(input + input, policy);
         String output = Parser.unescapeEntities(input, true);
@@ -49,7 +49,7 @@ public class GeneralControlFlowBench {
      * There is a control flow, but not a data flow between decoded spaces and the plus signs they were decoded from.
      */
     @FlowBench
-    public void testUDecoderDecode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws IOException {
+    public void testUDecoderDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws IOException {
         String value = "purus+faucibus+ornare+suspendisse+%3b%3a%40%26%3d%2b%2f%3f%23%5b%5d";
         value += value;
         char[] input = taintWithIndices(value.toCharArray(), policy);
@@ -78,7 +78,7 @@ public class GeneralControlFlowBench {
      * not a data flow between the percent sign of percent encoded characters and the original, reserved character that is encoded.
      */
     @FlowBench
-    public void testUEncoderEncode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) throws IOException {
+    public void testUEncoderEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws IOException {
         String input = "purus faucibus ornare suspendisse ;:@&=+/?#[]";
         input = taintWithIndices(input + input, policy);
         UEncoder encoder = new UEncoder(UEncoder.SafeCharsSet.DEFAULT);
@@ -101,7 +101,7 @@ public class GeneralControlFlowBench {
      * not a data flow between reserved characters and the escaped values produced from them.
      */
     @FlowBench
-    public void testEscapeHtml4(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testEscapeHtml4(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String input = "eget nullam \"&<> non nisi est ";
         input = taintWithIndices(input + input, policy);
         String output = StringEscapeUtils.escapeHtml4(input);
@@ -129,7 +129,7 @@ public class GeneralControlFlowBench {
      * statement.
      */
     @FlowBench
-    public void testHtmlUtilsEscapeUTF8(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testHtmlUtilsEscapeUTF8(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String input = "eget nullam \"&<> non nisi est ";
         input = taintWithIndices(input + input, policy);
         String output = HtmlUtils.htmlEscape(input, "UTF-8");
@@ -156,7 +156,7 @@ public class GeneralControlFlowBench {
      * indexing into an array of Strings.
      */
     @FlowBench
-    public void testHtmlUtilsEscapeISO(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testHtmlUtilsEscapeISO(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String input = "eget nullam \"&<> non nisi est ";
         input = taintWithIndices(input + input, policy);
         String output = HtmlUtils.htmlEscape(input, "ISO-8859-1");

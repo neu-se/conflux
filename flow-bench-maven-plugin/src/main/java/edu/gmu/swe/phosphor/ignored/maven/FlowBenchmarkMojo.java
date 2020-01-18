@@ -1,9 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.PhosphorOption;
-import edu.gmu.swe.phosphor.ignored.runtime.BinaryFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
-import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
 import edu.gmu.swe.phosphor.ignored.runtime.TableStat;
 import edu.gmu.swe.util.GroupedTable;
 import org.apache.maven.artifact.Artifact;
@@ -16,29 +15,22 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.shade.booter.org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.maven.surefire.shade.booter.org.apache.commons.lang3.tuple.Pair;
-import org.apache.maven.surefire.shade.common.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
 import java.util.*;
 
-import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentingMojo.PROPERTIES_FILE_NAME;
+import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createPhosphorAgentArgument;
+import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.getPhosphorJarFile;
 
 /**
  * Runs benchmarks with different Phosphor configurations and reports the results.
  */
-@SuppressWarnings("unused")
 @Mojo(name = "benchmark", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
 public class FlowBenchmarkMojo extends AbstractMojo {
-
-    /**
-     * Option name used by Phosphor to specify a cache directory for instrumented files
-     */
-    private static final String phosphorCacheDirectoryOptionName = PhosphorOption.CACHE_DIR.createOption().getOpt();
 
     /**
      * Name of the directory used to store results from the different configurations
@@ -46,9 +38,9 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     private static final String REPORT_DIRECTORY = "flow-benchmark-reports";
 
     /**
-     * Name of the file used to store the Phosphor arguments used for a particular cache directory
+     * Name of the file used to store the Phosphor configuration options used for a particular cache directory
      */
-    private static final String PHOSPHOR_ARGS_CACHE_FILE = "phosphor-cache-args";
+    private static final String PHOSPHOR_CACHE_PROPERTIES_FILE = "phosphor-cache-properties";
 
     /**
      * String argument used to tell "forked" JVMs to wait for a debugger
@@ -56,28 +48,20 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     private static final String DEBUG_ARG = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
 
     /**
+     * Configuration option name used by Phosphor to specify a cache directory for instrumented files
+     */
+    private static final String phosphorCacheDirectoryOptionName = PhosphorOption.CACHE_DIR.createOption().getOpt();
+
+    /**
      * True if "forked" JVMs should wait for a debugger
      */
     private static final boolean debugForks = Boolean.getBoolean("phosphor.flow.bench.debug");
-
-    /**
-     * Version of Phosphor dependency
-     */
-    @Parameter(property = "phosphorVersion", readonly = true, required = true)
-    private String phosphorVersion;
-
 
     /**
      * Maven build output directory
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File buildDir;
-
-    /**
-     * Directory of the build system's local repository
-     */
-    @Parameter(defaultValue = "${settings.localRepository}", readonly = true)
-    private File localRepository;
 
     /**
      * The project being benchmarked
@@ -110,20 +94,12 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoFailureException {
-        String phosphorJarPath = localRepository.getAbsolutePath() + "/edu/gmu/swe/phosphor/Phosphor/" +
-                phosphorVersion + "/Phosphor-" + phosphorVersion + ".jar";
-        if(!new File(phosphorJarPath).isFile()) {
-            throw new MojoFailureException("Failed to find Phosphor jar: " + phosphorJarPath);
-        } else {
-            getLog().info("Using Phosphor version: " + phosphorVersion);
-        }
         validatePhosphorConfigurations();
         try {
             File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
-            createOrCleanDirectory(reportDirectory);
-            List<File> reportFiles = runBenchmarks(reportDirectory, phosphorJarPath);
-            printResultsTable(getConfigurationNames(), deserializeReports(reportFiles), BinaryFlowBenchResult.class);
-            printResultsTable(getConfigurationNames(), deserializeReports(reportFiles), MultiLabelFlowBenchResult.class);
+            PhosphorInstrumentUtil.createOrCleanDirectory(reportDirectory);
+            List<File> reportFiles = runBenchmarks(reportDirectory);
+            printResultsTable(getConfigurationNames(), deserializeReports(reportFiles));
         } catch(InterruptedException | IOException e) {
             throw new MojoFailureException("Failed to benchmark configurations", e);
         }
@@ -162,10 +138,8 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      *
      * @param configurationNames the names of the configurations that were benchmarked
      * @param reportLists        list of reports for each configuration that was benchmarked
-     * @param resultType         type of results that should be reported
      */
-    private void printResultsTable(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists,
-                                   Class<? extends FlowBenchResult> resultType) {
+    private void printResultsTable(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists) {
         TreeMap<Pair<String, String>, Map<String, FlowBenchReport>> tests = new TreeMap<>();
         Iterator<? extends List<FlowBenchReport>> reportsIt = reportLists.iterator();
         String benchmarkTypeDesc = null;
@@ -173,7 +147,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             List<FlowBenchReport> reports = reportsIt.next();
             for(FlowBenchReport report : reports) {
                 Pair<String, String> test = new ImmutablePair<>(report.getSimpleClassName(), report.getMethodName());
-                if(resultType.isInstance(report.getResult())) {
+                if(report.getResult() instanceof FlowBenchResultImpl) {
                     tests.putIfAbsent(test, new HashMap<>());
                     tests.get(test).put(name, report);
                     if(benchmarkTypeDesc == null) {
@@ -183,7 +157,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             }
         }
         if(!tests.isEmpty()) {
-            Map<String, Method> tableStatMethods = getTableStatMethods(resultType);
+            Map<String, Method> tableStatMethods = getTableStatMethods();
             List<String> statsPerConfig = new LinkedList<>();
             statsPerConfig.add("Time (ms)");
             statsPerConfig.addAll(tableStatMethods.keySet());
@@ -233,13 +207,12 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     /**
      * Gathers method annotated with the TableStat annotation from the specified class.
      *
-     * @param resultType class whose methods are checked
      * @return mapping from TableStat annotation names to the methods they annotate
      */
-    private Map<String, Method> getTableStatMethods(Class<? extends FlowBenchResult> resultType) {
+    private Map<String, Method> getTableStatMethods() {
         Map<String, Method> statMethods = new TreeMap<>();
-        for(Class<?> clazz = resultType; clazz != FlowBenchResult.class; clazz = clazz.getSuperclass()) {
-            for(Method method : resultType.getDeclaredMethods()) {
+        for(Class<?> clazz = FlowBenchResultImpl.class; clazz != FlowBenchResult.class; clazz = clazz.getSuperclass()) {
+            for(Method method : FlowBenchResultImpl.class.getDeclaredMethods()) {
                 if(method.isAnnotationPresent(TableStat.class)) {
                     String statName = method.getAnnotation(TableStat.class).name();
                     statMethods.put(statName, method);
@@ -250,8 +223,8 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     }
 
     /**
-     * Validates phosphorConfigurations to ensure that configurations have valid names and specified valid instrumented
-     * JVM directories. Canonicalizes the phosphorConfigurations properties.
+     * Validates phosphorConfigurations to ensure that configurations have valid names and instrumented JVM directories.
+     * Canonicalizes the phosphorConfigurations' properties.
      *
      * @throws MojoFailureException if a PhosphorConfig in phosphorConfigurations has an invalid name or instrumentedJVM
      *                              value
@@ -269,7 +242,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             if(!names.add(config.name)) {
                 throw new MojoFailureException("Phosphor configurations must unique names: " + config.name);
             }
-            config.options = PhosphorInstrumentingMojo.canonicalizeProperties(config.options, true);
+            config.options = PhosphorInstrumentUtil.canonicalizeProperties(config.options, true);
         }
     }
 
@@ -294,123 +267,56 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     }
 
     /**
-     * Converts the specified properties into an argument line for Phosphor's premain.
-     *
-     * @param properties properties to be converted
-     * @param cacheDir   value that should be used for Phosphor's cacheDir option
-     * @return string argument line that represents properties in a format that is accepted by Phosphor
-     */
-    private String createPhosphorArgLine(Properties properties, File cacheDir) {
-        StringBuilder builder = new StringBuilder().append("=").append(phosphorCacheDirectoryOptionName).append("=")
-                .append(cacheDir.getAbsolutePath());
-        Set<String> propNames = properties.stringPropertyNames();
-        for(String propName : propNames) {
-            builder.append(',').append(propName);
-            if(!"true".equals(properties.getProperty(propName))) {
-                builder.append('=').append(properties.getProperty(propName));
-            }
-        }
-        return builder.toString();
-    }
-
-    /**
-     * Ensures that the specified directory exists and is empty.
-     *
-     * @param dir the directory to be created or cleaned
-     * @throws IOException if dir could not be created or cleaned
-     */
-    private void createOrCleanDirectory(File dir) throws IOException {
-        if(dir.isDirectory()) {
-            FileUtils.cleanDirectory(dir);
-        } else {
-            if(dir.isFile()) {
-                if(!dir.delete()) {
-                    throw new IOException("Failed to delete: " + dir);
-                }
-            }
-            if(!dir.mkdirs()) {
-                throw new IOException("Failed to create directory: " + dir);
-            }
-        }
-    }
-
-    /**
      * Checked the specified directory to determine whether it was a Phosphor cache directory for a Phosphor agent that
-     * used the same arguments as the specified argument line and used an instrumented JVM with the same properties
-     * as the specified properties.
+     * used the same properties as the specified desired properties.
      *
-     * @param cacheDir                  the directory to be checked
-     * @param phosphorArgLine           the expected arguments
-     * @param instrumentedJVMProperties instrumented JVM properties that should be matched
-     * @return true if cacheDir contains a Phosphor arguments file whose contents match phosphorArgLine and a Phosphor
-     * JVM properties file whose contents match instrumentedJVMProperties
+     * @param cacheDir          the directory to be checked
+     * @param desiredProperties the properties an existing cache must have to be valid
+     * @return true if the specified directory contains a phosphor-cache-properties that contains properties matching
+     * the specified desired properties
      */
-    private boolean isExistingCacheDirectory(File cacheDir, String phosphorArgLine, Properties instrumentedJVMProperties) {
-        try {
-            if(cacheDir.isDirectory()) {
-                File argsFile = new File(cacheDir, PHOSPHOR_ARGS_CACHE_FILE);
-                File jvmPropertiesFile = new File(cacheDir, PROPERTIES_FILE_NAME);
-                if(argsFile.isFile() && jvmPropertiesFile.isFile()) {
-                    String existingArgLine = new String(Files.readAllBytes(argsFile.toPath())).trim();
+    private boolean isExistingCacheDirectory(File cacheDir, Properties desiredProperties) {
+        if(cacheDir.isDirectory()) {
+            File propFile = new File(cacheDir, PHOSPHOR_CACHE_PROPERTIES_FILE);
+            if(propFile.isFile()) {
+                try {
                     Properties existingProperties = new Properties();
-                    existingProperties.load(new FileReader(jvmPropertiesFile));
-                    return phosphorArgLine.equals(existingArgLine) && instrumentedJVMProperties.equals(existingProperties);
+                    existingProperties.load(new FileReader(propFile));
+                    if(!desiredProperties.equals(existingProperties)) {
+                        return false;
+                    }
+                } catch(IOException e) {
+                    return false;
                 }
             }
-        } catch(IOException e) {
-            // False should be returned in this situation as well
         }
         return false;
-    }
-
-    /**
-     * Returns the properties used when instrumenting the specified configuration's JVM
-     *
-     * @param config the configuration whose JVM's properties are being checked
-     * @return null if a property file cannot be found and read for config's JVM or config's JVM's properties
-     */
-    private Properties getJVMProperties(PhosphorConfig config) {
-        try {
-            File jvmPropertiesFile = new File(config.instrumentedJVM, PROPERTIES_FILE_NAME);
-            Properties jvmProperties = new Properties();
-            jvmProperties.load(new FileReader(jvmPropertiesFile));
-            return jvmProperties;
-        } catch(IOException e) {
-            return null;
-        }
     }
 
     /**
      * Runs flow benchmarks in isolated Phosphor-instrumented JVMs.
      *
      * @param reportDirectory directory to which .json benchmarks reports should be written
-     * @param phosphorJarPath path to a jar file for Phosphor
      * @return a list of the files to which benchmark results were written
      * @throws IOException          if an I/O error occurs
      * @throws InterruptedException if a thread interrupts this thread while it is waiting for a benchmark process to finish
      */
-    private List<File> runBenchmarks(File reportDirectory, String phosphorJarPath) throws IOException, InterruptedException {
+    private List<File> runBenchmarks(File reportDirectory) throws IOException, InterruptedException {
         List<File> reportFiles = new LinkedList<>();
         for(PhosphorConfig config : phosphorConfigurations) {
             File cacheDir = getCacheDir(config);
-            String phosphorArgLine = createPhosphorArgLine(config.options, cacheDir);
-            Properties jvmProperties = getJVMProperties(config);
-            if(jvmProperties == null || !isExistingCacheDirectory(cacheDir, phosphorArgLine, jvmProperties)) {
+            if(!isExistingCacheDirectory(cacheDir, config.options)) {
                 getLog().info("Creating new Phosphor cache directory: " + cacheDir);
-                createOrCleanDirectory(cacheDir);
-                if(jvmProperties != null) {
-                    // Add file to indicate the arguments and JVM properties used for the cache
-                    File argsFile = new File(cacheDir, PHOSPHOR_ARGS_CACHE_FILE);
-                    Files.write(argsFile.toPath(), phosphorArgLine.getBytes());
-                    File jvmPropertiesFile = new File(cacheDir, PROPERTIES_FILE_NAME);
-                    jvmProperties.store(new FileWriter(jvmPropertiesFile), null);
-                }
+                PhosphorInstrumentUtil.createOrCleanDirectory(cacheDir);
+                // Add phosphor-cache-properties file to directory
+                File propsFile = new File(cacheDir, PHOSPHOR_CACHE_PROPERTIES_FILE);
+                config.options.store(new FileWriter(propsFile), null);
             } else {
                 getLog().info("Using existing Phosphor cache directory: " + cacheDir);
             }
             File reportFile = new File(reportDirectory, config.name + ".json");
-            getLog().info("Running flow benchmarks for Phosphor configurations: " + config.name);
-            forkBenchmarkRunner(config.instrumentedJVM, phosphorArgLine, reportFile, phosphorJarPath);
+            getLog().info("Running flow benchmarks for Phosphor configuration: " + config.name);
+            forkBenchmarkRunner(config.instrumentedJVM, config.options, reportFile);
             reportFiles.add(reportFile);
         }
         return reportFiles;
@@ -420,21 +326,21 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      * Runs benchmarks for a particular Phosphor configuration is a separate process.
      *
      * @param instrumentedJVM directory of the instrumented JVM that should be used to run the benchmark
-     * @param phosphorArgLine argument line for the Phosphor agent
+     * @param properties      canonicalized properties that specify the Phosphor configuration options that should be used
+     *                        in the fork
      * @param reportFile      file to which created process should write its json report
-     * @param phosphorJarPath path the jat file for Phosphor
      * @throws InterruptedException if a thread interrupts this thread while it is waiting for the benchmark process to finish
      * @throws IOException          if an I/O error occurs
      */
-    private void forkBenchmarkRunner(File instrumentedJVM, String phosphorArgLine, File reportFile, String phosphorJarPath)
-            throws InterruptedException, IOException {
+    private void forkBenchmarkRunner(File instrumentedJVM, Properties properties, File reportFile) throws InterruptedException, IOException {
         String javaCommand = new File(instrumentedJVM, "bin" + File.separator + "java").getAbsolutePath();
         List<String> commands = new LinkedList<>();
         commands.add(javaCommand);
         commands.add("-cp");
         commands.add(String.join(File.pathSeparator, getClassPath()));
+        String phosphorJarPath = getPhosphorJarFile().getAbsolutePath();
         commands.add("-Xbootclasspath/p:" + phosphorJarPath);
-        commands.add("-javaagent:" + phosphorJarPath + phosphorArgLine);
+        commands.add("-javaagent:" + phosphorJarPath + createPhosphorAgentArgument(properties));
         if(debugForks) {
             commands.add(DEBUG_ARG);
         }

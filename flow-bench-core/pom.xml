@@ -14,13 +14,16 @@
     <properties>
         <inst.jre.cache>${project.basedir}/inst-jre-cache</inst.jre.cache>
         <tomcat.version>9.0.19</tomcat.version>
+        <data.array.index.cache>${project.build.directory}/data-array-index-cache</data.array.index.cache>
+        <control.cache>${project.build.directory}/control-cache</control.cache>
+        <binding.control.cache>${project.build.directory}/binding-control-cache</binding.control.cache>
     </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>edu.gmu.swe.phosphor</groupId>
                 <artifactId>phosphor-instrument-maven-plugin</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>${phosphor.instrument.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>data-array-index</id>
@@ -29,7 +32,7 @@
                         </goals>
                         <configuration>
                             <targetBaseDir>${inst.jre.cache}</targetBaseDir>
-                            <name>data-array-index</name>
+                            <targetName>data-array-index</targetName>
                             <options>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
@@ -37,6 +40,9 @@
                                 <reenableCaches/>
                                 <quiet/>
                             </options>
+                            <associatedCaches>
+                                <associatedCache>${data.array.index.cache}</associatedCache>
+                            </associatedCaches>
                         </configuration>
                     </execution>
                     <execution>
@@ -46,7 +52,7 @@
                         </goals>
                         <configuration>
                             <targetBaseDir>${inst.jre.cache}</targetBaseDir>
-                            <name>control</name>
+                            <targetName>control</targetName>
                             <options>
                                 <controlTrack/>
                                 <forceUnboxAcmpEq/>
@@ -56,6 +62,9 @@
                                 <withoutBranchNotTaken/>
                                 <quiet/>
                             </options>
+                            <associatedCaches>
+                                <associatedCache>${control.cache}</associatedCache>
+                            </associatedCaches>
                         </configuration>
                     </execution>
                     <execution>
@@ -65,7 +74,7 @@
                         </goals>
                         <configuration>
                             <targetBaseDir>${inst.jre.cache}</targetBaseDir>
-                            <name>binding-control</name>
+                            <targetName>binding-control</targetName>
                             <options>
                                 <controlFlowManager>edu.columbia.cs.psl.phosphor.control.binding.BindingControlFlowManager</controlFlowManager>
                                 <forceUnboxAcmpEq/>
@@ -74,6 +83,9 @@
                                 <reenableCaches/>
                                 <quiet/>
                             </options>
+                            <associatedCaches>
+                                <associatedCache>${binding.control.cache}</associatedCache>
+                            </associatedCaches>
                         </configuration>
                     </execution>
                 </executions>
@@ -81,18 +93,18 @@
             <plugin>
                 <groupId>edu.gmu.swe.phosphor</groupId>
                 <artifactId>flow-bench-maven-plugin</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>benchmark</goal>
                         </goals>
                         <configuration>
-                            <phosphorVersion>${phosphor.version}</phosphorVersion>
                             <phosphorConfigurations>
                                 <phosphorConfiguration>
                                     <name>data-array-index</name>
                                     <options>
+                                        <cacheDir>${data.array.index.cache}</cacheDir>
                                         <quiet/>
                                         <objmethods/>
                                         <forceUnboxAcmpEq/>
@@ -105,6 +117,7 @@
                                 <phosphorConfiguration>
                                     <name>control</name>
                                     <options>
+                                        <cacheDir>${control.cache}</cacheDir>
                                         <quiet/>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
@@ -117,6 +130,7 @@
                                 <phosphorConfiguration>
                                     <name>binding-control</name>
                                     <options>
+                                        <cacheDir>${binding.control.cache}</cacheDir>
                                         <quiet/>
                                         <controlFlowManager>edu.columbia.cs.psl.phosphor.control.binding.BindingControlFlowManager</controlFlowManager>
                                         <forceUnboxAcmpEq/>
@@ -136,13 +150,8 @@
     <dependencies>
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
-            <artifactId>phosphor-instrument-maven-plugin</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>flow-bench-maven-plugin</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>

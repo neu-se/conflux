@@ -28,6 +28,7 @@
         <phosphor.version>0.0.5-SNAPSHOT</phosphor.version>
         <maven.checkstyle.version>3.1.0</maven.checkstyle.version>
         <checkstyle.version>8.26</checkstyle.version>
+        <phosphor.instrument.plugin.version>1.0.0-SNAPSHOT</phosphor.instrument.plugin.version>
     </properties>
     <build>
         <plugins>

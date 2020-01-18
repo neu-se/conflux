@@ -5,13 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class MultiLabelFlowBenchResult extends FlowBenchResult {
+public class FlowBenchResultImpl extends FlowBenchResult {
 
     private final List<SetComparison> comparisons = new LinkedList<>();
 
     @Override
     public String getBenchmarkTypeDesc() {
-        return "Multi-label Flow Benchmark";
+        return "Flow Benchmark";
     }
 
     public List<SetComparison> getComparisons() {
@@ -88,7 +88,7 @@ public class MultiLabelFlowBenchResult extends FlowBenchResult {
 
     @Override
     public String toString() {
-        return "MultiLabelFlowBenchResult{comparisons=" + comparisons + '}';
+        return "FlowBenchResult{comparisons=" + comparisons + '}';
     }
 
     private static class SetComparison {

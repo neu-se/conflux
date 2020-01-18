@@ -1,12 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.Instrumenter;
-import edu.columbia.cs.psl.phosphor.PhosphorOption;
-import edu.columbia.cs.psl.phosphor.org.apache.commons.cli.Option;
-import edu.columbia.cs.psl.phosphor.org.apache.commons.cli.Options;
-import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -17,21 +11,25 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
-import java.util.Set;
+
+import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createPhosphorMainArguments;
+import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.generateChecksumForPhosphorJar;
 
 /**
  * Creates a Phosphor-instrumented JVM at a target location. If a directory already exists at the target location,
- * checks to see if it contains a phosphor-properties file. If it does and the phosphor-properties file's properties match
- * the desired properties for the Phosphor-instrumented JVM to be created, this directory is assumed to contain a properly
- * instrumented JVM. Otherwise, deletes any existing files or directories at the target location and creates a
- * Phosphor-instrumented JVM there.
+ * checks to see if it contains a phosphor-properties file and phosphor-checksum.md5sum file. If it does and the
+ * phosphor-properties file's properties match the desired properties for the Phosphor-instrumented JVM to be created,
+ * and the phosphor-checksum.md5sum file's checksum matches the checksum of the Phosphor JAR current loaded, this
+ * directory is assumed to contain a properly instrumented JVM. Otherwise, deletes any existing files or directories at
+ * the target location and creates a new Phosphor-instrumented JVM there.
+ * <p>
+ * If a new Phosphor-instrumented JVM is generated, deletes any directories listed as being used to cache files
+ * dynamically instrumented by Phosphor when using the previous Phosphor-instrumented JVM.
  */
-@SuppressWarnings("unused")
 @Mojo(name = "instrument", defaultPhase = LifecyclePhase.COMPILE)
 public class PhosphorInstrumentingMojo extends AbstractMojo {
 
@@ -42,9 +40,15 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
     public static final String PROPERTIES_FILE_NAME = "phosphor-properties";
 
     /**
-     * Constant name of the file used to store the checksum of the Phosphor jar used to instrument a JVM.
+     * Constant name of the file used to store the checksum of the Phosphor JAR used to instrument a JVM.
      */
     public static final String CHECKSUM_FILE_NAME = "phosphor-checksum.md5sum";
+
+    /**
+     * Path to directory where the JDK or JRE installation to be instrumented is installed.
+     */
+    @Parameter(property = "baseJVMDir", readonly = true)
+    private String baseJVMDir;
 
     /**
      * Path to a directory in which the target location for the instrumented JVM should be placed.
@@ -53,62 +57,60 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
     private File targetBaseDir;
 
     /**
+     * Name of the target location directory for the instrumented JVM.
+     */
+    @Parameter(property = "instrumentedJVMName", readonly = true, required = true)
+    private String targetName;
+
+    /**
      * Phosphor configuration options that should be set while instrumenting the JVM.
      */
     @Parameter(property = "options", readonly = true, required = true)
     private Properties options;
 
     /**
-     * Name of the target location directory for the instrumented JVM.
+     * True if an existing instrumented JVM should be invalidated and rebuilt if it was instrumented with a Phosphor
+     * JAR file whose checksum does not match the current Phosphor JAR file's checksum
      */
-    @Parameter(property = "name", readonly = true, required = true)
-    private String name;
-
-    /**
-     * Path to directory where the JDK or JRE installation to be instrumented is installed.
-     */
-    @Parameter(property = "baseJVMDir", readonly = true)
-    private String baseJVMDir;
-
     @Parameter(property = "invalidateBasedOnChecksum", readonly = true, defaultValue = "true")
     private boolean invalidateBasedOnChecksum;
 
     /**
-     * MD5 MessageDigest instance used for generating checksums.
+     * List of paths to directories that are used to cache files dynamically instrumented by Phosphor that
+     * should be delete if a new Phosphor-instrumented JVM is generated
      */
-    private MessageDigest md5Inst;
-
-    public PhosphorInstrumentingMojo() {
-        try {
-            md5Inst = MessageDigest.getInstance("MD5");
-        } catch(Exception e) {
-            System.err.println("Failed to create MD5 MessageDigest.");
-            e.printStackTrace();
-        }
-    }
+    @Parameter(property = "associatedCaches", readonly = true)
+    private List<String> associatedCaches;
 
     /**
-     * Creates a Phosphor-instrumented JVM at a target location
+     * Creates a Phosphor-instrumented JVM at a target location if one does not already exist with the correct
+     * properties and checksum.
      *
      * @throws MojoFailureException if the Phosphor-instrumented JVM cannot be created at the target location
      */
     @Override
     public void execute() throws MojoFailureException {
-        Properties canonicalOptions = canonicalizeProperties(options, false);
-        File jvmDir = getJVMDir();
-        File instJVMDir = new File(targetBaseDir, name);
+        Properties canonicalOptions = PhosphorInstrumentUtil.canonicalizeProperties(options, false);
+        File jvmDir = getJVMDir(baseJVMDir);
+        File instJVMDir = new File(targetBaseDir, targetName);
         byte[] checksum;
         try {
             checksum = generateChecksumForPhosphorJar();
         } catch(IOException e) {
-            throw new MojoFailureException("Failed to generate checksum for Phosphor jar");
+            throw new MojoFailureException("Failed to generate checksum for Phosphor JAR");
         }
-        if(!checkForExistingInstrumentedJVM(instJVMDir, canonicalOptions, checksum)) {
+        if(!isExistingInstrumentedJVM(instJVMDir, canonicalOptions, checksum)) {
             getLog().info(String.format("Generating Phosphor-instrumented JVM %s with options: %s", instJVMDir, canonicalOptions));
             try {
                 generateInstrumentedJVM(jvmDir, instJVMDir, canonicalOptions, checksum);
             } catch(IOException e) {
                 throw new MojoFailureException("Failed to create instrumented JVM", e);
+            }
+            // Delete associated caches
+            for(String associateCache : associatedCaches) {
+                if(associateCache != null) {
+                    deleteCache(new File(associateCache));
+                }
             }
         } else {
             getLog().info(String.format("No generation necessary: existing Phosphor-instrumented JVM %s with correct " +
@@ -128,7 +130,7 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
      * and a phosphor-checksum file whose bytes match the specified checksum (if invalidating
      * invalidateBasedOnChecksum is true).
      */
-    private boolean checkForExistingInstrumentedJVM(File instJVMDir, Properties desiredProperties, byte[] checksum) {
+    private boolean isExistingInstrumentedJVM(File instJVMDir, Properties desiredProperties, byte[] checksum) {
         if(instJVMDir.isDirectory()) {
             File propFile = new File(instJVMDir, PROPERTIES_FILE_NAME);
             if(propFile.isFile()) {
@@ -138,7 +140,7 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
                     if(!desiredProperties.equals(existingProperties)) {
                         return false;
                     }
-                } catch(IllegalArgumentException | IOException e) {
+                } catch(IOException e) {
                     return false;
                 }
             }
@@ -155,11 +157,20 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
     }
 
     /**
-     * @return the checksum of the jar file for Phosphor
+     * Tries to delete the specified cache directory. Logs a warning if deletion is unsuccessful.
+     *
+     * @param cacheDir directory containing a cache files dynamically instrumented by Phosphor
      */
-    private byte[] generateChecksumForPhosphorJar() throws IOException {
-        byte[] jarBytes = Files.readAllBytes(getPhosphorJarFile().toPath());
-        return md5Inst.digest(jarBytes);
+    private void deleteCache(File cacheDir) {
+        if(cacheDir.exists()) {
+            getLog().info("Deleting associated Phosphor cache directory: " + cacheDir);
+            try {
+                Files.walkFileTree(cacheDir.toPath(), new DeletingFileVisitor());
+            } catch(IOException e) {
+                getLog().warn("Failed to delete associated Phosphor cache directory: " + cacheDir);
+                getLog().warn(e);
+            }
+        }
     }
 
     /**
@@ -170,11 +181,13 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
      * the environmental variable JAVA_HOME if it is set to a non-null, non empty string value. Otherwise no appropriate
      * path value was provided.
      *
+     * @param baseJVMDir if non-null and non-empty specified the location of the JDK or JRE installation to be
+     *                   instrumented
      * @throws MojoFailureException if an appropriate JDK or JRE installation path was not provided or the provided
      *                              path does not point to a directory
      * @ return a file representing the path to the determined JDK or JRE installation directory
      */
-    private File getJVMDir() throws MojoFailureException {
+    private static File getJVMDir(String baseJVMDir) throws MojoFailureException {
         String path;
         String source;
         if(baseJVMDir != null && baseJVMDir.length() > 0) {
@@ -199,80 +212,12 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
     }
 
     /**
-     * Creates a standardized copy of the specified properties where each Phosphor option without an argument is mapped
-     * to either true or not present in the properties, each Phosphor option with an argument is either mapped to a
-     * non-null, non-empty string or not present in properties, and no other keys are present in the properties.
-     *
-     * @param isRuntimeInst true if the options should be standardized against the options available during dynamic
-     *                      instrumentation, otherwise standardizes against the options available during static
-     *                      instrumentation
-     * @param properties    un-standardized properties to be standardized
-     * @return a standardized copy of properties
-     */
-    public static Properties canonicalizeProperties(Properties properties, boolean isRuntimeInst) {
-        Set<String> propNames = properties.stringPropertyNames();
-        Properties canonicalProps = new Properties();
-        Map<String, Option> phosphorOptionMap = createPhosphorOptionMap(isRuntimeInst);
-        for(String propName : propNames) {
-            if(phosphorOptionMap.containsKey(propName)) {
-                Option option = phosphorOptionMap.get(propName);
-                if(option.hasArg()) {
-                    if(properties.getProperty(propName) != null && properties.getProperty(propName).length() > 0) {
-                        canonicalProps.setProperty(option.getOpt(), properties.getProperty(propName));
-                    }
-                } else {
-                    if(properties.getProperty(propName).length() == 0 || "true".equals(properties.getProperty(propName).toLowerCase())) {
-                        canonicalProps.setProperty(option.getOpt(), "true");
-                    }
-                }
-            } else {
-                System.err.println("Unknown Phosphor option: " + propName);
-            }
-        }
-        return canonicalProps;
-    }
-
-    /**
-     * @param isRuntimeInst true if a map of options available during dynamic instrumentation should be returned,
-     *                      otherwise returns a map of option available during static instrumentation
-     * @return a mapping from the names of options available in Phosphor to an option instance that represents that
-     * option
-     */
-    public static Map<String, Option> createPhosphorOptionMap(boolean isRuntimeInst) {
-        Map<String, Option> phosphorOptionMap = new HashMap<>();
-        Options options = PhosphorOption.createOptions(isRuntimeInst);
-        for(Option option : options.getOptions()) {
-            phosphorOptionMap.put(option.getOpt(), option);
-            if(option.hasLongOpt()) {
-                phosphorOptionMap.put(option.getLongOpt(), option);
-            }
-        }
-        return phosphorOptionMap;
-    }
-
-    /**
-     * @param properties canonicalized properties that specify the Phosphor configuration options that should be used
-     * @return a list of option arguments to be passed to the Phosphor main method
-     */
-    private static SinglyLinkedList<String> createPhosphorOptionArguments(Properties properties) {
-        SinglyLinkedList<String> arguments = new SinglyLinkedList<>();
-        Set<String> propNames = properties.stringPropertyNames();
-        for(String propName : propNames) {
-            arguments.addLast("-" + propName);
-            if(!"true".equals(properties.getProperty(propName))) {
-                arguments.addLast(properties.getProperty(propName));
-            }
-        }
-        return arguments;
-    }
-
-    /**
      * Creates a Phosphor-instrumented JVM at the specified directory with the specified Phosphor configuration options.
      *
      * @param jvmDir     the source directory where the JDK or JRE is installed
      * @param instJVMDir the target directory where the Phosphor-instrumented JVM should be created
      * @param properties canonicalized properties that specify the Phosphor configuration options that should be used
-     * @param checksum   the checksum of the Phosphor jar that will be used to instrument the JVM
+     * @param checksum   the checksum of the Phosphor JAR that will be used to instrument the JVM
      * @throws IOException if an I/O error occurs
      */
     private static void generateInstrumentedJVM(File jvmDir, File instJVMDir, Properties properties, byte[] checksum) throws IOException {
@@ -281,12 +226,9 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
             Files.walkFileTree(instJVMDir.toPath(), new DeletingFileVisitor());
         }
         if(!instJVMDir.mkdirs()) {
-            throw new IOException("Failed to create target directory for Phosphor-instrumented files: " + instJVMDir);
+            throw new IOException("Failed to create target directory for Phosphor-instrumented JVM: " + instJVMDir);
         }
-        SinglyLinkedList<String> arguments = createPhosphorOptionArguments(properties);
-        arguments.addLast(jvmDir.getAbsolutePath());
-        arguments.addLast(instJVMDir.getAbsolutePath());
-        Instrumenter.main(arguments.toArray(new String[0]));
+        Instrumenter.main(createPhosphorMainArguments(jvmDir, instJVMDir, properties));
         // Add phosphor-properties file to directory
         File propsFile = new File(instJVMDir, PROPERTIES_FILE_NAME);
         properties.store(new FileWriter(propsFile), null);
@@ -299,17 +241,6 @@ public class PhosphorInstrumentingMojo extends AbstractMojo {
         if(new File(instJVMDir, "jre").exists()) {
             Files.walkFileTree(new File(instJVMDir, "jre" + File.separator + "bin").toPath(), new ExecutePermissionAssigningFileVisitor());
             Files.walkFileTree(new File(instJVMDir, "jre" + File.separator + "lib").toPath(), new ExecutePermissionAssigningFileVisitor());
-        }
-    }
-
-    /**
-     * @return a File object pointing to the jar file for Phosphor
-     */
-    private static File getPhosphorJarFile() {
-        try {
-            return new File(Instrumenter.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        } catch(URISyntaxException e) {
-            throw new AssertionError();
         }
     }
 }

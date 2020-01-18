@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor;
 
-import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
 import org.apache.tomcat.util.buf.HexUtils;
 
 import java.util.Arrays;
@@ -16,7 +16,7 @@ public class ArrayIndexFlowBench {
      * This conversion is done by using values derived from the input as indices into an array.
      */
     @FlowBench
-    public void testHexUtilsToHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testHexUtilsToHexString(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         byte[] input = taintWithIndices(new byte[]{126, 74, -79, 32, 126, 74, -79, 32}, policy);
         String output = HexUtils.toHexString(input);
         for(int i = 0; i < input.length; i++) {
@@ -35,7 +35,7 @@ public class ArrayIndexFlowBench {
      * This conversion is done by using values derived from the input as indices into an array.
      */
     @FlowBench
-    public void testHexUtilsFromHexString(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testHexUtilsFromHexString(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String input = taintWithIndices("7e4ab1207e4ab120", policy);
         byte[] output = HexUtils.fromHexString(input);
         for(int i = 0; i < input.length(); i += 2) {
@@ -52,7 +52,7 @@ public class ArrayIndexFlowBench {
      * the input.
      */
     @FlowBench(requiresBitLevelPrecision = true)
-    public void testBase64RoundTrip(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testBase64RoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String value = "Lorem ipsum dolor sit amett"; // Note: length of value is divisible by 3
         byte[] input = taintWithIndices((value + value).getBytes(), policy);
         byte[] output = Base64.getDecoder().decode(Base64.getEncoder().encode(input.clone()));
@@ -70,7 +70,7 @@ public class ArrayIndexFlowBench {
      * characters match the tags on the three input characters that were used to create the output group.
      */
     @FlowBench
-    public void testBase64Encode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testBase64Encode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String value = "Lorem ipsum dolor sit amett"; // Note: length of value is divisible by 3
         byte[] input = taintWithIndices((value + value).getBytes(), policy);
         byte[] output = Base64.getEncoder().encode(input);
@@ -90,7 +90,7 @@ public class ArrayIndexFlowBench {
      * characters match the tags on the four input characters that were used to create the output group.
      */
     @FlowBench
-    public void testBase64Decode(MultiLabelFlowBenchResult benchResult, TaintedPortionPolicy policy) {
+    public void testBase64Decode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
         String value = "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXR0";
         byte[] input = taintWithIndices((value + value).getBytes(), policy);
         byte[] output = Base64.getDecoder().decode(input);

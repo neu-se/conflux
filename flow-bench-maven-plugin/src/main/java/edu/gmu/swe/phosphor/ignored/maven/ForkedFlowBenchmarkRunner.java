@@ -6,10 +6,9 @@ import edu.gmu.swe.phosphor.FlowBench;
 import edu.gmu.swe.phosphor.FlowBenchReportComparator;
 import edu.gmu.swe.phosphor.IdentityFilter;
 import edu.gmu.swe.phosphor.TaintedPortionPolicy;
-import edu.gmu.swe.phosphor.ignored.runtime.BinaryFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.ErrorFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
-import edu.gmu.swe.phosphor.ignored.runtime.MultiLabelFlowBenchResult;
+import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.util.DefaultScanResult;
@@ -108,7 +107,7 @@ public class ForkedFlowBenchmarkRunner {
         boolean validParams = false;
         if(test.getParameterCount() == 1 || test.getParameterCount() == 2) {
             Class<?> firstParam = test.getParameterTypes()[0];
-            if(firstParam.equals(BinaryFlowBenchResult.class) || firstParam.equals(MultiLabelFlowBenchResult.class)) {
+            if(firstParam.equals(FlowBenchResultImpl.class)) {
                 if(test.getParameterCount() == 1 || test.getParameterTypes()[1].equals(TaintedPortionPolicy.class)) {
                     validParams = true;
                 }
@@ -116,7 +115,7 @@ public class ForkedFlowBenchmarkRunner {
         }
         if(!validParams) {
             throw new Exception("Flow benchmark test method should have one parameter of type BinaryFlowBenchResult " +
-                    "or MultiLabelFlowBenchResult and may optionally have a second  parameter of type TaintedPortionPolicy");
+                    "or FlowBenchResultImpl and may optionally have a second  parameter of type TaintedPortionPolicy");
         }
     }
 
