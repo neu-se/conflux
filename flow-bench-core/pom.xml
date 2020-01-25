@@ -16,7 +16,9 @@
         <data.array.index.cache>${project.build.directory}/data-array-index-cache</data.array.index.cache>
         <control.cache>${project.build.directory}/control-cache</control.cache>
         <binding.control.cache>${project.build.directory}/binding-control-cache</binding.control.cache>
-        <binding.control.manager>edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager</binding.control.manager>
+        <binding.control.manager>
+            edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager
+        </binding.control.manager>
     </properties>
     <profiles>
         <profile>
@@ -47,7 +49,7 @@
                                 </goals>
                                 <configuration>
                                     <targetBaseDir>${project.build.directory}</targetBaseDir>
-                                    <targetName>data-array-index</targetName>
+                                    <targetName>jvm-inst-data</targetName>
                                     <options>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
@@ -67,7 +69,7 @@
                                 </goals>
                                 <configuration>
                                     <targetBaseDir>${project.build.directory}</targetBaseDir>
-                                    <targetName>control</targetName>
+                                    <targetName>jvm-inst-control</targetName>
                                     <options>
                                         <controlTrack/>
                                         <forceUnboxAcmpEq/>
@@ -89,7 +91,7 @@
                                 </goals>
                                 <configuration>
                                     <targetBaseDir>${project.build.directory}</targetBaseDir>
-                                    <targetName>binding-control</targetName>
+                                    <targetName>jvm-inst-binding</targetName>
                                     <options>
                                         <controlFlowManager>${binding.control.manager}</controlFlowManager>
                                         <forceUnboxAcmpEq/>
@@ -130,7 +132,9 @@
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
                                             </options>
-                                            <instrumentedJVM>${project.build.directory}/data-array-index</instrumentedJVM>
+                                            <instrumentedJVM>
+                                                ${project.build.directory}/jvm-inst-data
+                                            </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
                                             <name>control</name>
@@ -143,7 +147,9 @@
                                                 <reenableCaches/>
                                                 <withoutBranchNotTaken/>
                                             </options>
-                                            <instrumentedJVM>${project.build.directory}/control</instrumentedJVM>
+                                            <instrumentedJVM>
+                                                ${project.build.directory}/jvm-inst-control
+                                            </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
                                             <name>binding-control</name>
@@ -156,7 +162,9 @@
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
                                             </options>
-                                            <instrumentedJVM>${project.build.directory}/binding-control</instrumentedJVM>
+                                            <instrumentedJVM>
+                                                ${project.build.directory}/jvm-inst-binding
+                                            </instrumentedJVM>
                                         </phosphorConfiguration>
                                     </phosphorConfigurations>
                                 </configuration>
@@ -182,7 +190,8 @@
                         <configuration>
                             <exportAntProperties>true</exportAntProperties>
                             <target>
-                                <property name="control.policies.jar" value="${maven.dependency.edu.gmu.swe.phosphor.control-flow-policies.jar.path}"/>
+                                <property name="control.policies.jar"
+                                          value="${maven.dependency.edu.gmu.swe.phosphor.control-flow-policies.jar.path}"/>
                             </target>
                         </configuration>
                     </execution>
