@@ -12,7 +12,6 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <properties>
-        <inst.jre.cache>${project.basedir}/inst-jre-cache</inst.jre.cache>
         <tomcat.version>9.0.19</tomcat.version>
         <data.array.index.cache>${project.build.directory}/data-array-index-cache</data.array.index.cache>
         <control.cache>${project.build.directory}/control-cache</control.cache>
@@ -47,7 +46,7 @@
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
-                                    <targetBaseDir>${inst.jre.cache}</targetBaseDir>
+                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
                                     <targetName>data-array-index</targetName>
                                     <options>
                                         <forceUnboxAcmpEq/>
@@ -67,7 +66,7 @@
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
-                                    <targetBaseDir>${inst.jre.cache}</targetBaseDir>
+                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
                                     <targetName>control</targetName>
                                     <options>
                                         <controlTrack/>
@@ -89,7 +88,7 @@
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
-                                    <targetBaseDir>${inst.jre.cache}</targetBaseDir>
+                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
                                     <targetName>binding-control</targetName>
                                     <options>
                                         <controlFlowManager>${binding.control.manager}</controlFlowManager>
@@ -131,7 +130,7 @@
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
                                             </options>
-                                            <instrumentedJVM>${inst.jre.cache}/data-array-index</instrumentedJVM>
+                                            <instrumentedJVM>${project.build.directory}/data-array-index</instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
                                             <name>control</name>
@@ -144,7 +143,7 @@
                                                 <reenableCaches/>
                                                 <withoutBranchNotTaken/>
                                             </options>
-                                            <instrumentedJVM>${inst.jre.cache}/control</instrumentedJVM>
+                                            <instrumentedJVM>${project.build.directory}/control</instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
                                             <name>binding-control</name>
@@ -157,7 +156,7 @@
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
                                             </options>
-                                            <instrumentedJVM>${inst.jre.cache}/binding-control</instrumentedJVM>
+                                            <instrumentedJVM>${project.build.directory}/binding-control</instrumentedJVM>
                                         </phosphorConfiguration>
                                     </phosphorConfigurations>
                                 </configuration>

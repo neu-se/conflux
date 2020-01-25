@@ -90,7 +90,6 @@
                   <associatedCaches>
                     <associatedCache>${binding.flow.cache}</associatedCache>
                   </associatedCaches>
-                  <reinstrumentBasedOnChecksum>true</reinstrumentBasedOnChecksum>
                 </configuration>
               </execution>
             </executions>
