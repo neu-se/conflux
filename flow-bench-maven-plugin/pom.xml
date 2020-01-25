@@ -96,7 +96,7 @@
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>phosphor-instrument-maven-plugin</artifactId>
-            <version>${phosphor.instrument.plugin.version}</version>
+            <version>${phosphor.version}</version>
         </dependency>
     </dependencies>
 </project>

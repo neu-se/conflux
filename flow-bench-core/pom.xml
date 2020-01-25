@@ -17,13 +17,40 @@
         <data.array.index.cache>${project.build.directory}/data-array-index-cache</data.array.index.cache>
         <control.cache>${project.build.directory}/control-cache</control.cache>
         <binding.control.cache>${project.build.directory}/binding-control-cache</binding.control.cache>
+        <binding.control.manager>edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager</binding.control.manager>
     </properties>
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <property name="control.policies.jar" value="${maven.dependency.edu.gmu.swe.phosphor.control-flow-policies.jar.path}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>edu.gmu.swe.phosphor</groupId>
                 <artifactId>phosphor-instrument-maven-plugin</artifactId>
-                <version>${phosphor.instrument.plugin.version}</version>
+                <version>${phosphor.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>edu.gmu.swe.phosphor</groupId>
+                        <artifactId>control-flow-policies</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>data-array-index</id>
@@ -76,7 +103,7 @@
                             <targetBaseDir>${inst.jre.cache}</targetBaseDir>
                             <targetName>binding-control</targetName>
                             <options>
-                                <controlFlowManager>edu.columbia.cs.psl.phosphor.control.binding.BindingControlFlowManager</controlFlowManager>
+                                <controlFlowManager>${binding.control.manager}</controlFlowManager>
                                 <forceUnboxAcmpEq/>
                                 <withEnumsByValue/>
                                 <withArrayIndexTags/>
@@ -100,6 +127,9 @@
                             <goal>benchmark</goal>
                         </goals>
                         <configuration>
+                            <bootClasspathJars>
+                                <bootClasspathJar>${control.policies.jar}</bootClasspathJar>
+                            </bootClasspathJars>
                             <phosphorConfigurations>
                                 <phosphorConfiguration>
                                     <name>data-array-index</name>
@@ -132,7 +162,7 @@
                                     <options>
                                         <cacheDir>${binding.control.cache}</cacheDir>
                                         <quiet/>
-                                        <controlFlowManager>edu.columbia.cs.psl.phosphor.control.binding.BindingControlFlowManager</controlFlowManager>
+                                        <controlFlowManager>${binding.control.manager}</controlFlowManager>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
@@ -151,6 +181,11 @@
         <dependency>
             <groupId>edu.gmu.swe.phosphor</groupId>
             <artifactId>flow-bench-maven-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.gmu.swe.phosphor</groupId>
+            <artifactId>control-flow-policies</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

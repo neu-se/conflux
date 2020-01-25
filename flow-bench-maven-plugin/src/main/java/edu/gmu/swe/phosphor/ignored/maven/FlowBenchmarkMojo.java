@@ -1,6 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.PhosphorOption;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
 import edu.gmu.swe.phosphor.ignored.runtime.TableStat;
@@ -86,6 +87,12 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      */
     @Parameter(property = "phosphorConfigurations", readonly = true, required = true)
     private List<PhosphorConfig> phosphorConfigurations;
+
+    /**
+     * List of paths to any JAR files, other than the JAR file for Phosphor, that need to be added to the bootclasspath
+     */
+    @Parameter(property = "bootClasspathJars", readonly = true)
+    private List<String> bootClasspathJars;
 
     /**
      * Runs flow benchmarks with different Phosphor configurations and reports the results to standard out.
@@ -339,7 +346,13 @@ public class FlowBenchmarkMojo extends AbstractMojo {
         commands.add("-cp");
         commands.add(String.join(File.pathSeparator, getClassPath()));
         String phosphorJarPath = getPhosphorJarFile().getAbsolutePath();
-        commands.add("-Xbootclasspath/p:" + phosphorJarPath);
+        StringBuilder bootClassPathBuilder = new StringBuilder("-Xbootclasspath/p:").append(phosphorJarPath);
+        if(bootClasspathJars != null && !bootClasspathJars.isEmpty()) {
+            for(String s : bootClasspathJars) {
+                bootClassPathBuilder.append(':').append(s);
+            }
+        }
+        commands.add(bootClassPathBuilder.toString());
         commands.add("-javaagent:" + phosphorJarPath + createPhosphorAgentArgument(properties));
         if(debugForks) {
             commands.add(DEBUG_ARG);
