@@ -1,5 +1,5 @@
 dist: trusty
 language: java
 sudo: false
-jdk: openjdk8
-script: export INST_HOME=$JAVA_HOME/jre; mvn install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+install: mvn install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests
+script: jdk_switcher use oraclejdk8; export INST_HOME=$JAVA_HOME/jre; mvn install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
