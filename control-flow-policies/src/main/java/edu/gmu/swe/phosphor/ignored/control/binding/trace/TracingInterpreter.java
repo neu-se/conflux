@@ -14,6 +14,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.DependentLoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.VariantLoopLevel;
+import edu.gmu.swe.phosphor.ignored.control.binding.OpcodesUtil;
 import edu.gmu.swe.phosphor.ignored.control.binding.asm.Analyzer;
 import edu.gmu.swe.phosphor.ignored.control.binding.trace.MergePointTracedValue.MergePointValueCache;
 
@@ -21,6 +22,8 @@ import java.util.List;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
+import static edu.gmu.swe.phosphor.ignored.control.binding.OpcodesUtil.isArrayLoad;
+import static edu.gmu.swe.phosphor.ignored.control.binding.OpcodesUtil.isArrayStore;
 
 public final class TracingInterpreter extends Interpreter<TracedValue> {
 
@@ -68,7 +71,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
     @Override
     public TracedValue newOperation(AbstractInsnNode insn) {
         TracedValue result;
-        int size = getSize(insn);
+        int size = OpcodesUtil.getSize(insn);
         switch(insn.getOpcode()) {
             case ACONST_NULL:
                 result = new ObjectConstantTracedValue(size, insn, null);
@@ -140,7 +143,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
     public TracedValue unaryOperation(AbstractInsnNode insn, TracedValue value) {
         TracedValue result = null;
         boolean finished = false;
-        int size = getSize(insn);
+        int size = OpcodesUtil.getSize(insn);
         switch(insn.getOpcode()) {
             case NEWARRAY:
             case ANEWARRAY:
@@ -254,7 +257,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
     public TracedValue binaryOperation(AbstractInsnNode insn, TracedValue value1, TracedValue value2) {
         TracedValue result = null;
         boolean finished = false;
-        int size = getSize(insn);
+        int size = OpcodesUtil.getSize(insn);
         switch(insn.getOpcode()) {
             case IALOAD:
             case LALOAD:
@@ -463,7 +466,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
 
     @Override
     public TracedValue naryOperation(AbstractInsnNode insn, List<? extends TracedValue> values) {
-        TracedValue result = new VariantTracedValueImpl(getSize(insn), insn, new HashSet<>(containingLoopMap.get(insn)));
+        TracedValue result = new VariantTracedValueImpl(OpcodesUtil.getSize(insn), insn, new HashSet<>(containingLoopMap.get(insn)));
         effectMap.put(insn, new InstructionEffect(values.toArray(new TracedValue[0]), result));
         return result;
     }
@@ -573,7 +576,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
      * instructions
      */
     private Set<TracedValue> getSources(AbstractInsnNode insn, InstructionEffect effect) {
-        if(isLocalVariableStoreInsn(insn)) {
+        if(OpcodesUtil.isLocalVariableStoreInsn(insn.getOpcode())) {
             Frame<TracedValue> currentFrame = frames[instructions.indexOf(insn)];
             int local = ((VarInsnNode) insn).var;
             TracedValue currentDefinition = currentFrame.getLocal(local);
@@ -581,7 +584,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
             DefinitionChecker checker = new LocalVariableDefinitionChecker(currentDefinition);
             gatherSources(checker, effect.sources[0], sources, new HashSet<>());
             return sources;
-        } else if(isFieldStoreInsn(insn)) {
+        } else if(OpcodesUtil.isFieldStoreInsn(insn.getOpcode())) {
             TracedValue receiver = insn.getOpcode() == PUTSTATIC ? null : effectMap.get(insn).sources[0];
             DefinitionChecker checker = new FieldDefinitionChecker((FieldInsnNode) insn, receiver, this);
             Set<TracedValue> sources = new HashSet<>();
@@ -592,7 +595,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
                 gatherSources(checker, effect.sources[1], sources, new HashSet<>(sources));
             }
             return sources;
-        } else if(isArrayStoreInsn(insn)) {
+        } else if(OpcodesUtil.isArrayStore(insn.getOpcode())) {
             DefinitionChecker checker = new ArrayDefinitionChecker((InsnNode) insn, this);
             Set<TracedValue> sources = new HashSet<>();
             sources.add(effect.sources[0]); // Add the array reference as a source
@@ -617,7 +620,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
                 && effectMap.containsKey(insn2)) {
             InstructionEffect effect1 = effectMap.get(insn1);
             InstructionEffect effect2 = effectMap.get(insn2);
-            if(isArithmeticOrLogicalInsn(insn1)) {
+            if(OpcodesUtil.isArithmeticOrLogicalInsn(insn1.getOpcode())) {
                 // Note: does not take into account commutative operations
                 for(int i = 0; i < effect1.sources.length; i++) {
                     if(!isSameValue(effect1.sources[i], effect2.sources[i])) {
@@ -627,10 +630,10 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
                 return true;
             } else if(insn1.getOpcode() == ARRAYLENGTH && interveningRedefinitionImpossible(insn1, insn2)) {
                 return isSameValue(effect1.sources[0], effect2.sources[0]);
-            } else if(isArrayLoadInsn(insn1) && interveningRedefinitionImpossible(insn1, insn2)) {
+            } else if(isArrayLoad(insn1.getOpcode()) && interveningRedefinitionImpossible(insn1, insn2)) {
                 return isSameValue(effect1.sources[0], effect2.sources[0])
                         && isSameValue(effect1.sources[1], effect2.sources[1]);
-            } else if(isFieldLoadInsn(insn1) && interveningRedefinitionImpossible(insn1, insn2)) {
+            } else if(OpcodesUtil.isFieldLoadInsn(insn1.getOpcode()) && interveningRedefinitionImpossible(insn1, insn2)) {
                 FieldInsnNode fieldInsn1 = (FieldInsnNode) insn1;
                 FieldInsnNode fieldInsn2 = (FieldInsnNode) insn2;
                 return fieldInsn1.owner.equals(fieldInsn2.owner) && fieldInsn1.name.equals(fieldInsn2.name)
@@ -645,7 +648,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
         if(visited.add(current)) {
             if(!checker.usesCurrentDefinition(current) && !sources.contains(current)) {
                 AbstractInsnNode insn = current.getInsnSource();
-                if(insn != null && isArithmeticOrLogicalInsn(insn) && effectMap.containsKey(insn)) {
+                if(insn != null && OpcodesUtil.isArithmeticOrLogicalInsn(insn.getOpcode()) && effectMap.containsKey(insn)) {
                     InstructionEffect effect = effectMap.get(insn);
                     for(TracedValue source : effect.sources) {
                         gatherSources(checker, source, sources, visited);
@@ -673,7 +676,8 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
             AbstractInsnNode target = cur == insn1 ? insn2 : insn1;
             cur = cur.getNext();
             while(cur != target) {
-                if(cur instanceof MethodInsnNode || cur instanceof InvokeDynamicInsnNode || isArrayStoreInsn(cur) || isFieldStoreInsn(cur)) {
+                if(cur instanceof MethodInsnNode || cur instanceof InvokeDynamicInsnNode || isArrayStore(cur.getOpcode())
+                        || OpcodesUtil.isFieldStoreInsn(cur.getOpcode())) {
                     return false;
                 }
                 cur = cur.getNext();
@@ -699,7 +703,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
      * @return true if the specified instruction should be marked as being at the constant loop level
      */
     private static boolean atConstantLevel(AbstractInsnNode insn, Set<TracedValue> sources) {
-        if(isPushConstantInsn(insn) || insn.getOpcode() == IINC) {
+        if(OpcodesUtil.isPushConstantOpcode(insn.getOpcode()) || insn.getOpcode() == IINC) {
             return true;
         }
         for(TracedValue source : sources) {
@@ -756,119 +760,6 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
         // Set<NaturalLoop<BasicBlock>> containingVariantLoops = new HashSet<>(containingLoopMap.get(insn));
         // containingVariantLoops.retainAll(variantLoops);
         return new VariantLoopLevel(variantLoops.size());
-    }
-
-    /**
-     * @param insn the instruction being checked
-     * @return true if the specified instruction stores a value into a field
-     */
-    public static boolean isFieldStoreInsn(AbstractInsnNode insn) {
-        return insn.getOpcode() == PUTFIELD || insn.getOpcode() == PUTSTATIC;
-    }
-
-    /**
-     * @param insn the instruction being checked
-     * @return true if the specified instruction loads a value from a field
-     */
-    public static boolean isFieldLoadInsn(AbstractInsnNode insn) {
-        return insn.getOpcode() == GETFIELD || insn.getOpcode() == GETSTATIC;
-    }
-
-    /**
-     * @param insn the instruction being checked
-     * @return true if the specified instruction stores a value into an array
-     */
-    public static boolean isArrayStoreInsn(AbstractInsnNode insn) {
-        return insn.getOpcode() >= IASTORE && insn.getOpcode() <= SASTORE;
-    }
-
-    /**
-     * @param insn the instruction being checked
-     * @return true if the specified instruction loads a value from an array
-     */
-    public static boolean isArrayLoadInsn(AbstractInsnNode insn) {
-        return insn.getOpcode() >= IALOAD && insn.getOpcode() <= SALOAD;
-    }
-
-    /**
-     * @param insn the instruction being checked
-     * @return true if the specified instruction stores a value into a local variable
-     */
-    public static boolean isLocalVariableStoreInsn(AbstractInsnNode insn) {
-        return insn.getOpcode() >= ISTORE && insn.getOpcode() <= ASTORE;
-    }
-
-    /**
-     * @param insn the instruction being checked
-     * @return true if the specified instruction pushes a constant onto the runtime stack
-     */
-    public static boolean isPushConstantInsn(AbstractInsnNode insn) {
-        return insn.getOpcode() >= ACONST_NULL && insn.getOpcode() <= LDC;
-    }
-
-    /**
-     * @param insn the instruction being checked
-     * @return true if the specified instruction performs an arithmetic or logical computation
-     * runtime stack and pushes the result onto the runtime stack
-     */
-    public static boolean isArithmeticOrLogicalInsn(AbstractInsnNode insn) {
-        return insn.getOpcode() >= IADD && insn.getOpcode() <= DCMPG;
-    }
-
-    /**
-     * @param insn the instruction whose associated type's size is being calculated
-     * @return the size of the type associated with the specified instruction
-     */
-    private static int getSize(AbstractInsnNode insn) {
-        int opcode = insn.getOpcode();
-        switch(opcode) {
-            case LCONST_0:
-            case LCONST_1:
-            case DCONST_0:
-            case DCONST_1:
-            case LALOAD:
-            case DALOAD:
-            case LADD:
-            case DADD:
-            case LSUB:
-            case DSUB:
-            case LMUL:
-            case DMUL:
-            case LDIV:
-            case DDIV:
-            case LREM:
-            case DREM:
-            case LSHL:
-            case LSHR:
-            case LUSHR:
-            case LAND:
-            case LOR:
-            case LXOR:
-            case LNEG:
-            case DNEG:
-            case I2L:
-            case I2D:
-            case L2D:
-            case F2L:
-            case F2D:
-            case D2L:
-                return 2;
-            case LDC:
-                Object value = ((LdcInsnNode) insn).cst;
-                return value instanceof Long || value instanceof Double ? 2 : 1;
-            case GETSTATIC:
-            case GETFIELD:
-                return Type.getType(((FieldInsnNode) insn).desc).getSize();
-            case INVOKEDYNAMIC:
-                return Type.getReturnType(((InvokeDynamicInsnNode) insn).desc).getSize();
-            case INVOKEVIRTUAL:
-            case INVOKESPECIAL:
-            case INVOKESTATIC:
-            case INVOKEINTERFACE:
-                return Type.getReturnType(((MethodInsnNode) insn).desc).getSize();
-            default:
-                return 1;
-        }
     }
 
     private static Map<AbstractInsnNode, BasicBlock> createBlockMap(FlowGraph<BasicBlock> controlFlowGraph) {
@@ -953,7 +844,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
         @Override
         boolean usesCurrentDefinition(TracedValue tracedValue) {
             AbstractInsnNode insn2 = tracedValue.getInsnSource();
-            if(insn2 != null && isArrayLoadInsn(insn2) && interpreter.effectMap.containsKey(insn2)
+            if(insn2 != null && isArrayLoad(insn2.getOpcode()) && interpreter.effectMap.containsKey(insn2)
                     && interpreter.interveningRedefinitionImpossible(insn, insn2)) {
                 InstructionEffect effect = interpreter.effectMap.get(insn2);
                 TracedValue otherArrayReference = effect.sources[0];
