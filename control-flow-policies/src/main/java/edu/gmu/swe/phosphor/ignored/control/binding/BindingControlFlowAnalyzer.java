@@ -1,6 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.control.binding;
 
 import edu.columbia.cs.psl.phosphor.control.ControlFlowAnalyzer;
+import edu.columbia.cs.psl.phosphor.control.OpcodesUtil;
 import edu.columbia.cs.psl.phosphor.control.graph.*;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.control.standard.BranchEnd;
@@ -16,7 +17,6 @@ import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
-import static edu.gmu.swe.phosphor.ignored.control.binding.OpcodesUtil.isArrayStore;
 
 /**
  * Identifies and marks the scope of "binding" branch edges and indicates whether each marked edge is "revisable". Does
@@ -155,7 +155,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
             AbstractInsnNode insn = itr.next();
             if(OpcodesUtil.isPushConstantOpcode(insn.getOpcode()) || insn.getOpcode() == IINC) {
                 instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(CONSTANT_LOOP_LEVEL)));
-            } else if(isArrayStore(insn.getOpcode()) || OpcodesUtil.isFieldStoreInsn(insn.getOpcode())
+            } else if(OpcodesUtil.isArrayStore(insn.getOpcode()) || OpcodesUtil.isFieldStoreInsn(insn.getOpcode())
                     || OpcodesUtil.isLocalVariableStoreInsn(insn.getOpcode())) {
                 instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(interpreter.getLoopLevel(insn))));
             }

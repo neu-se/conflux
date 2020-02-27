@@ -1,31 +1,29 @@
 package edu.gmu.swe.phosphor.ignored.control.binding.trace;
 
-import edu.columbia.cs.psl.phosphor.Configuration;
+import edu.columbia.cs.psl.phosphor.control.OpcodesUtil;
 import edu.columbia.cs.psl.phosphor.control.graph.BasicBlock;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
+import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.PhosphorOpcodeIgnoringAnalyzer;
+import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.MergeAwareInterpreter;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.analysis.Analyzer;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Interpreter;
 import edu.columbia.cs.psl.phosphor.struct.BitSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.DependentLoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.VariantLoopLevel;
-import edu.gmu.swe.phosphor.ignored.control.binding.OpcodesUtil;
-import edu.gmu.swe.phosphor.ignored.control.binding.asm.Analyzer;
 import edu.gmu.swe.phosphor.ignored.control.binding.trace.MergePointTracedValue.MergePointValueCache;
 
 import java.util.List;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
-import static edu.gmu.swe.phosphor.ignored.control.binding.OpcodesUtil.isArrayLoad;
-import static edu.gmu.swe.phosphor.ignored.control.binding.OpcodesUtil.isArrayStore;
 
-public final class TracingInterpreter extends Interpreter<TracedValue> {
+public final class TracingInterpreter extends MergeAwareInterpreter<TracedValue> {
 
     private final Map<AbstractInsnNode, InstructionEffect> effectMap = new HashMap<>();
     private final MergePointValueCache mergePointCache = new MergePointValueCache();
@@ -44,7 +42,6 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
 
     public TracingInterpreter(String owner, MethodNode methodNode, Map<AbstractInsnNode,
             Set<NaturalLoop<BasicBlock>>> containingLoopMap, FlowGraph<BasicBlock> controlFlowGraph) throws AnalyzerException {
-        super(Configuration.ASM_VERSION);
         this.instructions = methodNode.instructions;
         this.containingLoopMap = containingLoopMap;
         this.blockMap = createBlockMap(controlFlowGraph);
@@ -476,14 +473,6 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
         effectMap.put(insn, new InstructionEffect(new TracedValue[]{value}, null));
     }
 
-    public void preFrameMerge(int insnIndex) {
-        currentInsnIndex = insnIndex;
-    }
-
-    public void preVarMerge(int varIndex) {
-        this.varIndex = varIndex;
-    }
-
     @Override
     public TracedValue merge(TracedValue value1, TracedValue value2) {
         if(value1 == value2 || value1.equals(value2)) {
@@ -630,7 +619,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
                 return true;
             } else if(insn1.getOpcode() == ARRAYLENGTH && interveningRedefinitionImpossible(insn1, insn2)) {
                 return isSameValue(effect1.sources[0], effect2.sources[0]);
-            } else if(isArrayLoad(insn1.getOpcode()) && interveningRedefinitionImpossible(insn1, insn2)) {
+            } else if(OpcodesUtil.isArrayLoad(insn1.getOpcode()) && interveningRedefinitionImpossible(insn1, insn2)) {
                 return isSameValue(effect1.sources[0], effect2.sources[0])
                         && isSameValue(effect1.sources[1], effect2.sources[1]);
             } else if(OpcodesUtil.isFieldLoadInsn(insn1.getOpcode()) && interveningRedefinitionImpossible(insn1, insn2)) {
@@ -676,7 +665,8 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
             AbstractInsnNode target = cur == insn1 ? insn2 : insn1;
             cur = cur.getNext();
             while(cur != target) {
-                if(cur instanceof MethodInsnNode || cur instanceof InvokeDynamicInsnNode || isArrayStore(cur.getOpcode())
+                if(cur instanceof MethodInsnNode || cur instanceof InvokeDynamicInsnNode
+                        || OpcodesUtil.isArrayStore(cur.getOpcode())
                         || OpcodesUtil.isFieldStoreInsn(cur.getOpcode())) {
                     return false;
                 }
@@ -685,6 +675,21 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void mergingFrame(int instructionIndexOfNextMerge) {
+        currentInsnIndex = instructionIndexOfNextMerge;
+    }
+
+    @Override
+    public void mergingLocalVariable(int localIndexOfNextMerge, int numLocals, int stackSize) {
+        varIndex = localIndexOfNextMerge;
+    }
+
+    @Override
+    public void mergingStackElement(int stackIndexOfNextMerge, int numLocals, int stackSize) {
+        varIndex = stackIndexOfNextMerge + numLocals;
     }
 
     /**
@@ -844,7 +849,7 @@ public final class TracingInterpreter extends Interpreter<TracedValue> {
         @Override
         boolean usesCurrentDefinition(TracedValue tracedValue) {
             AbstractInsnNode insn2 = tracedValue.getInsnSource();
-            if(insn2 != null && isArrayLoad(insn2.getOpcode()) && interpreter.effectMap.containsKey(insn2)
+            if(insn2 != null && OpcodesUtil.isArrayLoad(insn2.getOpcode()) && interpreter.effectMap.containsKey(insn2)
                     && interpreter.interveningRedefinitionImpossible(insn, insn2)) {
                 InstructionEffect effect = interpreter.effectMap.get(insn2);
                 TracedValue otherArrayReference = effect.sources[0];
