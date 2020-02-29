@@ -8,14 +8,10 @@ import java.io.IOException;
 
 public class ControlAnalysisTestUtil {
 
-    private ControlAnalysisTestUtil() {
-
-    }
-
     public static MethodNode getMethodNode(Class<?> clazz, String methodName) throws NoSuchMethodException, IOException {
         ClassReader cr = new ClassReader(clazz.getName());
         ClassNode classNode = new ClassNode();
-        cr.accept(classNode, 0);
+        cr.accept(classNode, ClassReader.EXPAND_FRAMES);
         for(MethodNode mn : classNode.methods) {
             if(mn.name.equals(methodName)) {
                 return mn;
