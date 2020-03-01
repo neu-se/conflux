@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.ssa;
+package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 

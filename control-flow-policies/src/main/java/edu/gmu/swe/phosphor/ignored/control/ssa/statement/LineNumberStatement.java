@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.ssa;
+package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LineNumberNode;

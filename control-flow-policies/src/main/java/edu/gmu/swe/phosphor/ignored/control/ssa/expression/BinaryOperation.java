@@ -1,5 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
+
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
 public enum BinaryOperation {
@@ -33,8 +35,8 @@ public enum BinaryOperation {
         return getSymbol();
     }
 
-    public static BinaryOperation getInstance(int opcode) {
-        switch(opcode) {
+    public static BinaryOperation getInstance(AbstractInsnNode insn) {
+        switch(insn.getOpcode()) {
             case IADD:
             case LADD:
             case FADD:

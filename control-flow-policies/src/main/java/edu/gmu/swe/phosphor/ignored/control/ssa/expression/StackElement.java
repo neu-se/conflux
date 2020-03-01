@@ -6,9 +6,6 @@ public final class StackElement implements Expression {
     private final int version;
 
     public StackElement(int index) {
-        if(index < 0) {
-            throw new IllegalArgumentException();
-        }
         this.index = index;
         this.version = -1;
     }

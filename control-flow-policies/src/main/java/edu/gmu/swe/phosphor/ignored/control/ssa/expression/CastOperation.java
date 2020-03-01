@@ -23,7 +23,12 @@ public class CastOperation implements UnaryOperation {
 
     @Override
     public String toString() {
-        return String.format("(%s) ", desc);
+        return String.format("(%s)", desc);
+    }
+
+    @Override
+    public String format(Expression expression) {
+        return String.format("(%s) %s", desc, expression);
     }
 
     public static CastOperation getInstance(AbstractInsnNode insn) {

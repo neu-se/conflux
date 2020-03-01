@@ -22,6 +22,22 @@ public class InvokeExpression implements Expression {
         this.arguments = arguments.clone();
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    Expression getReceiver() {
+        return receiver;
+    }
+
+    Expression[] getArguments() {
+        return arguments;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

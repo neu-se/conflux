@@ -11,6 +11,6 @@ public class UnaryExpression implements Expression {
 
     @Override
     public String toString() {
-        return String.format("%s%s", operation, operand);
+        return operation.format(operand);
     }
 }
