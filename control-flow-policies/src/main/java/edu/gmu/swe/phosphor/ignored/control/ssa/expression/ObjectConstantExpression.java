@@ -16,7 +16,6 @@ public final class ObjectConstantExpression implements ConstantExpression {
                 && Objects.equals(constant, ((ObjectConstantExpression) other).constant);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if(this == o) {

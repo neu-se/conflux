@@ -1,11 +1,9 @@
-package edu.gmu.swe.phosphor.ignored.control.ssa;
+package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-
-public class StackElement implements Expression {
+public final class StackElement implements Expression {
 
     private final int index;
-    private int version;
+    private final int version;
 
     public StackElement(int index) {
         if(index < 0) {

@@ -28,6 +28,11 @@ public enum BinaryOperation {
         return symbol;
     }
 
+    @Override
+    public String toString() {
+        return getSymbol();
+    }
+
     public static BinaryOperation getInstance(int opcode) {
         switch(opcode) {
             case IADD:

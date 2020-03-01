@@ -7,19 +7,14 @@ import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.PhosphorOpcodeIgnoring
 import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeInterpreter;
 import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.InsnList;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.VarInsnNode;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ArrayExpression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ConstantExpression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 
 import java.util.Iterator;
 
@@ -40,10 +35,11 @@ public class SSAAnalyzer {
                 .createControlFlowGraph(methodNode, explicitExceptions);
         Iterator<AbstractInsnNode> itr = instructions.iterator();
         int i = 0;
-        List<Statement> statements = new LinkedList<>();
+        List<Statement[]> statements = new LinkedList<>();
         while(itr.hasNext()) {
             statements.add(convert(frames[i++], itr.next()));
         }
+        List<Statement> flat = flatten(statements);
     }
 
     private void calculateExplicitExceptions() {
@@ -61,11 +57,25 @@ public class SSAAnalyzer {
         }
     }
 
-    public static Statement convert(Frame<TypeValue> frame, AbstractInsnNode insn) {
-        int opcode = insn.getOpcode();
-        switch(opcode) {
+    private static List<Statement> flatten(List<Statement[]> statements) {
+        List<Statement> flattenedList = new LinkedList<>();
+        for(Statement[] arr : statements) {
+            for(Statement s : arr) {
+                flattenedList.add(s);
+            }
+        }
+        return flattenedList;
+    }
+
+    public static Statement[] convert(Frame<TypeValue> frame, AbstractInsnNode insn) {
+        if(insn instanceof LabelNode) {
+            return new Statement[]{new LabelStatement((LabelNode) insn)};
+        } else if(insn instanceof LineNumberNode) {
+            return new Statement[]{new LineNumberStatement((LineNumberNode) insn)};
+        }
+        switch(insn.getOpcode()) {
             case NOP:
-                return EmptyStatement.NOP;
+                return new Statement[]{EmptyStatement.NOP};
             case ACONST_NULL:
             case ICONST_M1:
             case ICONST_0:
@@ -84,14 +94,17 @@ public class SSAAnalyzer {
             case BIPUSH:
             case SIPUSH:
             case LDC:
-                return new AssignmentStatement(new StackElement(frame.getStackSize()), ConstantExpression.makeInstance(insn));
+                StackElement next = new StackElement(frame.getStackSize());
+                Statement statement = new AssignmentStatement(next, ConstantExpression.makeInstance(insn));
+                return new Statement[]{statement};
             case ILOAD:
             case LLOAD:
             case FLOAD:
             case DLOAD:
             case ALOAD:
-                return new AssignmentStatement(new StackElement(frame.getStackSize()),
-                        new LocalVariable(((VarInsnNode) insn).var));
+                next = new StackElement(frame.getStackSize());
+                statement = new AssignmentStatement(next, new LocalVariable(((VarInsnNode) insn).var));
+                return new Statement[]{statement};
             case IALOAD:
             case LALOAD:
             case FALOAD:
@@ -102,15 +115,17 @@ public class SSAAnalyzer {
             case SALOAD:
                 StackElement arrayRef = new StackElement(frame.getStackSize() - 2);
                 StackElement index = new StackElement(frame.getStackSize() - 1);
-                return new AssignmentStatement(new StackElement(frame.getStackSize() - 2),
+                statement = new AssignmentStatement(new StackElement(frame.getStackSize() - 2),
                         new ArrayExpression(arrayRef, index));
+                return new Statement[]{statement};
             case ISTORE:
             case LSTORE:
             case FSTORE:
             case DSTORE:
             case ASTORE:
-                return new AssignmentStatement(new LocalVariable(((VarInsnNode) insn).var),
-                        new StackElement(frame.getStackSize() - 1));
+                StackElement top = new StackElement(frame.getStackSize() - 1);
+                statement = new AssignmentStatement(new LocalVariable(((VarInsnNode) insn).var), top);
+                return new Statement[]{statement};
             case IASTORE:
             case LASTORE:
             case FASTORE:
@@ -122,26 +137,144 @@ public class SSAAnalyzer {
                 arrayRef = new StackElement(frame.getStackSize() - 3);
                 index = new StackElement(frame.getStackSize() - 2);
                 StackElement value = new StackElement(frame.getStackSize() - 1);
-                return new AssignmentStatement(new ArrayExpression(arrayRef, index), value);
+                statement = new AssignmentStatement(new ArrayExpression(arrayRef, index), value);
+                return new Statement[]{statement};
             case POP:
-                return EmptyStatement.POP;
+                return new Statement[]{EmptyStatement.POP};
             case POP2:
-                return EmptyStatement.POP2;
+                return new Statement[]{EmptyStatement.POP2};
             case DUP:
-                return new AssignmentStatement(new StackElement(frame.getStackSize()),
-                        new StackElement(frame.getStackSize() - 1));
+                top = new StackElement(frame.getStackSize() - 1);
+                statement = new AssignmentStatement(new StackElement(frame.getStackSize()), top);
+                return new Statement[]{statement};
             case DUP_X1:
-                // value2, value1 → value1, value2, value1
+                // value2, value1 -> value1, value2, value1
+                next = new StackElement(frame.getStackSize());
+                StackElement first = new StackElement(frame.getStackSize() - 1);
+                StackElement second = new StackElement(frame.getStackSize() - 2);
+                return new Statement[]{
+                        new AssignmentStatement(next, first),
+                        new AssignmentStatement(first, second),
+                        new AssignmentStatement(second, next),
+                };
             case DUP_X2:
-                // value3, value2, value1 → value1, value3, value2, value1
+                // {value3, value2}, value1 -> value1, {value3, value2}, value1
+                next = new StackElement(frame.getStackSize());
+                first = new StackElement(frame.getStackSize() - 1);
+                second = new StackElement(frame.getStackSize() - 2);
+                if(frame.getStack(frame.getStackSize() - 2).getSize() == 2) {
+                    return new Statement[]{
+                            new AssignmentStatement(next, first),
+                            new AssignmentStatement(first, second),
+                            new AssignmentStatement(second, next),
+                    };
+                } else {
+                    StackElement third = new StackElement(frame.getStackSize() - 3);
+                    return new Statement[]{
+                            new AssignmentStatement(next, first),
+                            new AssignmentStatement(first, second),
+                            new AssignmentStatement(second, third),
+                            new AssignmentStatement(third, next),
+                    };
+                }
             case DUP2:
-                // {value2, value1} → {value2, value1}, {value2, value1}
+                // {value2, value1} -> {value2, value1}, {value2, value1}
+                next = new StackElement(frame.getStackSize());
+                first = new StackElement(frame.getStackSize() - 1);
+                if(frame.getStack(frame.getStackSize() - 1).getSize() == 2) {
+                    return new Statement[]{
+                            new AssignmentStatement(next, first),
+                    };
+                } else {
+                    StackElement next2 = new StackElement(frame.getStackSize() + 1);
+                    second = new StackElement(frame.getStackSize() - 2);
+                    return new Statement[]{
+                            new AssignmentStatement(next, second),
+                            new AssignmentStatement(next2, first),
+                    };
+                }
             case DUP2_X1:
-                // value3, {value2, value1} → {value2, value1}, value3, {value2, value1}
+                //    -2            -1              -2           -1         0
+                // value3, {value2, value1} -> {value2, value1}, value3, {value2, value1}
+                next = new StackElement(frame.getStackSize());
+                first = new StackElement(frame.getStackSize() - 1);
+                second = new StackElement(frame.getStackSize() - 2);
+                if(frame.getStack(frame.getStackSize() - 1).getSize() == 2) {
+                    return new Statement[]{
+                            new AssignmentStatement(next, first),
+                            new AssignmentStatement(first, second),
+                            new AssignmentStatement(second, next),
+                    };
+                } else {
+                    StackElement next2 = new StackElement(frame.getStackSize() + 1);
+                    StackElement third = new StackElement(frame.getStackSize() - 3);
+                    return new Statement[]{
+                            new AssignmentStatement(next, second),
+                            new AssignmentStatement(next2, first),
+                            new AssignmentStatement(first, third),
+                            new AssignmentStatement(second, next2),
+                            new AssignmentStatement(third, next),
+                    };
+                }
             case DUP2_X2:
-                // {value4, value3}, {value2, value1} → {value2, value1}, {value4, value3}, {value2, value1}
+                // {value4, value3}, {value2, value1} -> {value2, value1}, {value4, value3}, {value2, value1}
+                next = new StackElement(frame.getStackSize());
+                first = new StackElement(frame.getStackSize() - 1);
+                second = new StackElement(frame.getStackSize() - 2);
+                if(frame.getStack(frame.getStackSize() - 1).getSize() == 2) {
+                    if(frame.getStack(frame.getStackSize() - 2).getSize() == 2) {
+                        // v2 v1 -> v1 v2 v1
+                        return new Statement[]{
+                                new AssignmentStatement(next, first),
+                                new AssignmentStatement(first, second),
+                                new AssignmentStatement(second, next),
+                        };
+                    } else {
+                        // v3 v2 v1 -> v1 v3 v2 v1
+                        StackElement third = new StackElement(frame.getStackSize() - 3);
+                        return new Statement[]{
+                                new AssignmentStatement(next, first),
+                                new AssignmentStatement(first, second),
+                                new AssignmentStatement(second, third),
+                                new AssignmentStatement(third, next)
+                        };
+                    }
+                } else {
+                    StackElement third = new StackElement(frame.getStackSize() - 3);
+                    StackElement next2 = new StackElement(frame.getStackSize() + 1);
+                    if(frame.getStack(frame.getStackSize() - 2).getSize() == 2) {
+                        // v3 v2 v1 -> v2 v1 v3 v2 v1
+                        return new Statement[]{
+                                new AssignmentStatement(next, second),
+                                new AssignmentStatement(next2, first),
+                                new AssignmentStatement(first, third),
+                                new AssignmentStatement(second, next2),
+                                new AssignmentStatement(third, next)
+                        };
+                    } else {
+                        // v4 v3 v2 v1 -> v2 v1 v4 v3 v2 v1
+                        // -4 -3 -2 -1    -4 -3 -2 -1 0  +1
+                        StackElement fourth = new StackElement(frame.getStackSize() - 4);
+                        return new Statement[]{
+                                new AssignmentStatement(next, second),
+                                new AssignmentStatement(next2, first),
+                                new AssignmentStatement(first, third),
+                                new AssignmentStatement(second, fourth),
+                                new AssignmentStatement(third, next2),
+                                new AssignmentStatement(fourth, next)
+                        };
+                    }
+                }
             case SWAP:
-                //value2, value1 → value1, value2
+                //value2, value1 -> value1, value2
+                next = new StackElement(frame.getStackSize());
+                first = new StackElement(frame.getStackSize() - 1);
+                second = new StackElement(frame.getStackSize() - 2);
+                return new Statement[]{
+                        new AssignmentStatement(next, first),
+                        new AssignmentStatement(first, second),
+                        new AssignmentStatement(second, next),
+                };
             case IADD:
             case LADD:
             case FADD:
@@ -162,10 +295,6 @@ public class SSAAnalyzer {
             case LREM:
             case FREM:
             case DREM:
-            case INEG:
-            case LNEG:
-            case FNEG:
-            case DNEG:
             case ISHL:
             case LSHL:
             case ISHR:
@@ -178,7 +307,20 @@ public class SSAAnalyzer {
             case LOR:
             case IXOR:
             case LXOR:
-            case IINC:
+            case LCMP:
+            case FCMPL:
+            case FCMPG:
+            case DCMPL:
+            case DCMPG:
+                BinaryOperation operation = BinaryOperation.getInstance(insn.getOpcode());
+                first = new StackElement(frame.getStackSize() - 1);
+                second = new StackElement(frame.getStackSize() - 2);
+                statement = new AssignmentStatement(first, new BinaryExpression(operation, second, first));
+                return new Statement[]{statement};
+            case INEG:
+            case LNEG:
+            case FNEG:
+            case DNEG:
             case I2L:
             case I2F:
             case I2D:
@@ -194,11 +336,24 @@ public class SSAAnalyzer {
             case I2B:
             case I2C:
             case I2S:
-            case LCMP:
-            case FCMPL:
-            case FCMPG:
-            case DCMPL:
-            case DCMPG:
+            case CHECKCAST:
+                first = new StackElement(frame.getStackSize() - 1);
+                statement = new AssignmentStatement(first, new UnaryExpression(UnaryOperation.getInstance(insn), first));
+                return new Statement[]{statement};
+            case IINC:
+                LocalVariable local = new LocalVariable(((IincInsnNode) insn).var);
+                statement = new AssignmentStatement(local, new BinaryExpression(BinaryOperation.ADD, local,
+                        new IntegerConstantExpression(((IincInsnNode) insn).incr)));
+                return new Statement[]{statement};
+            case IRETURN:
+            case LRETURN:
+            case FRETURN:
+            case DRETURN:
+            case ARETURN:
+                first = new StackElement(frame.getStackSize() - 1);
+                return new Statement[]{new ReturnStatement(first)};
+            case RETURN:
+                return new Statement[]{new ReturnStatement(null)};
             case IFEQ:
             case IFNE:
             case IFLT:
@@ -213,17 +368,11 @@ public class SSAAnalyzer {
             case IF_ICMPLE:
             case IF_ACMPEQ:
             case IF_ACMPNE:
+            case IFNULL:
+            case IFNONNULL:
             case GOTO:
-            case JSR:
-            case RET:
             case TABLESWITCH:
             case LOOKUPSWITCH:
-            case IRETURN:
-            case LRETURN:
-            case FRETURN:
-            case DRETURN:
-            case ARETURN:
-            case RETURN:
             case GETSTATIC:
             case PUTSTATIC:
             case GETFIELD:
@@ -238,15 +387,14 @@ public class SSAAnalyzer {
             case ANEWARRAY:
             case ARRAYLENGTH:
             case ATHROW:
-            case CHECKCAST:
             case INSTANCEOF:
             case MONITORENTER:
             case MONITOREXIT:
             case MULTIANEWARRAY:
-            case IFNULL:
-            case IFNONNULL:
+            case JSR:
+            case RET:
             default:
-                return EmptyStatement.UNIMPLEMENTED;
+                return new Statement[]{EmptyStatement.UNIMPLEMENTED};
         }
     }
 }

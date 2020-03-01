@@ -1,15 +1,20 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
-public class ReturnStatement {
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 
-    StackElement returnValue;
+public class ReturnStatement implements Statement {
 
-    public ReturnStatement(StackElement returnValue) {
+    Expression returnValue;
+
+    public ReturnStatement(Expression returnValue) {
         this.returnValue = returnValue;
     }
 
     @Override
     public String toString() {
+        if(returnValue == null) {
+            return "return";
+        }
         return String.format("return %s", returnValue);
     }
 }

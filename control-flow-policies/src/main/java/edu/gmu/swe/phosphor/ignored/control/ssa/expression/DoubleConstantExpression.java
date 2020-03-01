@@ -82,7 +82,6 @@ public final class DoubleConstantExpression implements ConstantExpression {
         return false;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if(this == o) {

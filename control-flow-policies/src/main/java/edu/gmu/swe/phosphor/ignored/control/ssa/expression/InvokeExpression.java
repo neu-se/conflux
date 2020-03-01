@@ -1,10 +1,10 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
-import edu.gmu.swe.phosphor.ignored.control.ssa.StackElement;
 import jdk.nashorn.internal.codegen.types.Type;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKESTATIC;
@@ -12,23 +12,14 @@ import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKESTATI
 public class InvokeExpression implements Expression {
     public final String owner;
     public final String name;
-    public final StackElement receiver;
-    public final StackElement[] arguments;
+    public final Expression receiver;
+    public final Expression[] arguments;
 
-    public InvokeExpression(MethodInsnNode insn, Frame<TypeValue> frame) {
-        this.owner = insn.owner;
-        this.name = insn.owner;
-        int numArguments = Type.getMethodArguments(insn.desc).length;
-        int top = frame.getStackSize();
-        arguments = new StackElement[numArguments];
-        for(int i = 0; i < arguments.length; i++) {
-            arguments[i] = new StackElement(top - arguments.length + i);
-        }
-        if(insn.getOpcode() == INVOKESTATIC) {
-            receiver = null;
-        } else {
-            receiver = new StackElement(top - arguments.length - 1);
-        }
+    public InvokeExpression(String owner, String name, Expression receiver, Expression[] arguments) {
+        this.owner = owner;
+        this.name = name;
+        this.receiver = receiver;
+        this.arguments = arguments.clone();
     }
 
     @Override
@@ -45,5 +36,33 @@ public class InvokeExpression implements Expression {
         }
         builder.append('.').append(name).append('(').append(String.join(", ", stringArgs)).append(')');
         return builder.toString();
+    }
+
+    public static InvokeExpression getInstance(MethodInsnNode insn, Frame<TypeValue> frame) {
+        int numArguments = Type.getMethodArguments(insn.desc).length;
+        int top = frame.getStackSize();
+        Expression[] arguments = new StackElement[numArguments];
+        for(int i = 0; i < arguments.length; i++) {
+            arguments[i] = new StackElement(top - arguments.length + i);
+        }
+        Expression receiver = null;
+        if(insn.getOpcode() != INVOKESTATIC) {
+            receiver = new StackElement(top - arguments.length - 1);
+        }
+        return new InvokeExpression(insn.owner, insn.name, receiver, arguments);
+    }
+
+    public static InvokeExpression getInstance(InvokeDynamicInsnNode insn, Frame<TypeValue> frame) {
+        int numArguments = Type.getMethodArguments(insn.desc).length;
+        int top = frame.getStackSize();
+        Expression[] arguments = new StackElement[numArguments];
+        for(int i = 0; i < arguments.length; i++) {
+            arguments[i] = new StackElement(top - arguments.length + i);
+        }
+        Expression receiver = null;
+        if(insn.getOpcode() != INVOKESTATIC) {
+            receiver = new StackElement(top - arguments.length - 1);
+        }
+        return new InvokeExpression(insn.bsm.getOwner(), insn.name, receiver, arguments);
     }
 }

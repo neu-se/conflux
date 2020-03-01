@@ -1,12 +1,10 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.gmu.swe.phosphor.ignored.control.ssa.StackElement;
-
 public class ArrayExpression implements Expression {
-    private StackElement arrayRef;
-    private StackElement index;
+    private Expression arrayRef;
+    private Expression index;
 
-    public ArrayExpression(StackElement arrayRef, StackElement index) {
+    public ArrayExpression(Expression arrayRef, Expression index) {
         this.arrayRef = arrayRef;
         this.index = index;
     }

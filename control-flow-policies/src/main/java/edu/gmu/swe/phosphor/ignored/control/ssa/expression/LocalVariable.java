@@ -1,9 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public class LocalVariable implements Expression {
+public final class LocalVariable implements Expression {
 
     private final int index;
-    private int version;
+    private final int version;
 
     public LocalVariable(int index) {
         if(index < 0) {
