@@ -5,7 +5,7 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TypeInsnNode;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INSTANCEOF;
 
-public class InstanceOfOperation implements UnaryOperation {
+public final class InstanceOfOperation implements UnaryOperation {
 
     private final String desc;
 

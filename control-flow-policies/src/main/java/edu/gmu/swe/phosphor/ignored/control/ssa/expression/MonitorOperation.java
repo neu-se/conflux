@@ -16,13 +16,8 @@ public enum MonitorOperation {
         this.symbol = symbol;
     }
 
-    @Override
-    public String toString() {
-        return symbol;
-    }
-
-    public String getSymbol() {
-        return symbol;
+    public String format(Expression operand) {
+        return String.format("%s(%s)", symbol, operand);
     }
 
     public static MonitorOperation getInstance(AbstractInsnNode insn) {

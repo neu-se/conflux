@@ -20,7 +20,7 @@ public final class ObjectConstantExpression implements ConstantExpression {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof ObjectConstantExpression) || !super.equals(o)) {
+        } else if(!(o instanceof ObjectConstantExpression)) {
             return false;
         }
         ObjectConstantExpression that = (ObjectConstantExpression) o;
@@ -29,13 +29,17 @@ public final class ObjectConstantExpression implements ConstantExpression {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (constant != null ? constant.hashCode() : 0);
-        return result;
+        return constant != null ? constant.hashCode() : 0;
     }
 
     @Override
     public String toString() {
-        return constant == null ? "null" : constant.toString();
+        if(constant == null) {
+            return "null";
+        } else if(constant instanceof String) {
+            return String.format("\"%s\"", constant);
+        } else {
+            return constant.toString();
+        }
     }
 }

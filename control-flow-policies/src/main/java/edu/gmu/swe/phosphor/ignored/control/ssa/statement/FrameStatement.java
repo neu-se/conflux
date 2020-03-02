@@ -9,7 +9,7 @@ import java.util.List;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
-public class FrameStatement implements Statement {
+public final class FrameStatement implements Statement {
 
     private final int type;
     private final String typeDesc;
@@ -98,5 +98,42 @@ public class FrameStatement implements Statement {
             objs[i] = o;
         }
         return objs;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof FrameStatement)) {
+            return false;
+        }
+        FrameStatement that = (FrameStatement) o;
+        if(type != that.type) {
+            return false;
+        }
+        if(nLocal != that.nLocal) {
+            return false;
+        }
+        if(nStack != that.nStack) {
+            return false;
+        }
+        if(!typeDesc.equals(that.typeDesc)) {
+            return false;
+        }
+        if(!Arrays.equals(local, that.local)) {
+            return false;
+        }
+        return Arrays.equals(stack, that.stack);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type;
+        result = 31 * result + typeDesc.hashCode();
+        result = 31 * result + nLocal;
+        result = 31 * result + Arrays.hashCode(local);
+        result = 31 * result + nStack;
+        result = 31 * result + Arrays.hashCode(stack);
+        return result;
     }
 }

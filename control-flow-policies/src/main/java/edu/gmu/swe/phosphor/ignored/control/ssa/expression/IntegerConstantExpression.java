@@ -102,7 +102,7 @@ public final class IntegerConstantExpression implements ConstantExpression {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof IntegerConstantExpression) || !super.equals(o)) {
+        } else if(!(o instanceof IntegerConstantExpression)) {
             return false;
         }
         IntegerConstantExpression that = (IntegerConstantExpression) o;
@@ -111,9 +111,7 @@ public final class IntegerConstantExpression implements ConstantExpression {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + constant;
-        return result;
+        return constant;
     }
 
     @Override

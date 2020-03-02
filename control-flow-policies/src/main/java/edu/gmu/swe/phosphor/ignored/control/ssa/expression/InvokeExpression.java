@@ -7,35 +7,25 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import jdk.nashorn.internal.codegen.types.Type;
 
+import java.util.Arrays;
+
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKESTATIC;
 
-public class InvokeExpression implements Expression {
-    public final String owner;
-    public final String name;
-    public final Expression receiver;
-    public final Expression[] arguments;
+public final class InvokeExpression implements Expression {
+
+    private final String owner;
+    private final String name;
+    private final Expression receiver;
+    private final Expression[] arguments;
 
     public InvokeExpression(String owner, String name, Expression receiver, Expression[] arguments) {
+        if(owner == null || name == null) {
+            throw new NullPointerException();
+        }
         this.owner = owner;
         this.name = name;
         this.receiver = receiver;
         this.arguments = arguments.clone();
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    Expression getReceiver() {
-        return receiver;
-    }
-
-    Expression[] getArguments() {
-        return arguments;
     }
 
     @Override
@@ -52,6 +42,36 @@ public class InvokeExpression implements Expression {
         }
         builder.append('.').append(name).append('(').append(String.join(", ", stringArgs)).append(')');
         return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof InvokeExpression)) {
+            return false;
+        }
+        InvokeExpression that = (InvokeExpression) o;
+        if(!owner.equals(that.owner)) {
+            return false;
+        }
+        if(!name.equals(that.name)) {
+            return false;
+        }
+        if(receiver != null ? !receiver.equals(that.receiver) : that.receiver != null) {
+            return false;
+        }
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        return Arrays.equals(arguments, that.arguments);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = owner.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + (receiver != null ? receiver.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(arguments);
+        return result;
     }
 
     public static InvokeExpression getInstance(MethodInsnNode insn, Frame<TypeValue> frame) {

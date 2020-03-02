@@ -5,6 +5,7 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
 public enum BinaryOperation {
+
     ADD("+"),
     SUBTRACT("-"),
     MULTIPLY("*"),
@@ -26,13 +27,8 @@ public enum BinaryOperation {
         this.symbol = symbol;
     }
 
-    public String getSymbol() {
-        return symbol;
-    }
-
-    @Override
-    public String toString() {
-        return getSymbol();
+    public String format(Expression operand1, Expression operand2) {
+        return String.format("%s %s %s", operand1, symbol, operand2);
     }
 
     public static BinaryOperation getInstance(AbstractInsnNode insn) {

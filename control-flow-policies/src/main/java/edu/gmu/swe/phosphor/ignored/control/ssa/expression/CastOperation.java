@@ -5,7 +5,7 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TypeInsnNode;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
-public class CastOperation implements UnaryOperation {
+public final class CastOperation implements UnaryOperation {
 
     public static final CastOperation TO_INT = new CastOperation("int");
     public static final CastOperation TO_LONG = new CastOperation("long");
@@ -18,6 +18,9 @@ public class CastOperation implements UnaryOperation {
     private final String desc;
 
     private CastOperation(String desc) {
+        if(desc == null) {
+            throw new NullPointerException();
+        }
         this.desc = desc;
     }
 
@@ -29,6 +32,22 @@ public class CastOperation implements UnaryOperation {
     @Override
     public String format(Expression expression) {
         return String.format("(%s) %s", desc, expression);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof CastOperation)) {
+            return false;
+        }
+        CastOperation that = (CastOperation) o;
+        return desc.equals(that.desc);
+    }
+
+    @Override
+    public int hashCode() {
+        return desc.hashCode();
     }
 
     public static CastOperation getInstance(AbstractInsnNode insn) {

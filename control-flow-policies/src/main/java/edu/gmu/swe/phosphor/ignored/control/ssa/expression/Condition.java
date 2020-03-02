@@ -19,13 +19,8 @@ public enum Condition {
         this.symbol = symbol;
     }
 
-    public String getSymbol() {
-        return symbol;
-    }
-
-    @Override
-    public String toString() {
-        return getSymbol();
+    public String format(Expression operand1, Expression operand2) {
+        return String.format("%s %s %s", operand1, symbol, operand2);
     }
 
     public static Condition getInstance(AbstractInsnNode insn) {

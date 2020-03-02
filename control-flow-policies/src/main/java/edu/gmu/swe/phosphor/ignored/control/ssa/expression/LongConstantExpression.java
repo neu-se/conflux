@@ -92,7 +92,7 @@ public final class LongConstantExpression implements ConstantExpression {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof LongConstantExpression) || !super.equals(o)) {
+        } else if(!(o instanceof LongConstantExpression)) {
             return false;
         }
         LongConstantExpression that = (LongConstantExpression) o;
@@ -101,9 +101,7 @@ public final class LongConstantExpression implements ConstantExpression {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (int) (constant ^ (constant >>> 32));
-        return result;
+        return (int) (constant ^ (constant >>> 32));
     }
 
     @Override

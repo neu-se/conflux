@@ -17,4 +17,25 @@ public final class StackElement implements Expression {
         }
         return String.format("s%d_%d", index, version);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof StackElement)) {
+            return false;
+        }
+        StackElement that = (StackElement) o;
+        if(index != that.index) {
+            return false;
+        }
+        return version == that.version;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = index;
+        result = 31 * result + version;
+        return result;
+    }
 }

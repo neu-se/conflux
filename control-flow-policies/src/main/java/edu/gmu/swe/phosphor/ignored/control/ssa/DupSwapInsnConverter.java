@@ -130,7 +130,8 @@ public class DupSwapInsnConverter extends InsnConverter {
                     };
                 }
             } else {
-                if(wide2) {
+                boolean wide3 = frame.getStack(frame.getStackSize() - 3).getSize() == 2;
+                if(wide3) {
                     // v3 v2 v1 -> v2 v1 v3 v2 v1
                     return new Statement[]{
                             new AssignmentStatement(zero, second),

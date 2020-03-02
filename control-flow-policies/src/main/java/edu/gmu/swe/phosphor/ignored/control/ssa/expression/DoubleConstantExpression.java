@@ -86,7 +86,7 @@ public final class DoubleConstantExpression implements ConstantExpression {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof DoubleConstantExpression) || !super.equals(o)) {
+        } else if(!(o instanceof DoubleConstantExpression)) {
             return false;
         }
         DoubleConstantExpression that = (DoubleConstantExpression) o;
@@ -95,11 +95,8 @@ public final class DoubleConstantExpression implements ConstantExpression {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        long temp;
-        temp = Double.doubleToLongBits(constant);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        return result;
+        long temp = Double.doubleToLongBits(constant);
+        return (int) (temp ^ (temp >>> 32));
     }
 
     @Override

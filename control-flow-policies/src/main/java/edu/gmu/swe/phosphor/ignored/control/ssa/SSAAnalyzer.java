@@ -16,6 +16,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.IdleStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 import java.util.Iterator;
@@ -28,6 +29,7 @@ public class SSAAnalyzer {
     private final InsnList instructions;
     private final Frame<TypeValue>[] frames;
     private final Map<AbstractInsnNode, String> explicitExceptions = new HashMap<>();
+    private final Statement[][] statements;
     private final FlowGraph<BasicBlock> cfg;
 
     public SSAAnalyzer(String owner, MethodNode methodNode) throws AnalyzerException {
@@ -38,12 +40,19 @@ public class SSAAnalyzer {
                 .createControlFlowGraph(methodNode, explicitExceptions);
         Iterator<AbstractInsnNode> itr = instructions.iterator();
         int i = 0;
-        Statement[][] statements = new Statement[instructions.size()][];
+        statements = new Statement[instructions.size()][];
         while(itr.hasNext()) {
-            statements[i] = insnToStatementConverter.convert(itr.next(), frames[i]);
+            if(frames[i] == null) {
+                statements[i] = new Statement[]{IdleStatement.NOP};
+            } else {
+                statements[i] = insnToStatementConverter.convert(itr.next(), frames[i]);
+            }
             i++;
         }
-        List<Statement> flat = flatten(statements);
+    }
+
+    List<Statement> getFlattenedStatementsList() {
+        return flatten(statements);
     }
 
     private void calculateExplicitExceptions() {

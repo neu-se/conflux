@@ -86,7 +86,7 @@ public final class FloatConstantExpression implements ConstantExpression {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof FloatConstantExpression) || !super.equals(o)) {
+        } else if(!(o instanceof FloatConstantExpression)) {
             return false;
         }
         FloatConstantExpression that = (FloatConstantExpression) o;
@@ -95,9 +95,7 @@ public final class FloatConstantExpression implements ConstantExpression {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (constant != +0.0f ? Float.floatToIntBits(constant) : 0);
-        return result;
+        return (constant != +0.0f ? Float.floatToIntBits(constant) : 0);
     }
 
     @Override

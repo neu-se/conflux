@@ -7,9 +7,10 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TableSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 
+import java.util.Arrays;
 import java.util.Collection;
 
-public class SwitchStatement implements Statement {
+public final class SwitchStatement implements Statement {
 
     private final Label defaultLabel;
     private final Label[] labels;
@@ -17,6 +18,9 @@ public class SwitchStatement implements Statement {
     private final Expression value;
 
     SwitchStatement(Expression value, LabelNode defaultLabel, Collection<LabelNode> labels) {
+        if(value == null) {
+            throw new NullPointerException();
+        }
         this.value = value;
         this.defaultLabel = defaultLabel == null ? null : defaultLabel.getLabel();
         this.labels = new Label[labels.size()];
@@ -52,5 +56,34 @@ public class SwitchStatement implements Statement {
             builder.append("\n\tdefault: goto ").append(defaultLabel).append(";");
         }
         return builder.append("\n}").toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof SwitchStatement)) {
+            return false;
+        }
+        SwitchStatement that = (SwitchStatement) o;
+        if(defaultLabel != null ? !defaultLabel.equals(that.defaultLabel) : that.defaultLabel != null) {
+            return false;
+        }
+        if(!Arrays.equals(labels, that.labels)) {
+            return false;
+        }
+        if(!Arrays.equals(keys, that.keys)) {
+            return false;
+        }
+        return value.equals(that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = defaultLabel != null ? defaultLabel.hashCode() : 0;
+        result = 31 * result + Arrays.hashCode(labels);
+        result = 31 * result + Arrays.hashCode(keys);
+        result = 31 * result + value.hashCode();
+        return result;
     }
 }

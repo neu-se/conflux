@@ -3,7 +3,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa;
 import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.EmptyStatement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.IdleStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 public abstract class InsnConverter {
@@ -24,7 +24,7 @@ public abstract class InsnConverter {
         if(canProcess(insn)) {
             return process(insn, frame);
         } else if(next == null) {
-            return new Statement[]{EmptyStatement.UNIMPLEMENTED};
+            return new Statement[]{IdleStatement.UNIMPLEMENTED};
         } else {
             return next.convert(insn, frame);
         }

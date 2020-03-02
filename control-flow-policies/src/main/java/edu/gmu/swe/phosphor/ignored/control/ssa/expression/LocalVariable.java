@@ -6,9 +6,6 @@ public final class LocalVariable implements Expression {
     private final int version;
 
     public LocalVariable(int index) {
-        if(index < 0) {
-            throw new IllegalArgumentException();
-        }
         this.index = index;
         this.version = -1;
     }
@@ -19,5 +16,26 @@ public final class LocalVariable implements Expression {
             return String.format("v%d", index);
         }
         return String.format("v%d_%d", index, version);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof LocalVariable)) {
+            return false;
+        }
+        LocalVariable that = (LocalVariable) o;
+        if(index != that.index) {
+            return false;
+        }
+        return version == that.version;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = index;
+        result = 31 * result + version;
+        return result;
     }
 }

@@ -10,7 +10,7 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.expression.NewArrayExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.NewExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.EmptyStatement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.IdleStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
@@ -90,7 +90,7 @@ public class NewInsnConverter extends InsnConverter {
             String desc = ((MultiANewArrayInsnNode) insn).desc;
             int dims = ((MultiANewArrayInsnNode) insn).dims;
             // TODO
-            statement = EmptyStatement.UNIMPLEMENTED;
+            statement = IdleStatement.UNIMPLEMENTED;
         } else {
             throw new IllegalArgumentException();
         }
