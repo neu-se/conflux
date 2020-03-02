@@ -428,63 +428,335 @@ public class InsnConverterTestMethods {
     }
 
     public static MethodNode shift() {
-        //    case ISHL:
-        //    case IUSHR:
-        //    case ISHR:
-        //    case LSHL:
-        //    case LSHR:
-        //    case LUSHR:
-        return null;
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "shift", "(IJ)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(ISHL);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(IUSHR);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(ISHR);
+        methodNode.visitInsn(POP);
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(LSHL);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(LUSHR);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(LSHR);
+        methodNode.visitInsn(POP2);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(4, 3);
+        methodNode.visitEnd();
+        return methodNode;
     }
 
     public static MethodNode and() {
-        //    case IAND:
-        //    case LAND:
-        return null;
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "and", "(IJ)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(IAND);
+        methodNode.visitInsn(POP);
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitInsn(LAND);
+        methodNode.visitInsn(POP2);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(4, 3);
+        methodNode.visitEnd();
+        return methodNode;
     }
 
     public static MethodNode or() {
-        //    case IOR:
-        //    case LOR:
-        return null;
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "or", "(IJ)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(IOR);
+        methodNode.visitInsn(POP);
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitInsn(LOR);
+        methodNode.visitInsn(POP2);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(4, 3);
+        methodNode.visitEnd();
+        return methodNode;
     }
 
     public static MethodNode xor() {
-        //    case IXOR:
-        //    case LXOR:
-        return null;
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "xor", "(IJ)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(IXOR);
+        methodNode.visitInsn(POP);
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitInsn(LXOR);
+        methodNode.visitInsn(POP2);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(4, 3);
+        methodNode.visitEnd();
+        return methodNode;
     }
 
     public static MethodNode negate() {
-        //    case INEG:
-        //    case LNEG:
-        //    case FNEG:
-        //    case DNEG:
-        return null;
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "negate", "(IJFD)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(INEG);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitInsn(LNEG);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitVarInsn(FLOAD, 3);
+        methodNode.visitInsn(FNEG);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(DLOAD, 4);
+        methodNode.visitInsn(DNEG);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(2, 6);
+        methodNode.visitEnd();
+        return methodNode;
     }
 
     public static MethodNode iinc() {
-        //    case IINC:
-        return null;
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "iinc", "(I)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitIincInsn(0, 4);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(0, 1);
+        methodNode.visitEnd();
+        return methodNode;
     }
 
     public static MethodNode cast() {
-        //    case I2L:
-        //    case I2F:
-        //    case I2D:
-        //    case L2I:
-        //    case L2F:
-        //    case L2D:
-        //    case F2I:
-        //    case F2L:
-        //    case F2D:
-        //    case D2I:
-        //    case D2L:
-        //    case D2F:
-        //    case I2B:
-        //    case I2C:
-        //    case I2S:
-        //    case CHECKCAST:
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "cast", "(IJFDLjava/lang/Object;)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(I2L);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(I2F);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(I2D);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitInsn(L2I);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitInsn(L2F);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(LLOAD, 1);
+        methodNode.visitInsn(L2D);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitVarInsn(FLOAD, 3);
+        methodNode.visitInsn(F2I);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(FLOAD, 3);
+        methodNode.visitInsn(F2L);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitVarInsn(FLOAD, 3);
+        methodNode.visitInsn(F2D);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitVarInsn(DLOAD, 4);
+        methodNode.visitInsn(D2I);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(DLOAD, 4);
+        methodNode.visitInsn(D2L);
+        methodNode.visitInsn(POP2);
+        //
+        methodNode.visitVarInsn(DLOAD, 4);
+        methodNode.visitInsn(D2F);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(I2B);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(I2C);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ILOAD, 0);
+        methodNode.visitInsn(I2S);
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ALOAD, 6);
+        methodNode.visitTypeInsn(CHECKCAST, "java/lang/String");
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(2, 11);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode arrayLength() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "arrayLength", "([I)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ALOAD, 0);
+        methodNode.visitInsn(ARRAYLENGTH);
+        methodNode.visitInsn(POP);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(1, 1);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode athrow() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "athrow", "(Ljava/lang/RuntimeException;)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ALOAD, 0);
+        methodNode.visitInsn(ATHROW);
+        methodNode.visitMaxs(1, 1);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode instanceOf() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "instanceOf", "(Ljava/lang/Object;)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ALOAD, 0);
+        methodNode.visitTypeInsn(INSTANCEOF, "java/lang/String");
+        methodNode.visitInsn(POP);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(1, 1);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode iReturn() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "iReturn", "()V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitInsn(ICONST_0);
+        methodNode.visitInsn(IRETURN);
+        methodNode.visitMaxs(1, 0);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode lReturn() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "lReturn", "()V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitInsn(LCONST_0);
+        methodNode.visitInsn(LRETURN);
+        methodNode.visitMaxs(2, 0);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode fReturn() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "fReturn", "()V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitInsn(FCONST_0);
+        methodNode.visitInsn(FRETURN);
+        methodNode.visitMaxs(1, 0);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode dReturn() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "dReturn", "()V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitInsn(DCONST_0);
+        methodNode.visitInsn(DRETURN);
+        methodNode.visitMaxs(2, 0);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode aReturn() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "aReturn", "()V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitInsn(ACONST_NULL);
+        methodNode.visitInsn(ARETURN);
+        methodNode.visitMaxs(1, 0);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode monitor() {
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "monitor", "(Ljava/lang/Object;)V",
+                null, null);
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ALOAD, 0);
+        methodNode.visitInsn(MONITORENTER);
+        methodNode.visitVarInsn(ALOAD, 0);
+        methodNode.visitInsn(MONITOREXIT);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(1, 1);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
+    public static MethodNode getFields() {
+        //    case GETSTATIC:
+        //    case GETFIELD:
+        return null;
+    }
+
+    public static MethodNode putFields() {
+        //    case PUTSTATIC:
+        //    case PUTFIELD:
+        return null;
+    }
+
+    public static MethodNode methodCall() {
+        //    case INVOKEVIRTUAL:
+        //    case INVOKEINTERFACE:
+        //    case INVOKEDYNAMIC:
+        return null;
+    }
+
+    public static MethodNode constructorCall() {
+        //    case NEW:
+        //    case INVOKESPECIAL:
+        return null;
+    }
+
+    public static MethodNode newArray() {
+        //    case NEWARRAY:
+        //    case ANEWARRAY:
+        return null;
+    }
+
+    public static MethodNode multiNewArray() {
+        //    case MULTIANEWARRAY:
         return null;
     }
 
@@ -494,6 +766,16 @@ public class InsnConverterTestMethods {
         //    case FCMPG:
         //    case DCMPL:
         //    case DCMPG:
+        return null;
+    }
+
+    public static MethodNode tableSwitch() {
+        //    case TABLESWITCH:
+        return null;
+    }
+
+    public static MethodNode lookupSwitch() {
+        //    case LOOKUPSWITCH:
         return null;
     }
 
@@ -523,98 +805,6 @@ public class InsnConverterTestMethods {
 
     public static MethodNode gotoStatement() {
         //    case GOTO:
-        return null;
-    }
-
-    public static MethodNode tableSwitch() {
-        //    case TABLESWITCH:
-        return null;
-    }
-
-    public static MethodNode lookupSwitch() {
-        //    case LOOKUPSWITCH:
-        return null;
-    }
-
-    public static MethodNode iReturn() {
-        //    case IRETURN:
-        return null;
-    }
-
-    public static MethodNode lReturn() {
-        //    case LRETURN:
-        return null;
-    }
-
-    public static MethodNode fReturn() {
-        //    case FRETURN:
-        return null;
-    }
-
-    public static MethodNode dReturn() {
-        //    case FRETURN:
-        return null;
-    }
-
-    public static MethodNode aReturn() {
-        //    case ARETURN:
-        return null;
-    }
-
-    public static MethodNode getFields() {
-        //    case GETSTATIC:
-        //    case GETFIELD:
-        return null;
-    }
-
-    public static MethodNode putFields() {
-        //    case PUTSTATIC:
-        //    case PUTFIELD:
-        return null;
-    }
-
-    public static MethodNode methodCall() {
-        //    case INVOKEVIRTUAL:
-        //    case INVOKEINTERFACE:
-        //    case INVOKEDYNAMIC:
-        return null;
-    }
-
-    public static MethodNode monitor() {
-        //    case MONITORENTER:
-        //    case MONITOREXIT:
-        return null;
-    }
-
-    public static MethodNode constructorCall() {
-        //    case NEW:
-        //    case INVOKESPECIAL:
-        return null;
-    }
-
-    public static MethodNode newArray() {
-        //    case NEWARRAY:
-        //    case ANEWARRAY:
-        return null;
-    }
-
-    public static MethodNode multiNewArray() {
-        //    case MULTIANEWARRAY:
-        return null;
-    }
-
-    public static MethodNode arrayLength() {
-        //    case ARRAYLENGTH:
-        return null;
-    }
-
-    public static MethodNode athrow() {
-        //    case ATHROW:
-        return null;
-    }
-
-    public static MethodNode instanceOf() {
-        //    case INSTANCEOF:
         return null;
     }
 }

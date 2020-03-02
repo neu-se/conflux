@@ -9,13 +9,32 @@ public final class InstanceOfOperation implements UnaryOperation {
 
     private final String desc;
 
-    private InstanceOfOperation(String desc) {
+    public InstanceOfOperation(String desc) {
+        if(desc == null) {
+            throw new NullPointerException();
+        }
         this.desc = desc;
     }
 
     @Override
     public String toString() {
         return String.format("instanceof %s", desc);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof InstanceOfOperation)) {
+            return false;
+        }
+        InstanceOfOperation that = (InstanceOfOperation) o;
+        return desc.equals(that.desc);
+    }
+
+    @Override
+    public int hashCode() {
+        return desc.hashCode();
     }
 
     @Override

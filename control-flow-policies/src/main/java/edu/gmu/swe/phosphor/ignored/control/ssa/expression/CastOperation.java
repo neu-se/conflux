@@ -17,7 +17,7 @@ public final class CastOperation implements UnaryOperation {
 
     private final String desc;
 
-    private CastOperation(String desc) {
+    public CastOperation(String desc) {
         if(desc == null) {
             throw new NullPointerException();
         }
