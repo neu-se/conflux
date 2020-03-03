@@ -15,6 +15,14 @@ public final class AssignmentStatement implements Statement {
         this.rightHandSide = rightHandSide;
     }
 
+    public Expression getLeftHandSide() {
+        return leftHandSide;
+    }
+
+    public Expression getRightHandSide() {
+        return rightHandSide;
+    }
+
     @Override
     public String toString() {
         return String.format("%s = %s", leftHandSide, rightHandSide);

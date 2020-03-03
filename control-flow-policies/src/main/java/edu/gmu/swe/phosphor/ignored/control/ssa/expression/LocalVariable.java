@@ -10,6 +10,10 @@ public final class LocalVariable implements Expression {
         this.version = -1;
     }
 
+    public int getIndex() {
+        return index;
+    }
+
     @Override
     public String toString() {
         if(version == -1) {
