@@ -12,9 +12,9 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.InvokeStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
-public class MethodInsnConverter extends InsnConverter {
+public class InvokeInsnConverter extends InsnConverter {
 
-    MethodInsnConverter(InsnConverter next) {
+    InvokeInsnConverter(InsnConverter next) {
         super(next);
     }
 
@@ -37,10 +37,14 @@ public class MethodInsnConverter extends InsnConverter {
         } else {
             throw new IllegalArgumentException();
         }
+        int count = expr.getArguments().length;
+        if(expr.getReceiver() != null) {
+            count++;
+        }
         if(ret.getSort() == Type.VOID) {
             statement = new InvokeStatement(expr);
         } else {
-            StackElement next = new StackElement(frame.getStackSize());
+            StackElement next = new StackElement(frame.getStackSize() - count);
             statement = new AssignmentStatement(next, expr);
         }
         return new Statement[]{statement};

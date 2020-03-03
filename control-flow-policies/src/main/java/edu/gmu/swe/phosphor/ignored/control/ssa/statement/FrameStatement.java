@@ -18,6 +18,39 @@ public final class FrameStatement implements Statement {
     private final int nStack;
     private final Object[] stack;
 
+    public FrameStatement(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
+        this.type = type;
+        switch(type) {
+            case F_NEW:
+                typeDesc = "F_NEW";
+                break;
+            case F_FULL:
+                typeDesc = "F_FULL";
+                break;
+            case TaintUtils.RAW_INSN:
+                typeDesc = "RAW_INSN";
+                break;
+            case F_APPEND:
+                typeDesc = "F_APPEND";
+                break;
+            case F_CHOP:
+                typeDesc = "F_CHOP";
+                break;
+            case F_SAME:
+                typeDesc = "F_SAME";
+                break;
+            case F_SAME1:
+                typeDesc = "F_SAME1";
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        this.nLocal = nLocal;
+        this.local = local.clone();
+        this.nStack = nStack;
+        this.stack = stack.clone();
+    }
+
     public FrameStatement(FrameNode frame) {
         this.type = frame.type;
         switch(type) {
@@ -88,18 +121,6 @@ public final class FrameStatement implements Statement {
         return String.format("{%s: %d | %s | %d | %s}", typeDesc, nLocal, Arrays.toString(local), nStack, Arrays.toString(stack));
     }
 
-    private static Object[] asArray(final List<Object> l) {
-        Object[] objs = new Object[l.size()];
-        for(int i = 0; i < objs.length; ++i) {
-            Object o = l.get(i);
-            if(o instanceof LabelNode) {
-                o = ((LabelNode) o).getLabel();
-            }
-            objs[i] = o;
-        }
-        return objs;
-    }
-
     @Override
     public boolean equals(Object o) {
         if(this == o) {
@@ -135,5 +156,17 @@ public final class FrameStatement implements Statement {
         result = 31 * result + nStack;
         result = 31 * result + Arrays.hashCode(stack);
         return result;
+    }
+
+    private static Object[] asArray(final List<Object> l) {
+        Object[] objs = new Object[l.size()];
+        for(int i = 0; i < objs.length; ++i) {
+            Object o = l.get(i);
+            if(o instanceof LabelNode) {
+                o = ((LabelNode) o).getLabel();
+            }
+            objs[i] = o;
+        }
+        return objs;
     }
 }

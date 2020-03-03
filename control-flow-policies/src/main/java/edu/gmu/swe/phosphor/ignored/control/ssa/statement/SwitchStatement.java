@@ -17,6 +17,16 @@ public final class SwitchStatement implements Statement {
     private final int[] keys;
     private final Expression value;
 
+    public SwitchStatement(Expression value, Label defaultLabel, Label[] labels, int[] keys) {
+        if(value == null) {
+            throw new NullPointerException();
+        }
+        this.value = value;
+        this.defaultLabel = defaultLabel;
+        this.labels = labels.clone();
+        this.keys = keys.clone();
+    }
+
     SwitchStatement(Expression value, LabelNode defaultLabel, Collection<LabelNode> labels) {
         if(value == null) {
             throw new NullPointerException();
@@ -26,7 +36,7 @@ public final class SwitchStatement implements Statement {
         this.labels = new Label[labels.size()];
         int i = 0;
         for(LabelNode label : labels) {
-            this.labels[i] = label.getLabel();
+            this.labels[i++] = label.getLabel();
         }
         this.keys = new int[labels.size()];
     }
@@ -50,7 +60,7 @@ public final class SwitchStatement implements Statement {
     public String toString() {
         StringBuilder builder = new StringBuilder("switch(").append(value).append(") {");
         for(int i = 0; i < labels.length; i++) {
-            builder.append("\n\tcase ").append(keys[i]).append(": goto").append(labels[i]).append(";");
+            builder.append("\n\tcase ").append(keys[i]).append(": goto ").append(labels[i]).append(";");
         }
         if(defaultLabel != null) {
             builder.append("\n\tdefault: goto ").append(defaultLabel).append(";");

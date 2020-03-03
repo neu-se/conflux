@@ -44,7 +44,7 @@ public abstract class InsnConverter {
             chain = new LabelInsnConverter(chain);
             chain = new LineNumberInsnConverter(chain);
             chain = new LocalVariableInsnConverter(chain);
-            chain = new MethodInsnConverter(chain);
+            chain = new InvokeInsnConverter(chain);
             chain = new MonitorInsnConverter(chain);
             chain = new NewInsnConverter(chain);
             chain = new ReturnInsnConverter(chain);

@@ -1,10 +1,13 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
+
 import java.util.Arrays;
 
 public final class NewArrayExpression implements Expression {
 
     private final String desc;
+    private final Type type;
     private final Expression[] dims;
 
     public NewArrayExpression(String desc, Expression dim) {
@@ -12,6 +15,7 @@ public final class NewArrayExpression implements Expression {
             throw new NullPointerException();
         }
         this.desc = desc;
+        this.type = Type.getType(desc);
         this.dims = new Expression[]{dim};
     }
 
@@ -20,13 +24,14 @@ public final class NewArrayExpression implements Expression {
             throw new NullPointerException();
         }
         this.desc = desc;
+        this.type = Type.getType(desc);
         this.dims = dims.clone();
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder("new ")
-                .append(desc);
+                .append(type.getClassName());
         for(Expression dim : dims) {
             builder.append("[");
             if(dim != null) {
@@ -48,7 +53,6 @@ public final class NewArrayExpression implements Expression {
         if(!desc.equals(that.desc)) {
             return false;
         }
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
         return Arrays.equals(dims, that.dims);
     }
 

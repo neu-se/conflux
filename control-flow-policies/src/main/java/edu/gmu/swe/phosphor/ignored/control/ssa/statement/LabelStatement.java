@@ -7,6 +7,13 @@ public final class LabelStatement implements Statement {
 
     private final Label label;
 
+    public LabelStatement(Label label) {
+        if(label == null) {
+            throw new NullPointerException();
+        }
+        this.label = label;
+    }
+
     public LabelStatement(LabelNode insn) {
         label = insn.getLabel();
         if(label == null) {

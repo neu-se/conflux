@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
@@ -8,6 +11,9 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 import org.junit.Test;
 
+import java.util.Iterator;
+
+import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.F_NEW;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.InsnConverterTestMethods.OWNER;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.ArrayLengthOperation.ARRAY_LENGTH;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.NegateOperation.NEGATE;
@@ -67,7 +73,7 @@ public class InsnConverterTest {
                         new StackElement(2),
                         new StackElement(3),
                         new StackElement(4)
-                })),
+                }, false)),
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -141,7 +147,7 @@ public class InsnConverterTest {
                         new StackElement(5),
                         new StackElement(6),
                         new StackElement(7)
-                })),
+                }, false)),
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -709,6 +715,350 @@ public class InsnConverterTest {
         assertEquals(expectedStatements, actualStatements);
     }
 
+    @Test
+    public void testGetFields() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.getFields();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(0), new FieldExpression(OWNER, "i", new StackElement(0))),
+                IdleStatement.POP,
+                new AssignmentStatement(new StackElement(0), new FieldExpression(OWNER, "b", null)),
+                IdleStatement.POP,
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testPutFields() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.putFields();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I1),
+                new AssignmentStatement(new FieldExpression(OWNER, "b", null), new StackElement(0)),
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
+                new AssignmentStatement(new FieldExpression(OWNER, "i", new StackElement(0)), new StackElement(1)),
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testInvokeDynamic() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.invokeDynamic();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
+                new AssignmentStatement(new StackElement(2), new LocalVariable(2)),
+                new AssignmentStatement(new StackElement(0),
+                        new InvokeExpression(InvokeExpression.INVOKE_DYNAMIC_OWNER, "run", null,
+                                new Expression[]{new StackElement(0), new StackElement(1), new StackElement(2)},
+                                true)),
+                IdleStatement.POP,
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testInvokeInterface() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.invokeInterface();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new InvokeStatement(new InvokeExpression("java/lang/Runnable", "run", new StackElement(0),
+                        new Expression[0], false)),
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testInvokeVirtual() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.invokeVirtual();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(0),
+                        new InvokeExpression("java/lang/Object", "toString", new StackElement(0), new Expression[0],
+                                false)),
+                IdleStatement.POP,
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testInvokeStatic() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.invokeStatic();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
+                new AssignmentStatement(new StackElement(2), new LocalVariable(2)),
+                new AssignmentStatement(new StackElement(0),
+                        new InvokeExpression(OWNER, "example", null, new Expression[]{
+                                new StackElement(0),
+                                new StackElement(1),
+                                new StackElement(2)
+                        }, false)),
+                new ReturnStatement(new StackElement(0))
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testConstructorCall() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.constructorCall();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new NewExpression("java/lang/String")),
+                new AssignmentStatement(new StackElement(1), new StackElement(0)),
+                new AssignmentStatement(new StackElement(2), new LocalVariable(0)),
+                new InvokeStatement(new InvokeExpression("java/lang/String", "<init>", new StackElement(1),
+                        new Expression[]{new StackElement(2)}, false)),
+                IdleStatement.POP,
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testNewArray() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.newArray();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I5),
+                new AssignmentStatement(new StackElement(0), new NewArrayExpression("I", new StackElement(0))),
+                IdleStatement.POP,
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
+                new AssignmentStatement(new StackElement(0), new NewArrayExpression("Ljava/lang/String;",
+                        new StackElement(0))),
+                IdleStatement.POP,
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testMultiNewArray() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.multiNewArray();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I2),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
+                new AssignmentStatement(new StackElement(0), new NewArrayExpression("Ljava/lang/String;",
+                        new Expression[]{new StackElement(0), new StackElement(1)})),
+                IdleStatement.POP,
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I3),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I2),
+                new AssignmentStatement(new StackElement(2), ConstantExpression.I1),
+                new AssignmentStatement(new StackElement(0), new NewArrayExpression("Ljava/lang/String;",
+                        new Expression[]{new StackElement(0), new StackElement(1), new StackElement(2), null})),
+                IdleStatement.POP,
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
+                new AssignmentStatement(new StackElement(0), new NewArrayExpression("Ljava/lang/String;",
+                        new Expression[]{new StackElement(0), null, null, null})),
+                IdleStatement.POP,
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I1),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
+
+                new AssignmentStatement(new StackElement(0), new NewArrayExpression("I",
+                        new Expression[]{new StackElement(0), new StackElement(1), null, null})),
+                IdleStatement.POP,
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testCompare() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.compare();
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(0), new BinaryExpression(BinaryOperation.COMPARE,
+                        new StackElement(0), new StackElement(1))),
+                IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(2)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(2)),
+                new AssignmentStatement(new StackElement(0), new BinaryExpression(BinaryOperation.COMPARE_L,
+                        new StackElement(0), new StackElement(1))),
+                IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(2)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(2)),
+                new AssignmentStatement(new StackElement(0), new BinaryExpression(BinaryOperation.COMPARE_G,
+                        new StackElement(0), new StackElement(1))),
+                IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(3)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(3)),
+                new AssignmentStatement(new StackElement(0), new BinaryExpression(BinaryOperation.COMPARE_L,
+                        new StackElement(0), new StackElement(1))),
+                IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(3)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(3)),
+                new AssignmentStatement(new StackElement(0), new BinaryExpression(BinaryOperation.COMPARE_G,
+                        new StackElement(0), new StackElement(1))),
+                IdleStatement.POP,
+                //
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testTableSwitch() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.tableSwitch();
+        Label l0 = getFirstLabel(methodNode);
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new SwitchStatement(new StackElement(0), l0, new Label[]{l0, l0, l0, l0, l0},
+                        new int[]{0, 1, 2, 3, 4}),
+                new LabelStatement(l0),
+                new FrameStatement(F_NEW, 0, new Object[0], 0, new Object[0]),
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testLookupSwitch() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.lookupSwitch();
+        Label l0 = getFirstLabel(methodNode);
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new SwitchStatement(new StackElement(0), l0, new Label[]{l0, l0, l0, l0},
+                        new int[]{0, 10, 78, 100}),
+                new LabelStatement(l0),
+                new FrameStatement(F_NEW, 0, new Object[0], 0, new Object[0]),
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testUnaryIf() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.unaryIf();
+        Label l0 = getFirstLabel(methodNode);
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                        ConstantExpression.I0), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                        ConstantExpression.I0), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new IfStatement(new ConditionExpression(Condition.LESS_THAN, new StackElement(0),
+                        ConstantExpression.I0), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new IfStatement(new ConditionExpression(Condition.GREATER_THAN_OR_EQUAL, new StackElement(0),
+                        ConstantExpression.I0), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new IfStatement(new ConditionExpression(Condition.GREATER_THAN, new StackElement(0),
+                        ConstantExpression.I0), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new IfStatement(new ConditionExpression(Condition.LESS_THAN_OR_EQUAL, new StackElement(0),
+                        ConstantExpression.I0), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
+                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                        ConstantExpression.NULL), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
+                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                        ConstantExpression.NULL), l0),
+                //
+                new LabelStatement(l0),
+                new FrameStatement(F_NEW, 0, new Object[0], 0, new Object[0]),
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testBinaryIf() throws Exception {
+        MethodNode methodNode = InsnConverterTestMethods.binaryIf();
+        Label l0 = getFirstLabel(methodNode);
+        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
+        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
+                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
+                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
+                new IfStatement(new ConditionExpression(Condition.LESS_THAN, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I2),
+                new IfStatement(new ConditionExpression(Condition.GREATER_THAN_OR_EQUAL, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I3),
+
+                new IfStatement(new ConditionExpression(Condition.GREATER_THAN, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(1), ConstantExpression.I4),
+                new IfStatement(new ConditionExpression(Condition.LESS_THAN_OR_EQUAL, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
+                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
+                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                        new StackElement(1)), l0),
+                //
+                new LabelStatement(l0),
+                new FrameStatement(F_NEW, 0, new Object[0], 0, new Object[0]),
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+    }
+
     private static void testBinaryLogicalOperation(BinaryOperation operation, MethodNode methodNode) throws Exception {
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
         List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
@@ -744,8 +1094,19 @@ public class InsnConverterTest {
                 new StackElement(1),
                 new StackElement(2),
                 new StackElement(3),
-        })));
+        }, false)));
         expectedStatements.add(new ReturnStatement(null));
         assertEquals(expectedStatements, actualStatements);
+    }
+
+    private static Label getFirstLabel(MethodNode methodNode) {
+        Iterator<AbstractInsnNode> itr = methodNode.instructions.iterator();
+        while(itr.hasNext()) {
+            AbstractInsnNode insn = itr.next();
+            if(insn instanceof LabelNode) {
+                return ((LabelNode) insn).getLabel();
+            }
+        }
+        throw new IllegalArgumentException();
     }
 }

@@ -9,16 +9,19 @@ import jdk.nashorn.internal.codegen.types.Type;
 
 import java.util.Arrays;
 
+import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKEDYNAMIC;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 public final class InvokeExpression implements Expression {
 
+    public static final String INVOKE_DYNAMIC_OWNER = "<invoke-dynamic>";
     private final String owner;
     private final String name;
     private final Expression receiver;
     private final Expression[] arguments;
+    private final boolean isInvokeDynamic;
 
-    public InvokeExpression(String owner, String name, Expression receiver, Expression[] arguments) {
+    public InvokeExpression(String owner, String name, Expression receiver, Expression[] arguments, boolean isInvokeDynamic) {
         if(owner == null || name == null) {
             throw new NullPointerException();
         }
@@ -26,6 +29,27 @@ public final class InvokeExpression implements Expression {
         this.name = name;
         this.receiver = receiver;
         this.arguments = arguments.clone();
+        this.isInvokeDynamic = isInvokeDynamic;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isInvokeDynamic() {
+        return isInvokeDynamic;
+    }
+
+    public Expression getReceiver() {
+        return receiver;
+    }
+
+    public Expression[] getArguments() {
+        return arguments.clone();
     }
 
     @Override
@@ -52,6 +76,9 @@ public final class InvokeExpression implements Expression {
             return false;
         }
         InvokeExpression that = (InvokeExpression) o;
+        if(isInvokeDynamic != that.isInvokeDynamic) {
+            return false;
+        }
         if(!owner.equals(that.owner)) {
             return false;
         }
@@ -61,7 +88,6 @@ public final class InvokeExpression implements Expression {
         if(receiver != null ? !receiver.equals(that.receiver) : that.receiver != null) {
             return false;
         }
-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
         return Arrays.equals(arguments, that.arguments);
     }
 
@@ -85,7 +111,7 @@ public final class InvokeExpression implements Expression {
         if(insn.getOpcode() != INVOKESTATIC) {
             receiver = new StackElement(top - arguments.length - 1);
         }
-        return new InvokeExpression(insn.owner, insn.name, receiver, arguments);
+        return new InvokeExpression(insn.owner, insn.name, receiver, arguments, false);
     }
 
     public static InvokeExpression getInstance(InvokeDynamicInsnNode insn, Frame<TypeValue> frame) {
@@ -96,9 +122,9 @@ public final class InvokeExpression implements Expression {
             arguments[i] = new StackElement(top - arguments.length + i);
         }
         Expression receiver = null;
-        if(insn.getOpcode() != INVOKESTATIC) {
+        if(insn.getOpcode() != INVOKESTATIC && insn.getOpcode() != INVOKEDYNAMIC) {
             receiver = new StackElement(top - arguments.length - 1);
         }
-        return new InvokeExpression(insn.bsm.getOwner(), insn.name, receiver, arguments);
+        return new InvokeExpression(INVOKE_DYNAMIC_OWNER, insn.name, receiver, arguments, true);
     }
 }

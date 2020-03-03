@@ -6,16 +6,19 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.IntInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MultiANewArrayInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TypeInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.NewArrayExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.NewExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.IdleStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
 public class NewInsnConverter extends InsnConverter {
+
+    private static final String[] operandDescMap = new String[]{null, null, null, null, "Z", "C", "F", "D", "B",
+            "S", "I", "J"};
 
     NewInsnConverter(InsnConverter next) {
         super(next);
@@ -37,63 +40,51 @@ public class NewInsnConverter extends InsnConverter {
     @Override
     protected Statement[] process(AbstractInsnNode insn, Frame<TypeValue> frame) {
         int opcode = insn.getOpcode();
-        Statement statement;
         if(opcode == NEW) {
             // -> objectref
             String desc = ((TypeInsnNode) insn).desc;
             NewExpression expr = new NewExpression(desc);
             StackElement next = new StackElement(frame.getStackSize());
-            statement = new AssignmentStatement(next, expr);
-        } else if(opcode == ANEWARRAY) {
-            // count -> arrayref
-            String desc = ((TypeInsnNode) insn).desc;
-            StackElement first = new StackElement(frame.getStackSize() - 1);
-            NewArrayExpression expr = new NewArrayExpression(desc, first);
-            statement = new AssignmentStatement(first, expr);
-        } else if(opcode == NEWARRAY) {
-            // count -> arrayref
-            int operand = ((IntInsnNode) insn).operand;
-            String desc;
-            switch(operand) {
-                case T_BOOLEAN:
-                    desc = "boolean";
-                    break;
-                case T_CHAR:
-                    desc = "char";
-                    break;
-                case T_FLOAT:
-                    desc = "float";
-                    break;
-                case T_DOUBLE:
-                    desc = "double";
-                    break;
-                case T_BYTE:
-                    desc = "byte";
-                    break;
-                case T_SHORT:
-                    desc = "short";
-                    break;
-                case T_INT:
-                    desc = "int";
-                    break;
-                case T_LONG:
-                    desc = "long";
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+            return new Statement[]{new AssignmentStatement(next, expr)};
+        }
+        String desc;
+        int pushedDimensions;
+        int dimensions = 0;
+        if(opcode == ANEWARRAY) {
+            desc = ((TypeInsnNode) insn).desc;
+            if(desc.contains("/") && !desc.contains(";")) {
+                desc = "L" + desc + ";";
             }
-            StackElement first = new StackElement(frame.getStackSize() - 1);
-            NewArrayExpression expr = new NewArrayExpression(desc, first);
-            statement = new AssignmentStatement(first, expr);
+            pushedDimensions = 1;
+            dimensions++;
+        } else if(opcode == NEWARRAY) {
+            desc = operandDescMap[((IntInsnNode) insn).operand];
+            if(desc == null) {
+                throw new IllegalArgumentException();
+            }
+            pushedDimensions = 1;
+            dimensions++;
         } else if(opcode == MULTIANEWARRAY) {
-            // count1, [count2, ...] -> arrayref
-            String desc = ((MultiANewArrayInsnNode) insn).desc;
-            int dims = ((MultiANewArrayInsnNode) insn).dims;
-            // TODO
-            statement = IdleStatement.UNIMPLEMENTED;
+            desc = ((MultiANewArrayInsnNode) insn).desc;
+            pushedDimensions = ((MultiANewArrayInsnNode) insn).dims;
         } else {
             throw new IllegalArgumentException();
         }
-        return new Statement[]{statement};
+        int count = 0;
+        for(char c : desc.toCharArray()) {
+            if(c == '[') {
+                count++;
+            } else {
+                break;
+            }
+        }
+        desc = desc.substring(count);
+        dimensions += count;
+        Expression[] dims = new Expression[dimensions];
+        for(int i = 0; i < pushedDimensions; i++) {
+            dims[i] = new StackElement(frame.getStackSize() - pushedDimensions + i);
+        }
+        NewArrayExpression expr = new NewArrayExpression(desc, dims);
+        return new Statement[]{new AssignmentStatement(new StackElement(frame.getStackSize() - pushedDimensions), expr)};
     }
 }
