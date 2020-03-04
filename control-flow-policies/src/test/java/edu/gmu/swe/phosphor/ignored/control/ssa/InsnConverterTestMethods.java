@@ -755,24 +755,54 @@ public class InsnConverterTestMethods {
     }
 
     public static MethodNode invokeDynamic() {
-        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "invokeDynamic", "(III)V",
-                null, null);
-        methodNode.visitCode();
-        methodNode.visitVarInsn(ILOAD, 0);
-        methodNode.visitVarInsn(ILOAD, 1);
-        methodNode.visitVarInsn(ILOAD, 2);
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC, "invokeDynamic", "([Ljava/lang/String;ILjava/util/Comparator;)V",
+                "([Ljava/lang/String;ILjava/util/Comparator<Ljava/lang/String;>;)V", null);
         @SuppressWarnings("all")
         Handle h1 = new Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
                 "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;" +
                         "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)" +
                         "Ljava/lang/invoke/CallSite;");
         @SuppressWarnings("all")
-        Handle h2 = new Handle(H_INVOKESTATIC, OWNER, "lambda$invokeDynamic$0", "(III)V");
-        methodNode.visitInvokeDynamicInsn("run", "(III)Ljava/lang/Runnable;", h1, Type.getType("()V"),
-                h2, Type.getType("()V"));
+        Handle h2 = new Handle(H_INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
+        @SuppressWarnings("all")
+        Handle h3 = new Handle(H_INVOKESTATIC, OWNER, "lambda$invokeDynamic$0", "([Ljava/lang/String;I)Ljava/lang/String;");
+        @SuppressWarnings("all")
+        Handle h4 = new Handle(H_INVOKESPECIAL, OWNER, "lambda$invokeDynamic$1", "()Ljava/lang/String;");
+        @SuppressWarnings("all")
+        Handle h5 = new Handle(H_NEWINVOKESPECIAL, "java/util/ArrayList", "<init>", "()V");
+        @SuppressWarnings("all")
+        Handle h6 = new Handle(H_INVOKEINTERFACE, "java/util/Comparator", "compare",
+                "(Ljava/lang/Object;Ljava/lang/Object;)I");
+        String desc1 = "(Ledu/gmu/swe/phosphor/ignored/control/ssa/InsnConverterTestMethods;)Ljava/util/function/Supplier;";
+        //
+        methodNode.visitCode();
+        methodNode.visitVarInsn(ALOAD, 0);
+        methodNode.visitInvokeDynamicInsn("get", desc1, h1, Type.getType("()Ljava/lang/Object;"), h2,
+                Type.getType("()Ljava/lang/String;"));
         methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ALOAD, 1);
+        methodNode.visitVarInsn(ILOAD, 2);
+        methodNode.visitInvokeDynamicInsn("get", "([Ljava/lang/String;I)Ljava/util/function/Supplier;", h1,
+                Type.getType("()Ljava/lang/Object;"), h3, Type.getType("()Ljava/lang/String;"));
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ALOAD, 0);
+        methodNode.visitInvokeDynamicInsn("get", desc1, h1, Type.getType("()Ljava/lang/Object;"), h4,
+                Type.getType("()Ljava/lang/String;"));
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitInvokeDynamicInsn("get", "()Ljava/util/function/Supplier;", h1,
+                Type.getType("()Ljava/lang/Object;"), h5, Type.getType("()Ljava/util/ArrayList;"));
+        methodNode.visitInsn(POP);
+        //
+        methodNode.visitVarInsn(ALOAD, 3);
+        methodNode.visitInvokeDynamicInsn("compare", "(Ljava/util/Comparator;)Ljava/util/Comparator;", h1,
+                Type.getType("(Ljava/lang/Object;Ljava/lang/Object;)I"), h6, Type.getType("(Ljava/lang/String;Ljava/lang/String;)I"));
+        methodNode.visitInsn(POP);
+        //
         methodNode.visitInsn(RETURN);
-        methodNode.visitMaxs(3, 3);
+        methodNode.visitMaxs(2, 4);
         methodNode.visitEnd();
         return methodNode;
     }
@@ -930,7 +960,7 @@ public class InsnConverterTestMethods {
         methodNode.visitVarInsn(ILOAD, 0);
         methodNode.visitLookupSwitchInsn(l0, new int[]{0, 10, 78, 100}, new Label[]{l0, l0, l0, l0});
         methodNode.visitLabel(l0);
-        methodNode.visitFrame(F_NEW,0, new Object[0], 0, new Object[0]);
+        methodNode.visitFrame(F_NEW, 0, new Object[0], 0, new Object[0]);
         methodNode.visitInsn(RETURN);
         methodNode.visitMaxs(1, 1);
         methodNode.visitEnd();

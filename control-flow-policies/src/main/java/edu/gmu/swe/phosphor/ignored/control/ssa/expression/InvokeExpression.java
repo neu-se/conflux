@@ -1,64 +1,91 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.InvokeDynamicInsnNode;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodInsnNode;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
-import jdk.nashorn.internal.codegen.types.Type;
 
 import java.util.Arrays;
 
-import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKEDYNAMIC;
-import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKESTATIC;
-
 public final class InvokeExpression implements Expression {
 
-    public static final String INVOKE_DYNAMIC_OWNER = "<invoke-dynamic>";
+    /**
+     * The internal name of the class that owns the method being called or null for INVOKEDYNAMIC instructions
+     */
     private final String owner;
-    private final String name;
-    private final Expression receiver;
-    private final Expression[] arguments;
-    private final boolean isInvokeDynamic;
 
-    public InvokeExpression(String owner, String name, Expression receiver, Expression[] arguments, boolean isInvokeDynamic) {
-        if(owner == null || name == null) {
+    /**
+     * The name of the method, non-null.
+     */
+    private final String name;
+
+    /**
+     * The receiver instance of the method call for INVOKEVIRTUAL, INVOKESPECIAL and INVOKEINTERFACE instructions.
+     * Null for INVOKESTATIC and INVOKEDYNAMIC instructions.
+     */
+    private final Expression receiver;
+
+    /**
+     * The arguments passed to the call, non-null.
+     */
+    private final Expression[] arguments;
+
+    /**
+     * The type of method call, non-null.
+     */
+    private final InvocationType type;
+
+    public InvokeExpression(String owner, String name, Expression receiver, Expression[] arguments, InvocationType type) {
+        if(name == null || type == null) {
             throw new NullPointerException();
+        }
+        switch(type) {
+            case INVOKE_STATIC:
+            case INVOKE_DYNAMIC:
+                if(receiver != null) {
+                    throw new IllegalArgumentException();
+                }
+                break;
+            case INVOKE_SPECIAL:
+            case INVOKE_VIRTUAL:
+            case INVOKE_INTERFACE:
+                if(receiver == null) {
+                    throw new IllegalArgumentException();
+                }
+        }
+        switch(type) {
+            case INVOKE_DYNAMIC:
+                if(owner != null) {
+                    throw new IllegalArgumentException();
+                }
+                break;
+            case INVOKE_STATIC:
+
+            case INVOKE_SPECIAL:
+            case INVOKE_VIRTUAL:
+            case INVOKE_INTERFACE:
+                if(owner == null) {
+                    throw new IllegalArgumentException();
+                }
         }
         this.owner = owner;
         this.name = name;
         this.receiver = receiver;
         this.arguments = arguments.clone();
-        this.isInvokeDynamic = isInvokeDynamic;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isInvokeDynamic() {
-        return isInvokeDynamic;
-    }
-
-    public Expression getReceiver() {
-        return receiver;
-    }
-
-    public Expression[] getArguments() {
-        return arguments.clone();
+        this.type = type;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if(receiver == null) {
-            builder.append(owner);
-        } else {
-            builder.append(receiver);
+        switch(type) {
+            case INVOKE_STATIC:
+                builder.append(owner);
+                break;
+            case INVOKE_DYNAMIC:
+                builder.append(type);
+                break;
+            case INVOKE_SPECIAL:
+            case INVOKE_VIRTUAL:
+            case INVOKE_INTERFACE:
+                builder.append(receiver);
         }
         String[] stringArgs = new String[arguments.length];
         for(int i = 0; i < arguments.length; i++) {
@@ -76,10 +103,7 @@ public final class InvokeExpression implements Expression {
             return false;
         }
         InvokeExpression that = (InvokeExpression) o;
-        if(isInvokeDynamic != that.isInvokeDynamic) {
-            return false;
-        }
-        if(!owner.equals(that.owner)) {
+        if(owner != null ? !owner.equals(that.owner) : that.owner != null) {
             return false;
         }
         if(!name.equals(that.name)) {
@@ -88,43 +112,19 @@ public final class InvokeExpression implements Expression {
         if(receiver != null ? !receiver.equals(that.receiver) : that.receiver != null) {
             return false;
         }
-        return Arrays.equals(arguments, that.arguments);
+        if(!Arrays.equals(arguments, that.arguments)) {
+            return false;
+        }
+        return type == that.type;
     }
 
     @Override
     public int hashCode() {
-        int result = owner.hashCode();
+        int result = owner != null ? owner.hashCode() : 0;
         result = 31 * result + name.hashCode();
         result = 31 * result + (receiver != null ? receiver.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(arguments);
+        result = 31 * result + type.hashCode();
         return result;
-    }
-
-    public static InvokeExpression getInstance(MethodInsnNode insn, Frame<TypeValue> frame) {
-        int numArguments = Type.getMethodArguments(insn.desc).length;
-        int top = frame.getStackSize();
-        Expression[] arguments = new StackElement[numArguments];
-        for(int i = 0; i < arguments.length; i++) {
-            arguments[i] = new StackElement(top - arguments.length + i);
-        }
-        Expression receiver = null;
-        if(insn.getOpcode() != INVOKESTATIC) {
-            receiver = new StackElement(top - arguments.length - 1);
-        }
-        return new InvokeExpression(insn.owner, insn.name, receiver, arguments, false);
-    }
-
-    public static InvokeExpression getInstance(InvokeDynamicInsnNode insn, Frame<TypeValue> frame) {
-        int numArguments = Type.getMethodArguments(insn.desc).length;
-        int top = frame.getStackSize();
-        Expression[] arguments = new StackElement[numArguments];
-        for(int i = 0; i < arguments.length; i++) {
-            arguments[i] = new StackElement(top - arguments.length + i);
-        }
-        Expression receiver = null;
-        if(insn.getOpcode() != INVOKESTATIC && insn.getOpcode() != INVOKEDYNAMIC) {
-            receiver = new StackElement(top - arguments.length - 1);
-        }
-        return new InvokeExpression(INVOKE_DYNAMIC_OWNER, insn.name, receiver, arguments, true);
     }
 }

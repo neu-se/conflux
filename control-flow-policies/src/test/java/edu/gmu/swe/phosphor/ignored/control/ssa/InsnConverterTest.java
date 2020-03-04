@@ -16,6 +16,7 @@ import java.util.Iterator;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.F_NEW;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.InsnConverterTestMethods.OWNER;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.ArrayLengthOperation.ARRAY_LENGTH;
+import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.InvocationType.*;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.NegateOperation.NEGATE;
 import static org.junit.Assert.assertEquals;
 
@@ -73,7 +74,7 @@ public class InsnConverterTest {
                         new StackElement(2),
                         new StackElement(3),
                         new StackElement(4)
-                }, false)),
+                }, INVOKE_STATIC)),
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -147,7 +148,7 @@ public class InsnConverterTest {
                         new StackElement(5),
                         new StackElement(6),
                         new StackElement(7)
-                }, false)),
+                }, INVOKE_STATIC)),
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -754,13 +755,37 @@ public class InsnConverterTest {
         List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
-                new AssignmentStatement(new StackElement(2), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression(InvokeExpression.INVOKE_DYNAMIC_OWNER, "run", null,
-                                new Expression[]{new StackElement(0), new StackElement(1), new StackElement(2)},
-                                true)),
+                        new InvokeExpression(null, "get", null,
+                                new Expression[]{new StackElement(0)},
+                                INVOKE_DYNAMIC)),
                 IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
+                new AssignmentStatement(new StackElement(1), new LocalVariable(2)),
+                new AssignmentStatement(new StackElement(0),
+                        new InvokeExpression(null, "get", null,
+                                new Expression[]{new StackElement(0), new StackElement(1)},
+                                INVOKE_DYNAMIC)),
+                IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
+                new AssignmentStatement(new StackElement(0),
+                        new InvokeExpression(null, "get", null,
+                                new Expression[]{new StackElement(0)},
+                                INVOKE_DYNAMIC)),
+                IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0),
+                        new InvokeExpression(null, "get", null, new Expression[]{}, INVOKE_DYNAMIC)),
+                IdleStatement.POP,
+                //
+                new AssignmentStatement(new StackElement(0), new LocalVariable(3)),
+                new AssignmentStatement(new StackElement(0),
+                        new InvokeExpression(null, "compare", null, new Expression[]{new StackElement(0)},
+                                INVOKE_DYNAMIC)),
+                IdleStatement.POP,
+                //
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -774,7 +799,7 @@ public class InsnConverterTest {
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new InvokeStatement(new InvokeExpression("java/lang/Runnable", "run", new StackElement(0),
-                        new Expression[0], false)),
+                        new Expression[0], INVOKE_INTERFACE)),
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -789,7 +814,7 @@ public class InsnConverterTest {
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
                         new InvokeExpression("java/lang/Object", "toString", new StackElement(0), new Expression[0],
-                                false)),
+                                INVOKE_VIRTUAL)),
                 IdleStatement.POP,
                 new ReturnStatement(null)
         ));
@@ -810,7 +835,7 @@ public class InsnConverterTest {
                                 new StackElement(0),
                                 new StackElement(1),
                                 new StackElement(2)
-                        }, false)),
+                        }, INVOKE_STATIC)),
                 new ReturnStatement(new StackElement(0))
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -826,7 +851,7 @@ public class InsnConverterTest {
                 new AssignmentStatement(new StackElement(1), new StackElement(0)),
                 new AssignmentStatement(new StackElement(2), new LocalVariable(0)),
                 new InvokeStatement(new InvokeExpression("java/lang/String", "<init>", new StackElement(1),
-                        new Expression[]{new StackElement(2)}, false)),
+                        new Expression[]{new StackElement(2)}, INVOKE_SPECIAL)),
                 IdleStatement.POP,
                 new ReturnStatement(null)
         ));
@@ -1094,7 +1119,7 @@ public class InsnConverterTest {
                 new StackElement(1),
                 new StackElement(2),
                 new StackElement(3),
-        }, false)));
+        }, INVOKE_STATIC)));
         expectedStatements.add(new ReturnStatement(null));
         assertEquals(expectedStatements, actualStatements);
     }
