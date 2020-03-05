@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+
 import java.util.Objects;
 
 public final class ObjectConstantExpression implements ConstantExpression {
@@ -41,5 +44,10 @@ public final class ObjectConstantExpression implements ConstantExpression {
         } else {
             return constant.toString();
         }
+    }
+
+    @Override
+    public ObjectConstantExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return this;
     }
 }

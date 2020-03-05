@@ -1,6 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 
 import java.util.Arrays;
 
@@ -61,5 +63,16 @@ public final class NewArrayExpression implements Expression {
         int result = desc.hashCode();
         result = 31 * result + Arrays.hashCode(dims);
         return result;
+    }
+
+    @Override
+    public NewArrayExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        Expression[] processedDims = new Expression[dims.length];
+        for(int i = 0; i < dims.length; i++) {
+            if(dims[i] != null) {
+                processedDims[i] = dims[i].process(versionStacks);
+            }
+        }
+        return new NewArrayExpression(desc, processedDims);
     }
 }

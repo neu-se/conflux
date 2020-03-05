@@ -2,6 +2,9 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 public final class LabelStatement implements Statement {
 
@@ -40,5 +43,10 @@ public final class LabelStatement implements Statement {
     @Override
     public int hashCode() {
         return label.hashCode();
+    }
+
+    @Override
+    public LabelStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return this;
     }
 }

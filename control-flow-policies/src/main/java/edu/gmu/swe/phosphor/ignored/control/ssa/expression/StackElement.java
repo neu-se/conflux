@@ -1,13 +1,22 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public final class StackElement implements Expression {
+public final class StackElement extends VersionedExpression {
 
     private final int index;
-    private final int version;
 
     public StackElement(int index) {
+        super(-1);
         this.index = index;
-        this.version = -1;
+    }
+
+    private StackElement(int index, int version) {
+        super(version);
+        this.index = index;
+    }
+
+    @Override
+    public StackElement setVersion(int version) {
+        return new StackElement(this.index, version);
     }
 
     public int getIndex() {
@@ -16,30 +25,27 @@ public final class StackElement implements Expression {
 
     @Override
     public String toString() {
-        if(version == -1) {
+        if(getVersion() == -1) {
             return String.format("s%d", index);
         }
-        return String.format("s%d_%d", index, version);
+        return String.format("s%d_%d", index, getVersion());
     }
 
     @Override
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof StackElement)) {
+        } else if(!(o instanceof StackElement) || !super.equals(o)) {
             return false;
         }
         StackElement that = (StackElement) o;
-        if(index != that.index) {
-            return false;
-        }
-        return version == that.version;
+        return index == that.index;
     }
 
     @Override
     public int hashCode() {
-        int result = index;
-        result = 31 * result + version;
+        int result = super.hashCode();
+        result = 31 * result + index;
         return result;
     }
 }

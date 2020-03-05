@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.ssa;
+package edu.gmu.swe.phosphor.ignored.control.ssa.converter;
 
 import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;

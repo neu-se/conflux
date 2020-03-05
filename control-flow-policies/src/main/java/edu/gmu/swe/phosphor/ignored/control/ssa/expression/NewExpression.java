@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+
 public final class NewExpression implements Expression {
 
     private final String desc;
@@ -30,5 +33,10 @@ public final class NewExpression implements Expression {
     @Override
     public int hashCode() {
         return desc.hashCode();
+    }
+
+    @Override
+    public NewExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return this;
     }
 }

@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+
 public final class BinaryExpression implements Expression {
 
     private final BinaryOperation operation;
@@ -43,5 +46,10 @@ public final class BinaryExpression implements Expression {
         result = 31 * result + operand1.hashCode();
         result = 31 * result + operand2.hashCode();
         return result;
+    }
+
+    @Override
+    public BinaryExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return new BinaryExpression(operation, operand1.process(versionStacks), operand2.process(versionStacks));
     }
 }

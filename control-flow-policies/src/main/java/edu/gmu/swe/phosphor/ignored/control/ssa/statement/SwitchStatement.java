@@ -4,8 +4,11 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LookupSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TableSwitchInsnNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -95,5 +98,10 @@ public final class SwitchStatement implements Statement {
         result = 31 * result + Arrays.hashCode(keys);
         result = 31 * result + value.hashCode();
         return result;
+    }
+
+    @Override
+    public SwitchStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return new SwitchStatement(value.process(versionStacks), defaultLabel, labels, keys);
     }
 }

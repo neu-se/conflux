@@ -1,13 +1,22 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public final class LocalVariable implements Expression {
+public final class LocalVariable extends VersionedExpression {
 
     private final int index;
-    private final int version;
 
     public LocalVariable(int index) {
+        super(-1);
         this.index = index;
-        this.version = -1;
+    }
+
+    private LocalVariable(int index, int version) {
+        super(version);
+        this.index = index;
+    }
+
+    @Override
+    public LocalVariable setVersion(int version) {
+        return new LocalVariable(this.index, version);
     }
 
     public int getIndex() {
@@ -16,30 +25,27 @@ public final class LocalVariable implements Expression {
 
     @Override
     public String toString() {
-        if(version == -1) {
+        if(getVersion() == -1) {
             return String.format("v%d", index);
         }
-        return String.format("v%d_%d", index, version);
+        return String.format("v%d_%d", index, getVersion());
     }
 
     @Override
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof LocalVariable)) {
+        } else if(!(o instanceof LocalVariable) || !super.equals(o)) {
             return false;
         }
         LocalVariable that = (LocalVariable) o;
-        if(index != that.index) {
-            return false;
-        }
-        return version == that.version;
+        return index == that.index;
     }
 
     @Override
     public int hashCode() {
-        int result = index;
-        result = 31 * result + version;
+        int result = super.hashCode();
+        result = 31 * result + index;
         return result;
     }
 }

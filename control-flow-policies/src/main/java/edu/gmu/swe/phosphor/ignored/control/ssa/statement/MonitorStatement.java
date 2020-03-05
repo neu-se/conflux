@@ -1,7 +1,10 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.MonitorOperation;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 public final class MonitorStatement implements Statement {
 
@@ -40,5 +43,10 @@ public final class MonitorStatement implements Statement {
         int result = operation.hashCode();
         result = 31 * result + operand.hashCode();
         return result;
+    }
+
+    @Override
+    public MonitorStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return new MonitorStatement(operation, operand.process(versionStacks));
     }
 }

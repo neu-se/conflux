@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+
 public final class DoubleConstantExpression implements ConstantExpression {
 
     private final double constant;
@@ -102,5 +105,10 @@ public final class DoubleConstantExpression implements ConstantExpression {
     @Override
     public String toString() {
         return String.valueOf(constant);
+    }
+
+    @Override
+    public DoubleConstantExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return this;
     }
 }

@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+
 public final class FieldExpression implements Expression {
 
     public final String owner;
@@ -47,5 +50,14 @@ public final class FieldExpression implements Expression {
         result = 31 * result + name.hashCode();
         result = 31 * result + (receiver != null ? receiver.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public FieldExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        if(receiver == null) {
+            return this;
+        } else {
+            return new FieldExpression(owner, name, receiver.process(versionStacks));
+        }
     }
 }

@@ -1,6 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public final class ConditionExpression {
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+
+public final class ConditionExpression implements Expression {
 
     private final Condition condition;
     private final Expression operand1;
@@ -43,5 +46,10 @@ public final class ConditionExpression {
         result = 31 * result + operand1.hashCode();
         result = 31 * result + operand2.hashCode();
         return result;
+    }
+
+    @Override
+    public ConditionExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return new ConditionExpression(condition, operand1.process(versionStacks), operand2.process(versionStacks));
     }
 }

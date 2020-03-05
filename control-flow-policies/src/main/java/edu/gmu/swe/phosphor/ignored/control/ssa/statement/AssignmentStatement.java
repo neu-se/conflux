@@ -1,6 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 public final class AssignmentStatement implements Statement {
 
@@ -47,5 +50,17 @@ public final class AssignmentStatement implements Statement {
         int result = leftHandSide.hashCode();
         result = 31 * result + rightHandSide.hashCode();
         return result;
+    }
+
+    @Override
+    public AssignmentStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+        Expression newRightHandSide = rightHandSide.process(versionStacks);
+        Expression newLeftHandSide;
+        if(versionStacks.containsKey(leftHandSide)) {
+            newLeftHandSide = versionStacks.get(leftHandSide).createNewVersion();
+        } else {
+            newLeftHandSide = leftHandSide.process(versionStacks);
+        }
+        return new AssignmentStatement(newLeftHandSide, newRightHandSide);
     }
 }

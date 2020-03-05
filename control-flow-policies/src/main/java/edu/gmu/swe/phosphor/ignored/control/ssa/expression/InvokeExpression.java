@@ -1,6 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 
 import java.util.Arrays;
 
@@ -126,5 +128,18 @@ public final class InvokeExpression implements Expression {
         result = 31 * result + Arrays.hashCode(arguments);
         result = 31 * result + type.hashCode();
         return result;
+    }
+
+    @Override
+    public InvokeExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        Expression processedReceiver = null;
+        Expression[] processedArguments = new Expression[arguments.length];
+        if(receiver != null) {
+            processedReceiver = receiver.process(versionStacks);
+        }
+        for(int i = 0; i < arguments.length; i++) {
+            processedArguments[i] = arguments[i].process(versionStacks);
+        }
+        return new InvokeExpression(owner, name, processedReceiver, processedArguments, type);
     }
 }

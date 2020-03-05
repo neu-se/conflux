@@ -1,6 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 public final class ReturnStatement implements Statement {
 
@@ -32,5 +35,14 @@ public final class ReturnStatement implements Statement {
     @Override
     public int hashCode() {
         return returnValue != null ? returnValue.hashCode() : 0;
+    }
+
+    @Override
+    public ReturnStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+        if(returnValue == null) {
+            return this;
+        } else {
+            return new ReturnStatement(returnValue.process(versionStacks));
+        }
     }
 }

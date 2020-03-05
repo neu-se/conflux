@@ -1,6 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 public final class GoToStatement implements Statement {
 
@@ -32,5 +35,10 @@ public final class GoToStatement implements Statement {
     @Override
     public int hashCode() {
         return target.hashCode();
+    }
+
+    @Override
+    public GoToStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return this;
     }
 }

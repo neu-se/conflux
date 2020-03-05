@@ -1,5 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+
 public final class ArrayExpression implements Expression {
 
     private final Expression arrayRef;
@@ -37,5 +40,10 @@ public final class ArrayExpression implements Expression {
         int result = arrayRef.hashCode();
         result = 31 * result + index.hashCode();
         return result;
+    }
+
+    @Override
+    public ArrayExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return new ArrayExpression(arrayRef.process(versionStacks), index.process(versionStacks));
     }
 }

@@ -3,6 +3,9 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.FrameNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 import java.util.Arrays;
 import java.util.List;
@@ -156,6 +159,11 @@ public final class FrameStatement implements Statement {
         result = 31 * result + nStack;
         result = 31 * result + Arrays.hashCode(stack);
         return result;
+    }
+
+    @Override
+    public FrameStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+        return this;
     }
 
     private static Object[] asArray(final List<Object> l) {

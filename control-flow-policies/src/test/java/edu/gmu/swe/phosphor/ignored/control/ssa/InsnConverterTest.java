@@ -26,7 +26,7 @@ public class InsnConverterTest {
     public void testPushPopConstants() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.pushPopConstants();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.NULL),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.M1),
@@ -61,7 +61,7 @@ public class InsnConverterTest {
     public void testLoadLocals() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.loadLocals();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
@@ -84,7 +84,7 @@ public class InsnConverterTest {
     public void testStoreLocals() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.storeLocals();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new LocalVariable(0), new StackElement(0)),
@@ -105,7 +105,7 @@ public class InsnConverterTest {
     public void testLoadArrayElements() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.loadArrayElements();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
@@ -158,7 +158,7 @@ public class InsnConverterTest {
     public void testStoreArrayElements() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.storeArrayElements();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
@@ -209,7 +209,7 @@ public class InsnConverterTest {
     public void testDup() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.dup();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), new StackElement(0)),
@@ -223,7 +223,7 @@ public class InsnConverterTest {
     public void testDupX1() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.dup_x1();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -241,7 +241,7 @@ public class InsnConverterTest {
     public void testDupX2() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.dup_x2();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -269,7 +269,7 @@ public class InsnConverterTest {
     public void testDup2() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.dup2();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -290,7 +290,7 @@ public class InsnConverterTest {
     public void testDup2X1() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.dup2_x1();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -320,7 +320,7 @@ public class InsnConverterTest {
     public void testDup2X2() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.dup2_x2();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -376,7 +376,7 @@ public class InsnConverterTest {
     public void testSwap() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.swap();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -418,7 +418,7 @@ public class InsnConverterTest {
     public void testShift() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.shift();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(0)),
@@ -473,7 +473,7 @@ public class InsnConverterTest {
     public void testNegate() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.negate();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0), new UnaryExpression(NEGATE, new StackElement(0))),
@@ -499,7 +499,7 @@ public class InsnConverterTest {
     public void testIinc() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.iinc();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new LocalVariable(0),
                         new BinaryExpression(BinaryOperation.ADD, new LocalVariable(0), ConstantExpression.I4)),
@@ -512,7 +512,7 @@ public class InsnConverterTest {
     public void testCast() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.cast();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -603,7 +603,7 @@ public class InsnConverterTest {
     public void testArrayLength() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.arrayLength();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -618,7 +618,7 @@ public class InsnConverterTest {
     public void testAthrow() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.athrow();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new ThrowStatement(new StackElement(0))
@@ -630,7 +630,7 @@ public class InsnConverterTest {
     public void testInstanceOf() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.instanceOf();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -645,7 +645,7 @@ public class InsnConverterTest {
     public void testIReturn() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.iReturn();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new ReturnStatement(new StackElement(0))
@@ -657,7 +657,7 @@ public class InsnConverterTest {
     public void testLReturn() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.lReturn();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.L0),
                 new ReturnStatement(new StackElement(0))
@@ -669,7 +669,7 @@ public class InsnConverterTest {
     public void testFReturn() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.fReturn();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.F0),
                 new ReturnStatement(new StackElement(0))
@@ -681,7 +681,7 @@ public class InsnConverterTest {
     public void testDReturn() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.dReturn();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.D0),
                 new ReturnStatement(new StackElement(0))
@@ -693,7 +693,7 @@ public class InsnConverterTest {
     public void testAReturn() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.aReturn();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.NULL),
                 new ReturnStatement(new StackElement(0))
@@ -705,7 +705,7 @@ public class InsnConverterTest {
     public void testMonitor() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.monitor();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new MonitorStatement(MonitorOperation.ENTER, new StackElement(0)),
@@ -720,7 +720,7 @@ public class InsnConverterTest {
     public void testGetFields() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.getFields();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0), new FieldExpression(OWNER, "i", new StackElement(0))),
@@ -736,7 +736,7 @@ public class InsnConverterTest {
     public void testPutFields() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.putFields();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I1),
                 new AssignmentStatement(new FieldExpression(OWNER, "b", null), new StackElement(0)),
@@ -752,7 +752,7 @@ public class InsnConverterTest {
     public void testInvokeDynamic() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.invokeDynamic();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -795,7 +795,7 @@ public class InsnConverterTest {
     public void testInvokeInterface() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.invokeInterface();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new InvokeStatement(new InvokeExpression("java/lang/Runnable", "run", new StackElement(0),
@@ -809,7 +809,7 @@ public class InsnConverterTest {
     public void testInvokeVirtual() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.invokeVirtual();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -825,7 +825,7 @@ public class InsnConverterTest {
     public void testInvokeStatic() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.invokeStatic();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
@@ -845,7 +845,7 @@ public class InsnConverterTest {
     public void testConstructorCall() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.constructorCall();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new NewExpression("java/lang/String")),
                 new AssignmentStatement(new StackElement(1), new StackElement(0)),
@@ -862,7 +862,7 @@ public class InsnConverterTest {
     public void testNewArray() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.newArray();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I5),
                 new AssignmentStatement(new StackElement(0), new NewArrayExpression("I", new StackElement(0))),
@@ -880,7 +880,7 @@ public class InsnConverterTest {
     public void testMultiNewArray() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.multiNewArray();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I2),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -912,7 +912,7 @@ public class InsnConverterTest {
     public void testCompare() throws Exception {
         MethodNode methodNode = InsnConverterTestMethods.compare();
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(0)),
@@ -954,7 +954,7 @@ public class InsnConverterTest {
         MethodNode methodNode = InsnConverterTestMethods.tableSwitch();
         Label l0 = getFirstLabel(methodNode);
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new SwitchStatement(new StackElement(0), l0, new Label[]{l0, l0, l0, l0, l0},
@@ -971,7 +971,7 @@ public class InsnConverterTest {
         MethodNode methodNode = InsnConverterTestMethods.lookupSwitch();
         Label l0 = getFirstLabel(methodNode);
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new SwitchStatement(new StackElement(0), l0, new Label[]{l0, l0, l0, l0},
@@ -988,7 +988,7 @@ public class InsnConverterTest {
         MethodNode methodNode = InsnConverterTestMethods.unaryIf();
         Label l0 = getFirstLabel(methodNode);
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
@@ -1034,7 +1034,7 @@ public class InsnConverterTest {
         MethodNode methodNode = InsnConverterTestMethods.binaryIf();
         Label l0 = getFirstLabel(methodNode);
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -1086,7 +1086,7 @@ public class InsnConverterTest {
 
     private static void testBinaryLogicalOperation(BinaryOperation operation, MethodNode methodNode) throws Exception {
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(0)),
@@ -1105,7 +1105,7 @@ public class InsnConverterTest {
 
     private static void testBinaryArithmeticOperation(BinaryOperation operation, MethodNode methodNode) throws Exception {
         SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.getFlattenedStatementsList();
+        List<Statement> actualStatements = analyzer.createStatementList();
         List<Statement> expectedStatements = new LinkedList<>();
         for(int i = 0; i < 4; i++) {
             int local = i > 1 ? i + 1 : i;
