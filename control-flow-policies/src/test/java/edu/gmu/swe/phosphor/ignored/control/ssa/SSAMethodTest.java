@@ -77,8 +77,7 @@ public class SSAMethodTest {
                 if(statement.definesVariable()) {
                     definitions.put(statement.definedVariable(), block);
                 }
-                if(!(statement instanceof AssignmentStatement)
-                        || !(((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction)) {
+                if(!isPhiFunctionStatement(statement)) {
                     for(VersionedExpression use : statement.usedVariables()) {
                         if(!uses.containsKey(use)) {
                             uses.put(use, new HashSet<>());
@@ -95,16 +94,6 @@ public class SSAMethodTest {
                         usingBlock, definingBlock), cfg.getDominatorSets().get(usingBlock).contains(definingBlock));
             }
         }
-    }
-
-    /**
-     * Checks that if a CFG vertex Z is the first vertex common to two nonnull paths X -> Z and Y -> Z
-     * that start at vertices X and Y contain at least one assignments to V, then a phi-function for V has been
-     * inserted at the entrance to Z.
-     */
-    @Theory
-    public void phiFunctionAtMerge(Method method) throws Exception {
-        SSAMethod ssaMethod = convertToSSA(method);
     }
 
     @DataPoints
@@ -130,5 +119,10 @@ public class SSAMethodTest {
             list.addAll(block.getStatements());
         }
         return list;
+    }
+
+    private static boolean isPhiFunctionStatement(Statement statement) {
+        return statement instanceof AssignmentStatement
+                && ((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction;
     }
 }
