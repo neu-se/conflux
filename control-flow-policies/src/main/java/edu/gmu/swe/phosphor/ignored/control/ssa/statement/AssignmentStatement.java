@@ -1,5 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
@@ -9,6 +10,8 @@ public final class AssignmentStatement implements Statement {
 
     private final Expression leftHandSide;
     private final Expression rightHandSide;
+    private final transient VersionedExpression definedVariable;
+    private final transient List<VersionedExpression> usedVariables;
 
     public AssignmentStatement(Expression leftHandSide, Expression rightHandSide) {
         if(leftHandSide == null || rightHandSide == null) {
@@ -16,6 +19,14 @@ public final class AssignmentStatement implements Statement {
         }
         this.leftHandSide = leftHandSide;
         this.rightHandSide = rightHandSide;
+        if(leftHandSide instanceof VersionedExpression) {
+            definedVariable = (VersionedExpression) leftHandSide;
+            usedVariables = Statement.gatherVersionedExpressions(rightHandSide);
+
+        } else {
+            definedVariable = null;
+            usedVariables = Statement.gatherVersionedExpressions(leftHandSide, rightHandSide);
+        }
     }
 
     public Expression getLeftHandSide() {
@@ -62,5 +73,15 @@ public final class AssignmentStatement implements Statement {
             newLeftHandSide = leftHandSide.process(versionStacks);
         }
         return new AssignmentStatement(newLeftHandSide, newRightHandSide);
+    }
+
+    @Override
+    public VersionedExpression definedVariable() {
+        return definedVariable;
+    }
+
+    @Override
+    public List<VersionedExpression> usedVariables() {
+        return usedVariables;
     }
 }

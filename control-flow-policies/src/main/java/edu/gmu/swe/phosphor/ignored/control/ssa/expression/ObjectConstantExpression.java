@@ -3,8 +3,6 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 
-import java.util.Objects;
-
 public final class ObjectConstantExpression implements ConstantExpression {
 
     private final Object constant;
@@ -15,8 +13,7 @@ public final class ObjectConstantExpression implements ConstantExpression {
 
     @Override
     public boolean canMerge(ConstantExpression other) {
-        return other instanceof ObjectConstantExpression
-                && Objects.equals(constant, ((ObjectConstantExpression) other).constant);
+        return this.equals(other);
     }
 
     @Override

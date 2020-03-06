@@ -3,11 +3,11 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.FrameNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
@@ -166,15 +166,15 @@ public final class FrameStatement implements Statement {
         return this;
     }
 
-    private static Object[] asArray(final List<Object> l) {
-        Object[] objs = new Object[l.size()];
-        for(int i = 0; i < objs.length; ++i) {
-            Object o = l.get(i);
+    private static Object[] asArray(final List<Object> list) {
+        Object[] objects = new Object[list.size()];
+        for(int i = 0; i < objects.length; ++i) {
+            Object o = list.get(i);
             if(o instanceof LabelNode) {
                 o = ((LabelNode) o).getLabel();
             }
-            objs[i] = o;
+            objects[i] = o;
         }
-        return objs;
+        return objects;
     }
 }

@@ -1,7 +1,9 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 public final class BinaryExpression implements Expression {
 
@@ -51,5 +53,10 @@ public final class BinaryExpression implements Expression {
     @Override
     public BinaryExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
         return new BinaryExpression(operation, operand1.process(versionStacks), operand2.process(versionStacks));
+    }
+
+    @Override
+    public List<VersionedExpression> referencedVariables() {
+        return Statement.gatherVersionedExpressions(operand1, operand2);
     }
 }

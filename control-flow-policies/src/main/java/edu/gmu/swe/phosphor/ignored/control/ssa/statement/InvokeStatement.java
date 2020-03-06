@@ -1,5 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.InvokeExpression;
@@ -7,13 +8,15 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 public final class InvokeStatement implements Statement {
 
-    private InvokeExpression expression;
+    private final InvokeExpression expression;
+    private final transient List<VersionedExpression> usedVariables;
 
     public InvokeStatement(InvokeExpression expression) {
         if(expression == null) {
             throw new NullPointerException();
         }
         this.expression = expression;
+        usedVariables = Statement.gatherVersionedExpressions(expression);
     }
 
     @Override
@@ -40,5 +43,10 @@ public final class InvokeStatement implements Statement {
     @Override
     public InvokeStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
         return new InvokeStatement(expression.process(versionStacks));
+    }
+
+    @Override
+    public List<VersionedExpression> usedVariables() {
+        return usedVariables;
     }
 }

@@ -1,6 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ConditionExpression;
@@ -10,6 +11,7 @@ public final class IfStatement implements Statement {
 
     private final ConditionExpression conditionExpression;
     private final Label target;
+    private final transient List<VersionedExpression> usedVariables;
 
     public IfStatement(ConditionExpression conditionExpression, Label target) {
         if(conditionExpression == null || target == null) {
@@ -17,6 +19,7 @@ public final class IfStatement implements Statement {
         }
         this.conditionExpression = conditionExpression;
         this.target = target;
+        usedVariables = Statement.gatherVersionedExpressions(conditionExpression);
     }
 
     @Override
@@ -48,5 +51,10 @@ public final class IfStatement implements Statement {
     @Override
     public IfStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
         return new IfStatement(conditionExpression.process(versionStacks), target);
+    }
+
+    @Override
+    public List<VersionedExpression> usedVariables() {
+        return usedVariables;
     }
 }

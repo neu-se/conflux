@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.ssa;
+package edu.gmu.swe.phosphor.ignored.control.tac;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Handle;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
@@ -7,9 +7,9 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
-public class InsnConverterTestMethods {
+public class ThreeAddressMethodTestMethods {
 
-    public static final String OWNER = Type.getInternalName(InsnConverterTestMethods.class);
+    public static final String OWNER = Type.getInternalName(ThreeAddressMethodTestMethods.class);
 
     public static MethodNode pushPopConstants() {
         MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "pushPopConstants", "()V",
@@ -773,7 +773,7 @@ public class InsnConverterTestMethods {
         @SuppressWarnings("all")
         Handle h6 = new Handle(H_INVOKEINTERFACE, "java/util/Comparator", "compare",
                 "(Ljava/lang/Object;Ljava/lang/Object;)I");
-        String desc1 = "(Ledu/gmu/swe/phosphor/ignored/control/ssa/InsnConverterTestMethods;)Ljava/util/function/Supplier;";
+        String desc1 = "(Ledu/gmu/swe/phosphor/ignored/control/ssa/ThreeAddressMethodTestMethods;)Ljava/util/function/Supplier;";
         //
         methodNode.visitCode();
         methodNode.visitVarInsn(ALOAD, 0);

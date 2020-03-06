@@ -1,5 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
@@ -7,10 +8,13 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
 
 public final class ReturnStatement implements Statement {
 
-    Expression returnValue;
+    private final Expression returnValue;
+    private final transient List<VersionedExpression> usedVariables;
+
 
     public ReturnStatement(Expression returnValue) {
         this.returnValue = returnValue;
+        usedVariables = Statement.gatherVersionedExpressions(returnValue);
     }
 
     @Override
@@ -44,5 +48,10 @@ public final class ReturnStatement implements Statement {
         } else {
             return new ReturnStatement(returnValue.process(versionStacks));
         }
+    }
+
+    @Override
+    public List<VersionedExpression> usedVariables() {
+        return usedVariables;
     }
 }

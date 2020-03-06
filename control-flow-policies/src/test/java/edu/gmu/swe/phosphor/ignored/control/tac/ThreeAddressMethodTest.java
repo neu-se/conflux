@@ -1,32 +1,34 @@
-package edu.gmu.swe.phosphor.ignored.control.ssa;
+package edu.gmu.swe.phosphor.ignored.control.tac;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
+import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
+import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethodTestMethods;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.F_NEW;
-import static edu.gmu.swe.phosphor.ignored.control.ssa.InsnConverterTestMethods.OWNER;
+import static edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethodTestMethods.OWNER;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.ArrayLengthOperation.ARRAY_LENGTH;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.InvocationType.*;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.NegateOperation.NEGATE;
 import static org.junit.Assert.assertEquals;
 
-public class InsnConverterTest {
+public class ThreeAddressMethodTest {
 
     @Test
     public void testPushPopConstants() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.pushPopConstants();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.pushPopConstants();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.NULL),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.M1),
@@ -59,9 +61,9 @@ public class InsnConverterTest {
 
     @Test
     public void testLoadLocals() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.loadLocals();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.loadLocals();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
@@ -82,9 +84,9 @@ public class InsnConverterTest {
 
     @Test
     public void testStoreLocals() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.storeLocals();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.storeLocals();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new LocalVariable(0), new StackElement(0)),
@@ -103,9 +105,9 @@ public class InsnConverterTest {
 
     @Test
     public void testLoadArrayElements() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.loadArrayElements();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.loadArrayElements();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
@@ -156,9 +158,9 @@ public class InsnConverterTest {
 
     @Test
     public void testStoreArrayElements() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.storeArrayElements();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.storeArrayElements();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
@@ -207,9 +209,9 @@ public class InsnConverterTest {
 
     @Test
     public void testDup() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.dup();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.dup();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), new StackElement(0)),
@@ -221,9 +223,9 @@ public class InsnConverterTest {
 
     @Test
     public void testDupX1() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.dup_x1();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.dup_x1();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -239,9 +241,9 @@ public class InsnConverterTest {
 
     @Test
     public void testDupX2() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.dup_x2();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.dup_x2();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -267,9 +269,9 @@ public class InsnConverterTest {
 
     @Test
     public void testDup2() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.dup2();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.dup2();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -288,9 +290,9 @@ public class InsnConverterTest {
 
     @Test
     public void testDup2X1() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.dup2_x1();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.dup2_x1();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -318,9 +320,9 @@ public class InsnConverterTest {
 
     @Test
     public void testDup2X2() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.dup2_x2();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.dup2_x2();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -374,9 +376,9 @@ public class InsnConverterTest {
 
     @Test
     public void testSwap() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.swap();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.swap();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -391,34 +393,34 @@ public class InsnConverterTest {
 
     @Test
     public void testAdd() throws Exception {
-        testBinaryArithmeticOperation(BinaryOperation.ADD, InsnConverterTestMethods.add());
+        testBinaryArithmeticOperation(BinaryOperation.ADD, ThreeAddressMethodTestMethods.add());
     }
 
     @Test
     public void testSubtract() throws Exception {
-        testBinaryArithmeticOperation(BinaryOperation.SUBTRACT, InsnConverterTestMethods.subtract());
+        testBinaryArithmeticOperation(BinaryOperation.SUBTRACT, ThreeAddressMethodTestMethods.subtract());
     }
 
     @Test
     public void testMultiply() throws Exception {
-        testBinaryArithmeticOperation(BinaryOperation.MULTIPLY, InsnConverterTestMethods.multiply());
+        testBinaryArithmeticOperation(BinaryOperation.MULTIPLY, ThreeAddressMethodTestMethods.multiply());
     }
 
     @Test
     public void testDivide() throws Exception {
-        testBinaryArithmeticOperation(BinaryOperation.DIVIDE, InsnConverterTestMethods.divide());
+        testBinaryArithmeticOperation(BinaryOperation.DIVIDE, ThreeAddressMethodTestMethods.divide());
     }
 
     @Test
     public void testRemainder() throws Exception {
-        testBinaryArithmeticOperation(BinaryOperation.REMAINDER, InsnConverterTestMethods.remainder());
+        testBinaryArithmeticOperation(BinaryOperation.REMAINDER, ThreeAddressMethodTestMethods.remainder());
     }
 
     @Test
     public void testShift() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.shift();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.shift();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(0)),
@@ -456,24 +458,24 @@ public class InsnConverterTest {
 
     @Test
     public void testAnd() throws Exception {
-        testBinaryLogicalOperation(BinaryOperation.BITWISE_AND, InsnConverterTestMethods.and());
+        testBinaryLogicalOperation(BinaryOperation.BITWISE_AND, ThreeAddressMethodTestMethods.and());
     }
 
     @Test
     public void testOr() throws Exception {
-        testBinaryLogicalOperation(BinaryOperation.BITWISE_OR, InsnConverterTestMethods.or());
+        testBinaryLogicalOperation(BinaryOperation.BITWISE_OR, ThreeAddressMethodTestMethods.or());
     }
 
     @Test
     public void testXor() throws Exception {
-        testBinaryLogicalOperation(BinaryOperation.BITWISE_XOR, InsnConverterTestMethods.xor());
+        testBinaryLogicalOperation(BinaryOperation.BITWISE_XOR, ThreeAddressMethodTestMethods.xor());
     }
 
     @Test
     public void testNegate() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.negate();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.negate();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0), new UnaryExpression(NEGATE, new StackElement(0))),
@@ -497,9 +499,9 @@ public class InsnConverterTest {
 
     @Test
     public void testIinc() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.iinc();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.iinc();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new LocalVariable(0),
                         new BinaryExpression(BinaryOperation.ADD, new LocalVariable(0), ConstantExpression.I4)),
@@ -510,9 +512,9 @@ public class InsnConverterTest {
 
     @Test
     public void testCast() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.cast();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.cast();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -601,9 +603,9 @@ public class InsnConverterTest {
 
     @Test
     public void testArrayLength() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.arrayLength();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.arrayLength();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -616,9 +618,9 @@ public class InsnConverterTest {
 
     @Test
     public void testAthrow() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.athrow();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.athrow();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new ThrowStatement(new StackElement(0))
@@ -628,9 +630,9 @@ public class InsnConverterTest {
 
     @Test
     public void testInstanceOf() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.instanceOf();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.instanceOf();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -643,9 +645,9 @@ public class InsnConverterTest {
 
     @Test
     public void testIReturn() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.iReturn();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.iReturn();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
                 new ReturnStatement(new StackElement(0))
@@ -655,9 +657,9 @@ public class InsnConverterTest {
 
     @Test
     public void testLReturn() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.lReturn();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.lReturn();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.L0),
                 new ReturnStatement(new StackElement(0))
@@ -667,9 +669,9 @@ public class InsnConverterTest {
 
     @Test
     public void testFReturn() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.fReturn();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.fReturn();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.F0),
                 new ReturnStatement(new StackElement(0))
@@ -679,9 +681,9 @@ public class InsnConverterTest {
 
     @Test
     public void testDReturn() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.dReturn();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.dReturn();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.D0),
                 new ReturnStatement(new StackElement(0))
@@ -691,9 +693,9 @@ public class InsnConverterTest {
 
     @Test
     public void testAReturn() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.aReturn();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.aReturn();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.NULL),
                 new ReturnStatement(new StackElement(0))
@@ -703,9 +705,9 @@ public class InsnConverterTest {
 
     @Test
     public void testMonitor() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.monitor();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.monitor();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new MonitorStatement(MonitorOperation.ENTER, new StackElement(0)),
@@ -718,9 +720,9 @@ public class InsnConverterTest {
 
     @Test
     public void testGetFields() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.getFields();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.getFields();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0), new FieldExpression(OWNER, "i", new StackElement(0))),
@@ -734,9 +736,9 @@ public class InsnConverterTest {
 
     @Test
     public void testPutFields() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.putFields();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.putFields();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I1),
                 new AssignmentStatement(new FieldExpression(OWNER, "b", null), new StackElement(0)),
@@ -750,9 +752,9 @@ public class InsnConverterTest {
 
     @Test
     public void testInvokeDynamic() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.invokeDynamic();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.invokeDynamic();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -793,9 +795,9 @@ public class InsnConverterTest {
 
     @Test
     public void testInvokeInterface() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.invokeInterface();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.invokeInterface();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new InvokeStatement(new InvokeExpression("java/lang/Runnable", "run", new StackElement(0),
@@ -807,9 +809,9 @@ public class InsnConverterTest {
 
     @Test
     public void testInvokeVirtual() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.invokeVirtual();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.invokeVirtual();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
@@ -823,9 +825,9 @@ public class InsnConverterTest {
 
     @Test
     public void testInvokeStatic() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.invokeStatic();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.invokeStatic();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
@@ -843,9 +845,9 @@ public class InsnConverterTest {
 
     @Test
     public void testConstructorCall() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.constructorCall();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.constructorCall();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new NewExpression("java/lang/String")),
                 new AssignmentStatement(new StackElement(1), new StackElement(0)),
@@ -860,9 +862,9 @@ public class InsnConverterTest {
 
     @Test
     public void testNewArray() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.newArray();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.newArray();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I5),
                 new AssignmentStatement(new StackElement(0), new NewArrayExpression("I", new StackElement(0))),
@@ -878,9 +880,9 @@ public class InsnConverterTest {
 
     @Test
     public void testMultiNewArray() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.multiNewArray();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.multiNewArray();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I2),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -910,9 +912,9 @@ public class InsnConverterTest {
 
     @Test
     public void testCompare() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.compare();
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.compare();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(0)),
@@ -951,10 +953,10 @@ public class InsnConverterTest {
 
     @Test
     public void testTableSwitch() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.tableSwitch();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.tableSwitch();
         Label l0 = getFirstLabel(methodNode);
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new SwitchStatement(new StackElement(0), l0, new Label[]{l0, l0, l0, l0, l0},
@@ -968,10 +970,10 @@ public class InsnConverterTest {
 
     @Test
     public void testLookupSwitch() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.lookupSwitch();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.lookupSwitch();
         Label l0 = getFirstLabel(methodNode);
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new SwitchStatement(new StackElement(0), l0, new Label[]{l0, l0, l0, l0},
@@ -985,10 +987,10 @@ public class InsnConverterTest {
 
     @Test
     public void testUnaryIf() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.unaryIf();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.unaryIf();
         Label l0 = getFirstLabel(methodNode);
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
@@ -1031,10 +1033,10 @@ public class InsnConverterTest {
 
     @Test
     public void testBinaryIf() throws Exception {
-        MethodNode methodNode = InsnConverterTestMethods.binaryIf();
+        MethodNode methodNode = ThreeAddressMethodTestMethods.binaryIf();
         Label l0 = getFirstLabel(methodNode);
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
@@ -1085,8 +1087,8 @@ public class InsnConverterTest {
     }
 
     private static void testBinaryLogicalOperation(BinaryOperation operation, MethodNode methodNode) throws Exception {
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(0)),
@@ -1104,8 +1106,8 @@ public class InsnConverterTest {
     }
 
     private static void testBinaryArithmeticOperation(BinaryOperation operation, MethodNode methodNode) throws Exception {
-        SSAAnalyzer analyzer = new SSAAnalyzer(OWNER, methodNode);
-        List<Statement> actualStatements = analyzer.createStatementList();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>();
         for(int i = 0; i < 4; i++) {
             int local = i > 1 ? i + 1 : i;
@@ -1133,5 +1135,15 @@ public class InsnConverterTest {
             }
         }
         throw new IllegalArgumentException();
+    }
+
+    private static List<Statement> createStatementList(ThreeAddressMethod method) {
+        List<Statement> statements = new LinkedList<>();
+        Iterator<AbstractInsnNode> itr = method.getOriginalMethod().instructions.iterator();
+        while(itr.hasNext()) {
+            Statement[] s = method.getStatementMap().get(itr.next());
+            statements.addAll(Arrays.asList(s));
+        }
+        return statements;
     }
 }

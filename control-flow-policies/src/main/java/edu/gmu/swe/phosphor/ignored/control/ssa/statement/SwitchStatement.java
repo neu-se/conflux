@@ -4,14 +4,13 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LookupSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TableSwitchInsnNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 public final class SwitchStatement implements Statement {
 
@@ -19,6 +18,7 @@ public final class SwitchStatement implements Statement {
     private final Label[] labels;
     private final int[] keys;
     private final Expression value;
+    private final transient List<VersionedExpression> usedVariables;
 
     public SwitchStatement(Expression value, Label defaultLabel, Label[] labels, int[] keys) {
         if(value == null) {
@@ -28,9 +28,10 @@ public final class SwitchStatement implements Statement {
         this.defaultLabel = defaultLabel;
         this.labels = labels.clone();
         this.keys = keys.clone();
+        usedVariables = Statement.gatherVersionedExpressions(value);
     }
 
-    SwitchStatement(Expression value, LabelNode defaultLabel, Collection<LabelNode> labels) {
+    SwitchStatement(Expression value, LabelNode defaultLabel, java.util.Collection<LabelNode> labels) {
         if(value == null) {
             throw new NullPointerException();
         }
@@ -42,6 +43,7 @@ public final class SwitchStatement implements Statement {
             this.labels[i++] = label.getLabel();
         }
         this.keys = new int[labels.size()];
+        usedVariables = Statement.gatherVersionedExpressions(value);
     }
 
     public SwitchStatement(Expression value, TableSwitchInsnNode insn) {
@@ -103,5 +105,10 @@ public final class SwitchStatement implements Statement {
     @Override
     public SwitchStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
         return new SwitchStatement(value.process(versionStacks), defaultLabel, labels, keys);
+    }
+
+    @Override
+    public List<VersionedExpression> usedVariables() {
+        return usedVariables;
     }
 }
