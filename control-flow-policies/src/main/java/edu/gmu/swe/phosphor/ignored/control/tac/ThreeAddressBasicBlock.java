@@ -18,5 +18,5 @@ public interface ThreeAddressBasicBlock extends BasicBlock {
 
     void processStatements(Map<VariableExpression, VersionStack> versionStacks);
 
-    SSABasicBlock createSSABasicBlock();
+    SSABasicBlock createSSABasicBlock(int index);
 }

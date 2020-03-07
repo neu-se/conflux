@@ -32,7 +32,7 @@ public class ThreeAddressExitPoint extends ExitPoint implements ThreeAddressBasi
     }
 
     @Override
-    public SSABasicBlock createSSABasicBlock() {
-        return new SSABasicBlock(Collections.emptyList(), Collections.emptyMap());
+    public SSABasicBlock createSSABasicBlock(int index) {
+        return new SSABasicBlock(Collections.emptyList(), Collections.emptyMap(), index);
     }
 }

@@ -56,9 +56,19 @@ public class PhiFunction implements Expression {
 
     @Override
     public Expression transform(VariableTransformer transformer) {
+        return transform(transformer, null);
+    }
+
+    @Override
+    public Expression transform(VariableTransformer transformer, VariableExpression assignee) {
         Set<Expression> transformedValues = new HashSet<>();
         for(Expression value : values) {
-            transformedValues.add(value.transform(transformer));
+            Expression transformed = value.transform(transformer);
+            if(assignee != null && transformed.referencedVariables().contains(assignee)) {
+                transformedValues.add(value);
+            } else {
+                transformedValues.add(transformed);
+            }
         }
         if(transformer.foldingAllowed()) {
             transformedValues = mergeConstants(transformedValues);

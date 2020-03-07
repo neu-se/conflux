@@ -8,14 +8,20 @@ public class SSABasicBlock {
 
     private final List<Statement> statements;
     private final Map<AbstractInsnNode, List<Statement>> statementMap;
+    private final int index;
 
-    public SSABasicBlock(List<Statement> statements, Map<AbstractInsnNode, Statement[]> statementMap) {
+    public SSABasicBlock(List<Statement> statements, Map<AbstractInsnNode, Statement[]> statementMap, int index) {
         this.statements = Collections.unmodifiableList(new LinkedList<>(statements));
         Map<AbstractInsnNode, List<Statement>> temp = new HashMap<>();
         for(AbstractInsnNode insn : statementMap.keySet()) {
             temp.put(insn, Collections.unmodifiableList(Arrays.asList(statementMap.get(insn))));
         }
         this.statementMap = Collections.unmodifiableMap(temp);
+        this.index = index;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     public List<Statement> getStatements() {

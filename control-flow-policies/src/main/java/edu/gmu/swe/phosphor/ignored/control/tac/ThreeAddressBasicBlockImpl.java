@@ -73,7 +73,7 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
     }
 
     @Override
-    public SSABasicBlock createSSABasicBlock() {
+    public SSABasicBlock createSSABasicBlock(int index) {
         List<Statement> statements = new LinkedList<>();
         boolean foundLabel = false;
         for(AbstractInsnNode insn : ssaStatements.keySet()) {
@@ -88,7 +88,7 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
         if(!foundLabel) {
             statements.addAll(createPhiFunctions());
         }
-        return new SSABasicBlock(statements, ssaStatements);
+        return new SSABasicBlock(statements, ssaStatements, index);
     }
 
     public static <T> List<T> flattenMap(Map<?, T[]> map) {

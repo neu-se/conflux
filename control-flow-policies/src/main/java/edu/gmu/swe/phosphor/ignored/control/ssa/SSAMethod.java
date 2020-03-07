@@ -1,8 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
-import edu.columbia.cs.psl.phosphor.control.graph.BasicBlock;
-import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
-import edu.columbia.cs.psl.phosphor.control.graph.FlowGraphBuilder;
+import edu.columbia.cs.psl.phosphor.control.graph.*;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
@@ -27,18 +25,27 @@ public class SSAMethod {
                 .createControlFlowGraph(method.getOriginalMethod(), method.calculateExplicitExceptions());
         placePhiFunctions(method, threeAddressCFG);
         renameVariables(method, threeAddressCFG);
-        controlFlowGraph = createControlFlowGraph(threeAddressCFG);
+        controlFlowGraph = createControlFlowGraph(method, threeAddressCFG);
     }
 
     private SSAMethod(FlowGraph<SSABasicBlock> controlFlowGraph) {
         this.controlFlowGraph = controlFlowGraph;
     }
 
-    private FlowGraph<SSABasicBlock> createControlFlowGraph(FlowGraph<ThreeAddressBasicBlock> threeAddressCFG) {
+    private FlowGraph<SSABasicBlock> createControlFlowGraph(ThreeAddressMethod method,
+                                                            FlowGraph<ThreeAddressBasicBlock> threeAddressCFG) {
         FlowGraphBuilder<SSABasicBlock> builder = new FlowGraphBuilder<>();
         Map<ThreeAddressBasicBlock, SSABasicBlock> blockMap = new HashMap<>();
         for(ThreeAddressBasicBlock vertex : threeAddressCFG.getVertices()) {
-            blockMap.put(vertex, vertex.createSSABasicBlock());
+            int rank = -2;
+            if(vertex instanceof EntryPoint) {
+                rank = -1;
+            } else if(vertex instanceof ExitPoint) {
+                rank = threeAddressCFG.getVertices().size() - 1;
+            } else if(vertex instanceof SimpleBasicBlock) {
+                rank = ((SimpleBasicBlock) vertex).getIdentifier() + 1;
+            }
+            blockMap.put(vertex, vertex.createSSABasicBlock(rank));
             builder.addVertex(blockMap.get(vertex));
         }
         builder.addEntryPoint(blockMap.get(threeAddressCFG.getEntryPoint()));
@@ -144,7 +151,7 @@ public class SSAMethod {
             changed = false;
             for(VariableExpression assignee : definitions.keySet()) {
                 Expression assigned = definitions.get(assignee);
-                Expression transformed = assigned.transform(transformer);
+                Expression transformed = assigned.transform(transformer, assignee);
                 if(!assigned.equals(transformed)) {
                     changed = true;
                     definitions.put(assignee, transformed);

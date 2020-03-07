@@ -63,8 +63,13 @@ public final class AssignmentStatement implements Statement {
 
     @Override
     public AssignmentStatement transform(VariableTransformer transformer) {
-        Expression newRightHandSide = rightHandSide.transform(transformer);
+        Expression newRightHandSide;
         Expression newLeftHandSide;
+        if(leftHandSide instanceof VariableExpression) {
+            newRightHandSide = rightHandSide.transform(transformer, (VariableExpression) leftHandSide);
+        } else {
+            newRightHandSide = rightHandSide.transform(transformer);
+        }
         if(leftHandSide instanceof VariableExpression) {
             newLeftHandSide = transformer.transformDefinition((VariableExpression) leftHandSide);
         } else {

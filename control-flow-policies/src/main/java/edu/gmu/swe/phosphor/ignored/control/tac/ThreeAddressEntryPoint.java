@@ -46,7 +46,7 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
     }
 
     @Override
-    public SSABasicBlock createSSABasicBlock() {
-        return new SSABasicBlock(ssaStatements, Collections.emptyMap());
+    public SSABasicBlock createSSABasicBlock(int index) {
+        return new SSABasicBlock(ssaStatements, Collections.emptyMap(), index);
     }
 }

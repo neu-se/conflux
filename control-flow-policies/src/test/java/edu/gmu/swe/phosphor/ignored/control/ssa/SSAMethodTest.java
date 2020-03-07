@@ -14,6 +14,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Method;
+import java.util.Iterator;
 
 import static edu.gmu.swe.phosphor.ignored.control.ControlAnalysisTestUtil.getMethodNode;
 import static org.junit.Assert.assertTrue;
@@ -101,8 +102,42 @@ public class SSAMethodTest {
         for(Statement statement : createStatementList(ssaMethod)) {
             statements.add(statement.transform(transformer));
         }
+        removeDeadCode(statements);
         String original = format(createStatementList(ssaMethod));
         String propagated = format(statements);
+        // TODO
+    }
+
+    private static void removeDeadCode(List<Statement> statements) {
+        boolean changed;
+        do {
+            changed = false;
+            Map<Statement, VariableExpression> definingStatements = new HashMap<>();
+            Map<VariableExpression, VariableExpression> usedVariables = new HashMap<>();
+            for(Statement s : statements) {
+                if(s.definesVariable() && s instanceof AssignmentStatement) {
+                    Expression rhs = ((AssignmentStatement) s).getRightHandSide();
+                    if(!(rhs instanceof InvokeExpression)) {
+                        definingStatements.put(s, s.definedVariable());
+                    }
+                }
+                for(VariableExpression use : s.usedVariables()) {
+                    usedVariables.put(use, use);
+                }
+            }
+            Iterator<Statement> itr = statements.iterator();
+            while(itr.hasNext()) {
+                Statement s = itr.next();
+                if(definingStatements.containsKey(s)) {
+                    VariableExpression e = definingStatements.get(s);
+                    if(!usedVariables.containsKey(e)) {
+                        itr.remove();
+                        changed = true;
+                    }
+                }
+            }
+
+        } while(changed);
     }
 
     private static String format(List<Statement> statements) {
@@ -132,7 +167,9 @@ public class SSAMethodTest {
 
     private static List<Statement> createStatementList(SSAMethod ssaMethod) {
         List<Statement> list = new LinkedList<>();
-        for(SSABasicBlock block : ssaMethod.getControlFlowGraph().getVertices()) {
+        List<SSABasicBlock> blocks = new LinkedList<>(ssaMethod.getControlFlowGraph().getVertices());
+        Collections.sort(blocks, (object1, object2) -> Integer.compare(object1.getIndex(), object2.getIndex()));
+        for(SSABasicBlock block : blocks) {
             list.addAll(block.getStatements());
         }
         return list;
