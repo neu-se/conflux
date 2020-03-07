@@ -95,7 +95,7 @@ public class SSAMethodTest {
     }
 
     @Theory
-    public void testPerformPropagation(Method method) throws Exception {
+    public void testPropagateVariables(Method method) throws Exception {
         SSAMethod ssaMethod = convertToSSA(method);
         PropagationTransformer transformer = new PropagationTransformer(ssaMethod.propagateVariables());
         List<Statement> statements = new LinkedList<>();
