@@ -4,7 +4,9 @@ import edu.columbia.cs.psl.phosphor.control.graph.BasicBlock;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraphBuilder;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressControlFlowGraphCreator;
@@ -26,6 +28,10 @@ public class SSAMethod {
         placePhiFunctions(method, threeAddressCFG);
         renameVariables(method, threeAddressCFG);
         controlFlowGraph = createControlFlowGraph(threeAddressCFG);
+    }
+
+    private SSAMethod(FlowGraph<SSABasicBlock> controlFlowGraph) {
+        this.controlFlowGraph = controlFlowGraph;
     }
 
     private FlowGraph<SSABasicBlock> createControlFlowGraph(FlowGraph<ThreeAddressBasicBlock> threeAddressCFG) {
@@ -50,8 +56,8 @@ public class SSAMethod {
     }
 
     private void placePhiFunctions(ThreeAddressMethod method, FlowGraph<ThreeAddressBasicBlock> cfg) {
-        Map<VersionedExpression, Set<ThreeAddressBasicBlock>> persistentVarDefs = locatePersistentVarDefs(method, cfg);
-        for(VersionedExpression expr : persistentVarDefs.keySet()) {
+        Map<VariableExpression, Set<ThreeAddressBasicBlock>> persistentVarDefs = locatePersistentVarDefs(method, cfg);
+        for(VariableExpression expr : persistentVarDefs.keySet()) {
             LinkedList<ThreeAddressBasicBlock> workingSet = new LinkedList<>(persistentVarDefs.get(expr));
             Set<ThreeAddressBasicBlock> visited = new HashSet<>(workingSet);
             while(!workingSet.isEmpty()) {
@@ -69,14 +75,15 @@ public class SSAMethod {
     }
 
     private void renameVariables(ThreeAddressMethod method, FlowGraph<ThreeAddressBasicBlock> cfg) {
-        Map<VersionedExpression, VersionStack> versionStacks = new HashMap<>();
-        for(VersionedExpression expression : method.collectDefinedVariables()) {
+        Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
+        for(VariableExpression expression : method.collectDefinedVariables()) {
             versionStacks.put(expression, new VersionStack(expression));
         }
         search(cfg.getEntryPoint(), versionStacks, cfg);
     }
 
-    private void search(ThreeAddressBasicBlock block, Map<VersionedExpression, VersionStack> versionStacks, FlowGraph<ThreeAddressBasicBlock> cfg) {
+    private void search(ThreeAddressBasicBlock block, Map<VariableExpression, VersionStack> versionStacks,
+                        FlowGraph<ThreeAddressBasicBlock> cfg) {
         for(VersionStack stack : versionStacks.values()) {
             stack.processingBlock();
         }
@@ -92,13 +99,13 @@ public class SSAMethod {
         }
     }
 
-    private Map<VersionedExpression, Set<ThreeAddressBasicBlock>> locatePersistentVarDefs(ThreeAddressMethod method,
-                                                                                          FlowGraph<ThreeAddressBasicBlock> cfg) {
-        Map<VersionedExpression, Set<ThreeAddressBasicBlock>> persistentVarDefs = new HashMap<>();
+    private Map<VariableExpression, Set<ThreeAddressBasicBlock>> locatePersistentVarDefs(ThreeAddressMethod method,
+                                                                                         FlowGraph<ThreeAddressBasicBlock> cfg) {
+        Map<VariableExpression, Set<ThreeAddressBasicBlock>> persistentVarDefs = new HashMap<>();
         for(ThreeAddressBasicBlock block : cfg.getVertices()) {
             for(Statement s : block.getThreeAddressStatements()) {
                 if(s.definesVariable()) {
-                    VersionedExpression expr = s.definedVariable();
+                    VariableExpression expr = s.definedVariable();
                     if(isPersistentDefinition(method, block, expr, cfg)) {
                         if(!persistentVarDefs.containsKey(expr)) {
                             persistentVarDefs.put(expr, new HashSet<>());
@@ -111,7 +118,7 @@ public class SSAMethod {
         return persistentVarDefs;
     }
 
-    private boolean isPersistentDefinition(ThreeAddressMethod method, ThreeAddressBasicBlock block, VersionedExpression expr,
+    private boolean isPersistentDefinition(ThreeAddressMethod method, ThreeAddressBasicBlock block, VariableExpression expr,
                                            FlowGraph<ThreeAddressBasicBlock> cfg) {
         for(BasicBlock successor : cfg.getSuccessors(block)) {
             if(method.isDefinedAtInstruction(successor.getFirstInsn(), expr)) {
@@ -119,5 +126,31 @@ public class SSAMethod {
             }
         }
         return false;
+    }
+
+    public Map<VariableExpression, Expression> propagateVariables() {
+        Map<VariableExpression, Expression> definitions = new HashMap<>();
+        for(SSABasicBlock block : controlFlowGraph.getVertices()) {
+            for(Statement statement : block.getStatements()) {
+                if(statement.definesVariable() && statement instanceof AssignmentStatement) {
+                    definitions.put(statement.definedVariable(),
+                            ((AssignmentStatement) statement).getRightHandSide());
+                }
+            }
+        }
+        PropagationTransformer transformer = new PropagationTransformer(definitions);
+        boolean changed;
+        do {
+            changed = false;
+            for(VariableExpression assignee : definitions.keySet()) {
+                Expression assigned = definitions.get(assignee);
+                Expression transformed = assigned.transform(transformer);
+                if(!assigned.equals(transformed)) {
+                    changed = true;
+                    definitions.put(assignee, transformed);
+                }
+            }
+        } while(changed);
+        return definitions;
     }
 }

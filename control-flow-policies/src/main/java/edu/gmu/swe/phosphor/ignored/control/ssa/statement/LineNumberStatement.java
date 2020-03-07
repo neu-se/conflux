@@ -2,9 +2,9 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LineNumberNode;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class LineNumberStatement implements Statement {
 
@@ -17,6 +17,14 @@ public final class LineNumberStatement implements Statement {
         if(start == null) {
             throw new NullPointerException();
         }
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public Label getStart() {
+        return start;
     }
 
     @Override
@@ -46,7 +54,17 @@ public final class LineNumberStatement implements Statement {
     }
 
     @Override
-    public LineNumberStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+    public LineNumberStatement transform(VariableTransformer transformer) {
         return this;
+    }
+
+    @Override
+    public VariableExpression definedVariable() {
+        return null;
+    }
+
+    @Override
+    public List<VariableExpression> usedVariables() {
+        return Collections.emptyList();
     }
 }

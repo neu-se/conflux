@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public final class LocalVariable extends VersionedExpression {
+public final class LocalVariable extends VariableExpression {
 
     private final int index;
 

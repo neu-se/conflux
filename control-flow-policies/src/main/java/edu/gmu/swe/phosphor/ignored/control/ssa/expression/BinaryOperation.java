@@ -6,20 +6,160 @@ import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
 public enum BinaryOperation {
 
-    ADD("+"),
-    SUBTRACT("-"),
-    MULTIPLY("*"),
-    DIVIDE("/"),
-    REMAINDER("%"),
-    SHIFT_LEFT("<<"),
-    SHIFT_RIGHT(">>"),
-    SHIFT_RIGHT_UNSIGNED(">>>"),
-    BITWISE_OR("|"),
-    BITWISE_AND("&"),
-    BITWISE_XOR("^"),
-    COMPARE("compare"),
-    COMPARE_G("compareG"),
-    COMPARE_L("compareL");
+    ADD("+") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    SUBTRACT("-") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    MULTIPLY("*") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    DIVIDE("/") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    REMAINDER("%") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    SHIFT_LEFT("<<") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    SHIFT_RIGHT(">>") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    SHIFT_RIGHT_UNSIGNED(">>>") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    BITWISE_OR("|") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    BITWISE_AND("&") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    BITWISE_XOR("^") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    COMPARE("compare") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    COMPARE_G("compareG") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    },
+    COMPARE_L("compareL") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return false;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            return null;
+        }
+    };
 
     private final String symbol;
 
@@ -88,4 +228,8 @@ public enum BinaryOperation {
                 throw new IllegalArgumentException();
         }
     }
+
+    public abstract boolean canPerform(Expression operand1, Expression operand2);
+
+    public abstract Expression perform(Expression operand1, Expression operand2);
 }

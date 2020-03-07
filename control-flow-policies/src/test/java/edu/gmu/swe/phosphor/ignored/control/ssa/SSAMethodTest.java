@@ -4,10 +4,7 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
@@ -31,7 +28,7 @@ public class SSAMethodTest {
     @Theory
     public void assignmentsUniquelyNamed(Method method) throws Exception {
         SSAMethod ssaMethod = convertToSSA(method);
-        List<VersionedExpression> allDefinitions = new LinkedList<>();
+        List<VariableExpression> allDefinitions = new LinkedList<>();
         for(Statement s : createStatementList(ssaMethod)) {
             if(s.definesVariable()) {
                 allDefinitions.add(s.definedVariable());
@@ -41,7 +38,7 @@ public class SSAMethodTest {
         Map<Integer, Set<Integer>> localVariableVersions = new HashMap<>();
         // Maps stack element indices to sets of versions
         Map<Integer, Set<Integer>> stackElementVersions = new HashMap<>();
-        for(VersionedExpression expr : allDefinitions) {
+        for(VariableExpression expr : allDefinitions) {
             if(expr instanceof StackElement) {
                 int index = ((StackElement) expr).getIndex();
                 if(!stackElementVersions.containsKey(index)) {
@@ -70,15 +67,15 @@ public class SSAMethodTest {
     public void definitionDominatesUse(Method method) throws Exception {
         SSAMethod ssaMethod = convertToSSA(method);
         FlowGraph<SSABasicBlock> cfg = ssaMethod.getControlFlowGraph();
-        Map<VersionedExpression, SSABasicBlock> definitions = new HashMap<>();
-        Map<VersionedExpression, Set<SSABasicBlock>> uses = new HashMap<>();
+        Map<VariableExpression, SSABasicBlock> definitions = new HashMap<>();
+        Map<VariableExpression, Set<SSABasicBlock>> uses = new HashMap<>();
         for(SSABasicBlock block : cfg.getVertices()) {
             for(Statement statement : block.getStatements()) {
                 if(statement.definesVariable()) {
                     definitions.put(statement.definedVariable(), block);
                 }
                 if(!isPhiFunctionStatement(statement)) {
-                    for(VersionedExpression use : statement.usedVariables()) {
+                    for(VariableExpression use : statement.usedVariables()) {
                         if(!uses.containsKey(use)) {
                             uses.put(use, new HashSet<>());
                         }
@@ -87,13 +84,33 @@ public class SSAMethodTest {
                 }
             }
         }
-        for(VersionedExpression usedExpression : uses.keySet()) {
+        for(VariableExpression usedExpression : uses.keySet()) {
             SSABasicBlock definingBlock = definitions.get(usedExpression);
             for(SSABasicBlock usingBlock : uses.get(usedExpression)) {
                 assertTrue(String.format("Use of %s in %s is not dominated by its definition in %s", usedExpression,
                         usingBlock, definingBlock), cfg.getDominatorSets().get(usingBlock).contains(definingBlock));
             }
         }
+    }
+
+    @Theory
+    public void testPerformPropagation(Method method) throws Exception {
+        SSAMethod ssaMethod = convertToSSA(method);
+        PropagationTransformer transformer = new PropagationTransformer(ssaMethod.propagateVariables());
+        List<Statement> statements = new LinkedList<>();
+        for(Statement statement : createStatementList(ssaMethod)) {
+            statements.add(statement.transform(transformer));
+        }
+        String original = format(createStatementList(ssaMethod));
+        String propagated = format(statements);
+    }
+
+    private static String format(List<Statement> statements) {
+        List<String> s = new LinkedList<>();
+        for(Statement statement : statements) {
+            s.add(statement.toString());
+        }
+        return String.join("\n", s);
     }
 
     @DataPoints

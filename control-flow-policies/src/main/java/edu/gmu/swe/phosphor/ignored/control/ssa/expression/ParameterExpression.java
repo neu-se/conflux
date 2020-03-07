@@ -2,8 +2,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public class ParameterExpression implements Expression {
 
@@ -13,19 +12,23 @@ public class ParameterExpression implements Expression {
         this.parameterNumber = parameterNumber;
     }
 
-    @Override
-    public Expression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return this;
+    public int getParameterNumber() {
+        return parameterNumber;
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
+    public List<VariableExpression> referencedVariables() {
         return Collections.emptyList();
     }
 
     @Override
+    public Expression transform(VariableTransformer transformer) {
+        return this;
+    }
+
+    @Override
     public String toString() {
-        return "parameter " + parameterNumber;
+        return "<param " + parameterNumber + ">";
     }
 
     @Override

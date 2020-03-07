@@ -6,12 +6,96 @@ import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
 public enum Condition {
 
-    EQUAL("=="),
-    NOT_EQUAL("!="),
-    LESS_THAN("<"),
-    GREATER_THAN(">"),
-    LESS_THAN_OR_EQUAL("<="),
-    GREATER_THAN_OR_EQUAL(">=");
+    EQUAL("==") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return operand1 instanceof ConstantExpression && operand2 instanceof ConstantExpression;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            if(canPerform(operand1, operand2)) {
+                return ((ConstantExpression) operand1).constantEqual((ConstantExpression) operand2);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+    },
+    NOT_EQUAL("!=") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return operand1 instanceof ConstantExpression && operand2 instanceof ConstantExpression;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            if(canPerform(operand1, operand2)) {
+                return ((ConstantExpression) operand1).notEqual((ConstantExpression) operand2);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+    },
+    LESS_THAN("<") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return operand1 instanceof IntegerConstantExpression && operand2 instanceof IntegerConstantExpression;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            if(canPerform(operand1, operand2)) {
+                return ((IntegerConstantExpression) operand1).lessThan((IntegerConstantExpression) operand2);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+    },
+    GREATER_THAN(">") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return operand1 instanceof IntegerConstantExpression && operand2 instanceof IntegerConstantExpression;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            if(canPerform(operand1, operand2)) {
+                return ((IntegerConstantExpression) operand1).greaterThan((IntegerConstantExpression) operand2);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+    },
+    LESS_THAN_OR_EQUAL("<=") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return operand1 instanceof IntegerConstantExpression && operand2 instanceof IntegerConstantExpression;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            if(canPerform(operand1, operand2)) {
+                return ((IntegerConstantExpression) operand1).greaterThanOrEqual((IntegerConstantExpression) operand2);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+    },
+    GREATER_THAN_OR_EQUAL(">=") {
+        @Override
+        public boolean canPerform(Expression operand1, Expression operand2) {
+            return operand1 instanceof IntegerConstantExpression && operand2 instanceof IntegerConstantExpression;
+        }
+
+        @Override
+        public Expression perform(Expression operand1, Expression operand2) {
+            if(canPerform(operand1, operand2)) {
+                return ((IntegerConstantExpression) operand1).lessThanOrEqual((IntegerConstantExpression) operand2);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+    };
 
     private final String symbol;
 
@@ -22,6 +106,10 @@ public enum Condition {
     public String format(Expression operand1, Expression operand2) {
         return String.format("%s %s %s", operand1, symbol, operand2);
     }
+
+    public abstract boolean canPerform(Expression operand1, Expression operand2);
+
+    public abstract Expression perform(Expression operand1, Expression operand2);
 
     public static Condition getInstance(AbstractInsnNode insn) {
         switch(insn.getOpcode()) {

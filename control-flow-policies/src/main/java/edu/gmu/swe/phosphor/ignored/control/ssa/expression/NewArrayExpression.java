@@ -3,9 +3,8 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class NewArrayExpression implements Expression {
 
@@ -29,6 +28,18 @@ public final class NewArrayExpression implements Expression {
         this.desc = desc;
         this.type = Type.getType(desc);
         this.dims = dims.clone();
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public Expression[] getDims() {
+        return dims.clone();
     }
 
     @Override
@@ -67,18 +78,18 @@ public final class NewArrayExpression implements Expression {
     }
 
     @Override
-    public NewArrayExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        Expression[] processedDims = new Expression[dims.length];
-        for(int i = 0; i < dims.length; i++) {
-            if(dims[i] != null) {
-                processedDims[i] = dims[i].process(versionStacks);
-            }
-        }
-        return new NewArrayExpression(desc, processedDims);
+    public List<VariableExpression> referencedVariables() {
+        return Statement.gatherVersionedExpressions(dims);
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(dims);
+    public Expression transform(VariableTransformer transformer) {
+        Expression[] processedDims = new Expression[dims.length];
+        for(int i = 0; i < dims.length; i++) {
+            if(dims[i] != null) {
+                processedDims[i] = dims[i].transform(transformer);
+            }
+        }
+        return new NewArrayExpression(desc, processedDims);
     }
 }

@@ -10,6 +10,10 @@ public interface UnaryOperation {
 
     String format(Expression expression);
 
+    boolean canPerform(Expression operand);
+
+    Expression perform(Expression operand);
+
     static UnaryOperation getInstance(AbstractInsnNode insn) {
         switch(insn.getOpcode()) {
             case INEG:

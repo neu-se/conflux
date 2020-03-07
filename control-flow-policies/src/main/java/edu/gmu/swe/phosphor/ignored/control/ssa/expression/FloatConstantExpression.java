@@ -1,9 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
-
 public final class FloatConstantExpression implements ConstantExpression {
 
     private final float constant;
@@ -16,19 +12,19 @@ public final class FloatConstantExpression implements ConstantExpression {
         return constant;
     }
 
-    FloatConstantExpression negate(int size, AbstractInsnNode insnSource) {
+    FloatConstantExpression negate() {
         return new FloatConstantExpression(-constant);
     }
 
-    DoubleConstantExpression castToDouble(int size, AbstractInsnNode insnSource) {
+    DoubleConstantExpression castToDouble() {
         return new DoubleConstantExpression(constant);
     }
 
-    IntegerConstantExpression castToInt(int size, AbstractInsnNode insnSource) {
+    IntegerConstantExpression castToInt() {
         return new IntegerConstantExpression((int) constant);
     }
 
-    LongConstantExpression castToLong(int size, AbstractInsnNode insnSource) {
+    LongConstantExpression castToLong() {
         return new LongConstantExpression((long) constant);
     }
 
@@ -103,10 +99,5 @@ public final class FloatConstantExpression implements ConstantExpression {
     @Override
     public String toString() {
         return String.valueOf(constant);
-    }
-
-    @Override
-    public FloatConstantExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return this;
     }
 }

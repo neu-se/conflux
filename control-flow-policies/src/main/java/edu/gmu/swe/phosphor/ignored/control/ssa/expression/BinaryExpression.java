@@ -1,9 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class BinaryExpression implements Expression {
 
@@ -18,6 +17,18 @@ public final class BinaryExpression implements Expression {
         this.operation = operation;
         this.operand1 = operand1;
         this.operand2 = operand2;
+    }
+
+    public BinaryOperation getOperation() {
+        return operation;
+    }
+
+    public Expression getOperand1() {
+        return operand1;
+    }
+
+    public Expression getOperand2() {
+        return operand2;
     }
 
     @Override
@@ -51,12 +62,17 @@ public final class BinaryExpression implements Expression {
     }
 
     @Override
-    public BinaryExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return new BinaryExpression(operation, operand1.process(versionStacks), operand2.process(versionStacks));
+    public List<VariableExpression> referencedVariables() {
+        return Statement.gatherVersionedExpressions(operand1, operand2);
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(operand1, operand2);
+    public Expression transform(VariableTransformer transformer) {
+        BinaryExpression expr = new BinaryExpression(operation, operand1.transform(transformer),
+                operand2.transform(transformer));
+        if(transformer.foldingAllowed() && operation.canPerform(expr.operand1, expr.operand2)) {
+            return operation.perform(expr.operand1, expr.operand2);
+        }
+        return expr;
     }
 }

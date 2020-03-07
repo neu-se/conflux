@@ -2,10 +2,9 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class InvokeExpression implements Expression {
 
@@ -75,6 +74,22 @@ public final class InvokeExpression implements Expression {
         this.type = type;
     }
 
+    public String getOwner() {
+        return owner;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Expression getReceiver() {
+        return receiver;
+    }
+
+    public InvocationType getType() {
+        return type;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -132,20 +147,20 @@ public final class InvokeExpression implements Expression {
     }
 
     @Override
-    public InvokeExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        Expression processedReceiver = null;
-        Expression[] processedArguments = new Expression[arguments.length];
-        if(receiver != null) {
-            processedReceiver = receiver.process(versionStacks);
-        }
-        for(int i = 0; i < arguments.length; i++) {
-            processedArguments[i] = arguments[i].process(versionStacks);
-        }
-        return new InvokeExpression(owner, name, processedReceiver, processedArguments, type);
+    public List<VariableExpression> referencedVariables() {
+        return Statement.gatherVersionedExpressions(receiver, arguments);
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(receiver, arguments);
+    public InvokeExpression transform(VariableTransformer transformer) {
+        Expression processedReceiver = null;
+        Expression[] processedArguments = new Expression[arguments.length];
+        if(receiver != null) {
+            processedReceiver = receiver.transform(transformer);
+        }
+        for(int i = 0; i < arguments.length; i++) {
+            processedArguments[i] = arguments[i].transform(transformer);
+        }
+        return new InvokeExpression(owner, name, processedReceiver, processedArguments, type);
     }
 }

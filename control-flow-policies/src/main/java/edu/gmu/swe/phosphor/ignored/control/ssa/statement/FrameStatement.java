@@ -4,11 +4,9 @@ import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.FrameNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
-
-import java.util.List;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
@@ -119,6 +117,30 @@ public final class FrameStatement implements Statement {
         }
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public String getTypeDesc() {
+        return typeDesc;
+    }
+
+    public int getNLocal() {
+        return nLocal;
+    }
+
+    public Object[] getLocal() {
+        return local.clone();
+    }
+
+    public int getNStack() {
+        return nStack;
+    }
+
+    public Object[] getStack() {
+        return stack.clone();
+    }
+
     @Override
     public String toString() {
         return String.format("{%s: %d | %s | %d | %s}", typeDesc, nLocal, Arrays.toString(local), nStack, Arrays.toString(stack));
@@ -162,11 +184,21 @@ public final class FrameStatement implements Statement {
     }
 
     @Override
-    public FrameStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
+    public FrameStatement transform(VariableTransformer transformer) {
         return this;
     }
 
-    private static Object[] asArray(final List<Object> list) {
+    @Override
+    public VariableExpression definedVariable() {
+        return null;
+    }
+
+    @Override
+    public List<VariableExpression> usedVariables() {
+        return Collections.emptyList();
+    }
+
+    private static Object[] asArray(final java.util.List<Object> list) {
         Object[] objects = new Object[list.size()];
         for(int i = 0; i < objects.length; ++i) {
             Object o = list.get(i);

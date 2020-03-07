@@ -6,7 +6,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 public class ThreeAddressExitPoint extends ExitPoint implements ThreeAddressBasicBlock {
@@ -17,17 +17,17 @@ public class ThreeAddressExitPoint extends ExitPoint implements ThreeAddressBasi
     }
 
     @Override
-    public void addPhiFunctionForVariable(VersionedExpression expression) {
+    public void addPhiFunctionForVariable(VariableExpression expression) {
 
     }
 
     @Override
-    public void addPhiFunctionValues(Map<VersionedExpression, VersionStack> versionStacks) {
+    public void addPhiFunctionValues(Map<VariableExpression, VersionStack> versionStacks) {
 
     }
 
     @Override
-    public void processStatements(Map<VersionedExpression, VersionStack> versionStacks) {
+    public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
 
     }
 

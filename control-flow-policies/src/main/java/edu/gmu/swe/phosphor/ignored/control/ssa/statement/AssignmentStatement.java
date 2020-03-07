@@ -1,17 +1,15 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class AssignmentStatement implements Statement {
 
     private final Expression leftHandSide;
     private final Expression rightHandSide;
-    private final transient VersionedExpression definedVariable;
-    private final transient List<VersionedExpression> usedVariables;
+    private final transient VariableExpression definedVariable;
+    private final transient List<VariableExpression> usedVariables;
 
     public AssignmentStatement(Expression leftHandSide, Expression rightHandSide) {
         if(leftHandSide == null || rightHandSide == null) {
@@ -19,8 +17,8 @@ public final class AssignmentStatement implements Statement {
         }
         this.leftHandSide = leftHandSide;
         this.rightHandSide = rightHandSide;
-        if(leftHandSide instanceof VersionedExpression) {
-            definedVariable = (VersionedExpression) leftHandSide;
+        if(leftHandSide instanceof VariableExpression) {
+            definedVariable = (VariableExpression) leftHandSide;
             usedVariables = Statement.gatherVersionedExpressions(rightHandSide);
 
         } else {
@@ -64,24 +62,24 @@ public final class AssignmentStatement implements Statement {
     }
 
     @Override
-    public AssignmentStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
-        Expression newRightHandSide = rightHandSide.process(versionStacks);
+    public AssignmentStatement transform(VariableTransformer transformer) {
+        Expression newRightHandSide = rightHandSide.transform(transformer);
         Expression newLeftHandSide;
-        if(versionStacks.containsKey(leftHandSide)) {
-            newLeftHandSide = versionStacks.get(leftHandSide).createNewVersion();
+        if(leftHandSide instanceof VariableExpression) {
+            newLeftHandSide = transformer.transformDefinition((VariableExpression) leftHandSide);
         } else {
-            newLeftHandSide = leftHandSide.process(versionStacks);
+            newLeftHandSide = leftHandSide.transform(transformer);
         }
         return new AssignmentStatement(newLeftHandSide, newRightHandSide);
     }
 
     @Override
-    public VersionedExpression definedVariable() {
+    public VariableExpression definedVariable() {
         return definedVariable;
     }
 
     @Override
-    public List<VersionedExpression> usedVariables() {
+    public List<VariableExpression> usedVariables() {
         return usedVariables;
     }
 }

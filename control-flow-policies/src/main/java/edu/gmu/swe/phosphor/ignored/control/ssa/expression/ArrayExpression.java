@@ -1,9 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class ArrayExpression implements Expression {
 
@@ -44,13 +43,21 @@ public final class ArrayExpression implements Expression {
         return result;
     }
 
-    @Override
-    public ArrayExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return new ArrayExpression(arrayRef.process(versionStacks), index.process(versionStacks));
+    public Expression getArrayRef() {
+        return arrayRef;
+    }
+
+    public Expression getIndex() {
+        return index;
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
+    public List<VariableExpression> referencedVariables() {
         return Statement.gatherVersionedExpressions(arrayRef, index);
+    }
+
+    @Override
+    public ArrayExpression transform(VariableTransformer transformer) {
+        return new ArrayExpression(arrayRef.transform(transformer), index.transform(transformer));
     }
 }

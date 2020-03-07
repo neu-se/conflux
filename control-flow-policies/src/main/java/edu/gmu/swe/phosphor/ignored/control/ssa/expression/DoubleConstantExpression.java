@@ -1,8 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
-
 public final class DoubleConstantExpression implements ConstantExpression {
 
     private final double constant;
@@ -15,43 +12,43 @@ public final class DoubleConstantExpression implements ConstantExpression {
         return constant;
     }
 
-    DoubleConstantExpression negate() {
+    public DoubleConstantExpression negate() {
         return new DoubleConstantExpression(-constant);
     }
 
-    FloatConstantExpression castToFloat() {
+    public FloatConstantExpression castToFloat() {
         return new FloatConstantExpression((float) constant);
     }
 
-    IntegerConstantExpression castToInt() {
+    public IntegerConstantExpression castToInt() {
         return new IntegerConstantExpression((int) constant);
     }
 
-    LongConstantExpression castToLong() {
+    public LongConstantExpression castToLong() {
         return new LongConstantExpression((long) constant);
     }
 
-    DoubleConstantExpression add(DoubleConstantExpression other) {
+    public DoubleConstantExpression add(DoubleConstantExpression other) {
         return new DoubleConstantExpression(constant + other.constant);
     }
 
-    DoubleConstantExpression subtract(DoubleConstantExpression other) {
+    public DoubleConstantExpression subtract(DoubleConstantExpression other) {
         return new DoubleConstantExpression(constant - other.constant);
     }
 
-    DoubleConstantExpression divide(DoubleConstantExpression other) {
+    public DoubleConstantExpression divide(DoubleConstantExpression other) {
         return new DoubleConstantExpression(constant / other.constant);
     }
 
-    DoubleConstantExpression multiply(DoubleConstantExpression other) {
+    public DoubleConstantExpression multiply(DoubleConstantExpression other) {
         return new DoubleConstantExpression(constant * other.constant);
     }
 
-    DoubleConstantExpression remainder(DoubleConstantExpression other) {
+    public DoubleConstantExpression remainder(DoubleConstantExpression other) {
         return new DoubleConstantExpression(constant % other.constant);
     }
 
-    DoubleConstantExpression compareG(DoubleConstantExpression other) {
+    public DoubleConstantExpression compareG(DoubleConstantExpression other) {
         double result;
         if(Double.isNaN(constant) || Double.isNaN(other.constant)) {
             result = 1;
@@ -61,7 +58,7 @@ public final class DoubleConstantExpression implements ConstantExpression {
         return new DoubleConstantExpression(result);
     }
 
-    DoubleConstantExpression compareL(DoubleConstantExpression other) {
+    public DoubleConstantExpression compareL(DoubleConstantExpression other) {
         double result;
         if(Double.isNaN(constant) || Double.isNaN(other.constant)) {
             result = -1;
@@ -105,10 +102,5 @@ public final class DoubleConstantExpression implements ConstantExpression {
     @Override
     public String toString() {
         return String.valueOf(constant);
-    }
-
-    @Override
-    public DoubleConstantExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return this;
     }
 }

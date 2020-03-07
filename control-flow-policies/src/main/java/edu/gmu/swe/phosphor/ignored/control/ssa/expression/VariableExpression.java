@@ -4,45 +4,43 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
-public final class NewExpression implements Expression {
+public abstract class VariableExpression implements Expression {
 
-    private final String desc;
+    private final int version;
 
-    public NewExpression(String desc) {
-        if(desc == null) {
-            throw new NullPointerException();
-        }
-        this.desc = desc;
+    public VariableExpression(int version) {
+        this.version = version;
     }
 
-    @Override
-    public String toString() {
-        return String.format("new %s", desc);
+    public abstract VariableExpression setVersion(int version);
+
+    public int getVersion() {
+        return version;
     }
 
     @Override
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof NewExpression)) {
+        } else if(!(o instanceof VariableExpression)) {
             return false;
         }
-        NewExpression that = (NewExpression) o;
-        return desc.equals(that.desc);
+        VariableExpression that = (VariableExpression) o;
+        return version == that.version;
     }
 
     @Override
     public int hashCode() {
-        return desc.hashCode();
+        return version;
     }
 
     @Override
     public List<VariableExpression> referencedVariables() {
-        return Collections.emptyList();
+        return Collections.singletonList(this);
     }
 
     @Override
     public Expression transform(VariableTransformer transformer) {
-        return this;
+        return transformer.transformUse(this);
     }
 }

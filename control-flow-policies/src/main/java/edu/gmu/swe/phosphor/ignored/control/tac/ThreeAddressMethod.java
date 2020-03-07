@@ -13,7 +13,7 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.converter.InsnConverter;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ParameterExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
@@ -94,8 +94,8 @@ public class ThreeAddressMethod {
      * @return a set containing the local variables and stack elements that are assigned a value in at least one
      * statement in this method
      */
-    public Set<VersionedExpression> collectDefinedVariables() {
-        Set<VersionedExpression> definedVariables = new HashSet<>();
+    public Set<VariableExpression> collectDefinedVariables() {
+        Set<VariableExpression> definedVariables = new HashSet<>();
         for(Statement[] statements : statementMap.values()) {
             for(Statement statement : statements) {
                 if(statement.definesVariable()) {
@@ -111,7 +111,7 @@ public class ThreeAddressMethod {
         return definedVariables;
     }
 
-    public boolean isDefinedAtInstruction(AbstractInsnNode insn, VersionedExpression expr) {
+    public boolean isDefinedAtInstruction(AbstractInsnNode insn, VariableExpression expr) {
         int index = expr instanceof LocalVariable ? ((LocalVariable) expr).getIndex() : ((StackElement) expr).getIndex();
         Frame<TypeValue> frame = frameMap.get(insn);
         if(frame != null) {

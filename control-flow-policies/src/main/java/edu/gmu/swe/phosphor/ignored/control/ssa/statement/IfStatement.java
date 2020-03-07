@@ -2,18 +2,16 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ConditionExpression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class IfStatement implements Statement {
 
-    private final ConditionExpression conditionExpression;
+    private final Expression conditionExpression;
     private final Label target;
-    private final transient List<VersionedExpression> usedVariables;
+    private final transient List<VariableExpression> usedVariables;
 
-    public IfStatement(ConditionExpression conditionExpression, Label target) {
+    public IfStatement(Expression conditionExpression, Label target) {
         if(conditionExpression == null || target == null) {
             throw new NullPointerException();
         }
@@ -49,12 +47,17 @@ public final class IfStatement implements Statement {
     }
 
     @Override
-    public IfStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return new IfStatement(conditionExpression.process(versionStacks), target);
+    public IfStatement transform(VariableTransformer transformer) {
+        return new IfStatement(conditionExpression.transform(transformer), target);
     }
 
     @Override
-    public List<VersionedExpression> usedVariables() {
+    public VariableExpression definedVariable() {
+        return null;
+    }
+
+    @Override
+    public List<VariableExpression> usedVariables() {
         return usedVariables;
     }
 }

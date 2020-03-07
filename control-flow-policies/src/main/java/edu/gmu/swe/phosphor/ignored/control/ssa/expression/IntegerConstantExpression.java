@@ -1,8 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.ConstantExpression.fromBoolean;
 
 public final class IntegerConstantExpression implements ConstantExpression {
 
@@ -20,31 +18,31 @@ public final class IntegerConstantExpression implements ConstantExpression {
         return new IntegerConstantExpression(constant + amount);
     }
 
-    IntegerConstantExpression negate(int size, AbstractInsnNode insnSource) {
+    IntegerConstantExpression negate() {
         return new IntegerConstantExpression(-constant);
     }
 
-    FloatConstantExpression castToFloat(int size, AbstractInsnNode insnSource) {
+    FloatConstantExpression castToFloat() {
         return new FloatConstantExpression(constant);
     }
 
-    DoubleConstantExpression castToDouble(int size, AbstractInsnNode insnSource) {
+    DoubleConstantExpression castToDouble() {
         return new DoubleConstantExpression(constant);
     }
 
-    LongConstantExpression castToLong(int size, AbstractInsnNode insnSource) {
+    LongConstantExpression castToLong() {
         return new LongConstantExpression(constant);
     }
 
-    IntegerConstantExpression castToByte(int size, AbstractInsnNode insnSource) {
+    IntegerConstantExpression castToByte() {
         return new IntegerConstantExpression((byte) constant);
     }
 
-    IntegerConstantExpression castToShort(int size, AbstractInsnNode insnSource) {
+    IntegerConstantExpression castToShort() {
         return new IntegerConstantExpression((short) constant);
     }
 
-    IntegerConstantExpression castToChar(int size, AbstractInsnNode insnSource) {
+    IntegerConstantExpression castToChar() {
         return new IntegerConstantExpression((char) constant);
     }
 
@@ -92,6 +90,22 @@ public final class IntegerConstantExpression implements ConstantExpression {
         return new IntegerConstantExpression(constant ^ other.constant);
     }
 
+    public IntegerConstantExpression greaterThan(IntegerConstantExpression other) {
+        return fromBoolean(constant > other.constant);
+    }
+
+    public IntegerConstantExpression greaterThanOrEqual(IntegerConstantExpression other) {
+        return fromBoolean(constant >= other.constant);
+    }
+
+    public IntegerConstantExpression lessThan(IntegerConstantExpression other) {
+        return fromBoolean(constant < other.constant);
+    }
+
+    public IntegerConstantExpression lessThanOrEqual(IntegerConstantExpression other) {
+        return fromBoolean(constant <= other.constant);
+    }
+
     @Override
     public boolean canMerge(ConstantExpression other) {
         if(other instanceof IntegerConstantExpression) {
@@ -119,10 +133,5 @@ public final class IntegerConstantExpression implements ConstantExpression {
     @Override
     public String toString() {
         return String.valueOf(constant);
-    }
-
-    @Override
-    public IntegerConstantExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return this;
     }
 }

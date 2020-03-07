@@ -1,9 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class FieldExpression implements Expression {
 
@@ -18,6 +17,18 @@ public final class FieldExpression implements Expression {
         this.owner = owner;
         this.name = name;
         this.receiver = receiver;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Expression getReceiver() {
+        return receiver;
     }
 
     @Override
@@ -55,16 +66,16 @@ public final class FieldExpression implements Expression {
     }
 
     @Override
-    public FieldExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        if(receiver == null) {
-            return this;
-        } else {
-            return new FieldExpression(owner, name, receiver.process(versionStacks));
-        }
+    public List<VariableExpression> referencedVariables() {
+        return Statement.gatherVersionedExpressions(receiver);
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(receiver);
+    public FieldExpression transform(VariableTransformer transformer) {
+        if(receiver == null) {
+            return this;
+        } else {
+            return new FieldExpression(owner, name, receiver.transform(transformer));
+        }
     }
 }

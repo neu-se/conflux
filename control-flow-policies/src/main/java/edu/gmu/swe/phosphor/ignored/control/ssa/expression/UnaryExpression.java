@@ -1,9 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class UnaryExpression implements Expression {
 
@@ -45,12 +44,16 @@ public final class UnaryExpression implements Expression {
     }
 
     @Override
-    public UnaryExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return new UnaryExpression(operation, operand.process(versionStacks));
+    public List<VariableExpression> referencedVariables() {
+        return Statement.gatherVersionedExpressions(operand);
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(operand);
+    public Expression transform(VariableTransformer transformer) {
+        UnaryExpression expr = new UnaryExpression(operation, operand.transform(transformer));
+        if(transformer.foldingAllowed() && operation.canPerform(expr.operand)) {
+            return operation.perform(expr.operand);
+        }
+        return expr;
     }
 }

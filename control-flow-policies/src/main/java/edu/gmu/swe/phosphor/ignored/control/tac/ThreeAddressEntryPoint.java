@@ -5,9 +5,10 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.ssa.ProcessVersionStackTransformer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBasicBlock {
@@ -25,20 +26,21 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
     }
 
     @Override
-    public void addPhiFunctionForVariable(VersionedExpression expression) {
+    public void addPhiFunctionForVariable(VariableExpression expression) {
 
     }
 
     @Override
-    public void addPhiFunctionValues(Map<VersionedExpression, VersionStack> versionStacks) {
+    public void addPhiFunctionValues(Map<VariableExpression, VersionStack> versionStacks) {
 
     }
 
     @Override
-    public void processStatements(Map<VersionedExpression, VersionStack> versionStacks) {
+    public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
+        ProcessVersionStackTransformer transformer = new ProcessVersionStackTransformer(versionStacks);
         ssaStatements = new LinkedList<>();
         for(Statement statement : threeAddressStatements) {
-            ssaStatements.add(statement.process(versionStacks));
+            ssaStatements.add(statement.transform(transformer));
         }
         ssaStatements = Collections.unmodifiableList(ssaStatements);
     }

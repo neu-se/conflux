@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public final class StackElement extends VersionedExpression {
+public final class StackElement extends VariableExpression {
 
     private final int index;
 

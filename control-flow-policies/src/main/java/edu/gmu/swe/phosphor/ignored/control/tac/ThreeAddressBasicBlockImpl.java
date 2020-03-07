@@ -4,17 +4,18 @@ import edu.columbia.cs.psl.phosphor.control.graph.SimpleBasicBlock;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.gmu.swe.phosphor.ignored.control.ssa.ProcessVersionStackTransformer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
 public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements ThreeAddressBasicBlock {
 
-    private final Map<VersionedExpression, Set<VersionedExpression>> phiValues = new HashMap<>();
-    private final Map<VersionedExpression, VersionedExpression> phiAssignees = new HashMap<>();
+    private final Map<VariableExpression, Set<VariableExpression>> phiValues = new HashMap<>();
+    private final Map<VariableExpression, VariableExpression> phiAssignees = new HashMap<>();
     private final Map<AbstractInsnNode, Statement[]> threeAddressStatements = new LinkedHashMap<>();
     private final Map<AbstractInsnNode, Statement[]> ssaStatements = new LinkedHashMap<>();
     private final List<Statement> threeAddressStatementList;
@@ -34,7 +35,7 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
 
     private List<AssignmentStatement> createPhiFunctions() {
         List<AssignmentStatement> phiFunctions = new LinkedList<>();
-        for(VersionedExpression expr : phiValues.keySet()) {
+        for(VariableExpression expr : phiValues.keySet()) {
             PhiFunction phi = new PhiFunction(phiValues.get(expr));
             phiFunctions.add(new AssignmentStatement(phiAssignees.get(expr), phi));
         }
@@ -42,29 +43,30 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
     }
 
     @Override
-    public void addPhiFunctionForVariable(VersionedExpression expression) {
+    public void addPhiFunctionForVariable(VariableExpression expression) {
         if(!phiValues.containsKey(expression)) {
             phiValues.put(expression, new HashSet<>());
         }
     }
 
     @Override
-    public void addPhiFunctionValues(Map<VersionedExpression, VersionStack> versionStacks) {
-        for(VersionedExpression key : phiValues.keySet()) {
+    public void addPhiFunctionValues(Map<VariableExpression, VersionStack> versionStacks) {
+        for(VariableExpression key : phiValues.keySet()) {
             phiValues.get(key).add(versionStacks.get(key).getCurrentExpression());
         }
     }
 
     @Override
-    public void processStatements(Map<VersionedExpression, VersionStack> versionStacks) {
-        for(VersionedExpression expression : phiValues.keySet()) {
+    public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
+        ProcessVersionStackTransformer transformer = new ProcessVersionStackTransformer(versionStacks);
+        for(VariableExpression expression : phiValues.keySet()) {
             phiAssignees.put(expression, versionStacks.get(expression).createNewVersion());
         }
         for(AbstractInsnNode insn : threeAddressStatements.keySet()) {
             Statement[] originalStatements = threeAddressStatements.get(insn);
             Statement[] processedStatements = new Statement[originalStatements.length];
             for(int i = 0; i < originalStatements.length; i++) {
-                processedStatements[i] = originalStatements[i].process(versionStacks);
+                processedStatements[i] = originalStatements[i].transform(transformer);
             }
             ssaStatements.put(insn, processedStatements);
         }

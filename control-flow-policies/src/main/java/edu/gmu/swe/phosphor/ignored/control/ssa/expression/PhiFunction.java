@@ -1,18 +1,24 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
+
+import java.util.Arrays;
 
 public class PhiFunction implements Expression {
 
-    private final VersionedExpression[] values;
+    private final Expression[] values;
 
-    public PhiFunction(Set<VersionedExpression> values) {
-        this.values = values.toArray(new VersionedExpression[0]);
+    public PhiFunction(Set<? extends Expression> values) {
+        this.values = values.toArray(new Expression[0]);
+    }
+
+    public Expression[] getValues() {
+        return values.clone();
     }
 
     @Override
@@ -28,12 +34,58 @@ public class PhiFunction implements Expression {
     }
 
     @Override
-    public PhiFunction process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return this;
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        } else if(!(o instanceof PhiFunction)) {
+            return false;
+        }
+        PhiFunction that = (PhiFunction) o;
+        return Arrays.equals(values, that.values);
     }
 
     @Override
-    public List<VersionedExpression> referencedVariables() {
+    public int hashCode() {
+        return Arrays.hashCode(values);
+    }
+
+    @Override
+    public List<VariableExpression> referencedVariables() {
         return Statement.gatherVersionedExpressions(values);
+    }
+
+    @Override
+    public Expression transform(VariableTransformer transformer) {
+        Set<Expression> transformedValues = new HashSet<>();
+        for(Expression value : values) {
+            transformedValues.add(value.transform(transformer));
+        }
+        if(transformer.foldingAllowed()) {
+            transformedValues = mergeConstants(transformedValues);
+            if(transformedValues.size() == 1) {
+                return transformedValues.iterator().next();
+            }
+        }
+        return new PhiFunction(transformedValues);
+    }
+
+    private Set<Expression> mergeConstants(Set<Expression> values) {
+        Set<Expression> result = new HashSet<>();
+        for(Expression v1 : values) {
+            boolean keep = true;
+            if(v1 instanceof ConstantExpression) {
+                for(Expression v2 : values) {
+                    if(v2 instanceof ConstantExpression && v1 != v2
+                            && ((ConstantExpression) v2).canMerge((ConstantExpression) v1)) {
+                        keep = false;
+                        break;
+                    }
+                }
+            }
+            if(keep) {
+                result.add(v1);
+            }
+        }
+        return result;
     }
 }

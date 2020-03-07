@@ -24,6 +24,10 @@ public final class CastOperation implements UnaryOperation {
         this.desc = desc;
     }
 
+    public String getDesc() {
+        return desc;
+    }
+
     @Override
     public String toString() {
         return String.format("(%s)", desc);
@@ -32,6 +36,76 @@ public final class CastOperation implements UnaryOperation {
     @Override
     public String format(Expression expression) {
         return String.format("(%s) %s", desc, expression);
+    }
+
+    @Override
+    public boolean canPerform(Expression operand) {
+        return true;
+    }
+
+    @Override
+    public Expression perform(Expression operand) {
+        if(operand instanceof IntegerConstantExpression) {
+            switch(desc) {
+                case "int":
+                    return operand;
+                case "long":
+                    return ((IntegerConstantExpression) operand).castToLong();
+                case "float":
+                    return ((IntegerConstantExpression) operand).castToFloat();
+                case "double":
+                    return ((IntegerConstantExpression) operand).castToDouble();
+                case "byte":
+                    return ((IntegerConstantExpression) operand).castToByte();
+                case "char":
+                    return ((IntegerConstantExpression) operand).castToChar();
+                case "short":
+                    return ((IntegerConstantExpression) operand).castToShort();
+                default:
+                    throw new IllegalArgumentException();
+            }
+        } else if(operand instanceof FloatConstantExpression) {
+            switch(desc) {
+                case "int":
+                    return ((FloatConstantExpression) operand).castToInt();
+                case "long":
+                    return ((FloatConstantExpression) operand).castToLong();
+                case "float":
+                    return operand;
+                case "double":
+                    return ((FloatConstantExpression) operand).castToDouble();
+                default:
+                    throw new IllegalArgumentException();
+            }
+        } else if(operand instanceof DoubleConstantExpression) {
+            switch(desc) {
+                case "int":
+                    return ((DoubleConstantExpression) operand).castToInt();
+                case "long":
+                    return ((DoubleConstantExpression) operand).castToLong();
+                case "float":
+                    return ((DoubleConstantExpression) operand).castToFloat();
+                case "double":
+                    return operand;
+                default:
+                    throw new IllegalArgumentException();
+            }
+        } else if(operand instanceof LongConstantExpression) {
+            switch(desc) {
+                case "int":
+                    return ((LongConstantExpression) operand).castToInt();
+                case "long":
+                    return operand;
+                case "float":
+                    return ((LongConstantExpression) operand).castToFloat();
+                case "double":
+                    return ((LongConstantExpression) operand).castToDouble();
+                default:
+                    throw new IllegalArgumentException();
+            }
+        } else {
+            return operand;
+        }
     }
 
     @Override

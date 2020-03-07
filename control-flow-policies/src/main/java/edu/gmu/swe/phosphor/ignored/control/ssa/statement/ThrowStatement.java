@@ -1,15 +1,13 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class ThrowStatement implements Statement {
 
     private final Expression expression;
-    private final transient List<VersionedExpression> usedVariables;
+    private final transient List<VariableExpression> usedVariables;
 
     public ThrowStatement(Expression expression) {
         if(expression == null) {
@@ -17,6 +15,10 @@ public final class ThrowStatement implements Statement {
         }
         this.expression = expression;
         usedVariables = Statement.gatherVersionedExpressions(expression);
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     @Override
@@ -41,12 +43,17 @@ public final class ThrowStatement implements Statement {
     }
 
     @Override
-    public ThrowStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return new ThrowStatement(expression.process(versionStacks));
+    public ThrowStatement transform(VariableTransformer transformer) {
+        return new ThrowStatement(expression.transform(transformer));
     }
 
     @Override
-    public List<VersionedExpression> usedVariables() {
+    public VariableExpression definedVariable() {
+        return null;
+    }
+
+    @Override
+    public List<VariableExpression> usedVariables() {
         return usedVariables;
     }
 }

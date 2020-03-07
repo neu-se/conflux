@@ -1,17 +1,15 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.MonitorOperation;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class MonitorStatement implements Statement {
 
     private final MonitorOperation operation;
     private final Expression operand;
-    private final transient List<VersionedExpression> usedVariables;
+    private final transient List<VariableExpression> usedVariables;
 
     public MonitorStatement(MonitorOperation operation, Expression operand) {
         if(operation == null || operand == null) {
@@ -20,6 +18,14 @@ public final class MonitorStatement implements Statement {
         this.operation = operation;
         this.operand = operand;
         usedVariables = Statement.gatherVersionedExpressions(operand);
+    }
+
+    public MonitorOperation getOperation() {
+        return operation;
+    }
+
+    public Expression getOperand() {
+        return operand;
     }
 
     @Override
@@ -49,12 +55,17 @@ public final class MonitorStatement implements Statement {
     }
 
     @Override
-    public MonitorStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return new MonitorStatement(operation, operand.process(versionStacks));
+    public MonitorStatement transform(VariableTransformer transformer) {
+        return new MonitorStatement(operation, operand.transform(transformer));
     }
 
     @Override
-    public List<VersionedExpression> usedVariables() {
+    public VariableExpression definedVariable() {
+        return null;
+    }
+
+    @Override
+    public List<VariableExpression> usedVariables() {
         return usedVariables;
     }
 }

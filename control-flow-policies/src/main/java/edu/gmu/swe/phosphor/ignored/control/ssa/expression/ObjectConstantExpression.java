@@ -1,7 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 
 public final class ObjectConstantExpression implements ConstantExpression {
 
@@ -11,9 +10,22 @@ public final class ObjectConstantExpression implements ConstantExpression {
         this.constant = constant;
     }
 
+    public Object getConstant() {
+        return constant;
+    }
+
     @Override
     public boolean canMerge(ConstantExpression other) {
-        return this.equals(other);
+        return other instanceof ObjectConstantExpression
+                && ((ObjectConstantExpression) other).constant == constant;
+    }
+
+    public boolean instanceOf(String desc) {
+        if(constant == null) {
+            return false;
+        } else {
+            return Type.getInternalName(constant.getClass()).equals(desc);
+        }
     }
 
     @Override
@@ -41,10 +53,5 @@ public final class ObjectConstantExpression implements ConstantExpression {
         } else {
             return constant.toString();
         }
-    }
-
-    @Override
-    public ObjectConstantExpression process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return this;
     }
 }

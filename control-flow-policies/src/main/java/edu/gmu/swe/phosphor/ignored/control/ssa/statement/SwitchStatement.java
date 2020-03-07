@@ -6,11 +6,9 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LookupSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TableSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VersionedExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class SwitchStatement implements Statement {
 
@@ -18,7 +16,7 @@ public final class SwitchStatement implements Statement {
     private final Label[] labels;
     private final int[] keys;
     private final Expression value;
-    private final transient List<VersionedExpression> usedVariables;
+    private final transient List<VariableExpression> usedVariables;
 
     public SwitchStatement(Expression value, Label defaultLabel, Label[] labels, int[] keys) {
         if(value == null) {
@@ -59,6 +57,22 @@ public final class SwitchStatement implements Statement {
         for(int key : insn.keys) {
             keys[i++] = key;
         }
+    }
+
+    public Label getDefaultLabel() {
+        return defaultLabel;
+    }
+
+    public Label[] getLabels() {
+        return labels.clone();
+    }
+
+    public int[] getKeys() {
+        return keys.clone();
+    }
+
+    public Expression getValue() {
+        return value;
     }
 
     @Override
@@ -103,12 +117,17 @@ public final class SwitchStatement implements Statement {
     }
 
     @Override
-    public SwitchStatement process(Map<VersionedExpression, VersionStack> versionStacks) {
-        return new SwitchStatement(value.process(versionStacks), defaultLabel, labels, keys);
+    public SwitchStatement transform(VariableTransformer transformer) {
+        return new SwitchStatement(value.transform(transformer), defaultLabel, labels, keys);
     }
 
     @Override
-    public List<VersionedExpression> usedVariables() {
+    public VariableExpression definedVariable() {
+        return null;
+    }
+
+    @Override
+    public List<VariableExpression> usedVariables() {
         return usedVariables;
     }
 }
