@@ -1,9 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.MonitorOperation;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class MonitorStatement implements Statement {
@@ -68,15 +66,5 @@ public final class MonitorStatement implements Statement {
     @Override
     public List<VariableExpression> getUsedVariables() {
         return usedVariables;
-    }
-
-    @Override
-    public Expression getDefinedExpression() {
-        return null;
-    }
-
-    @Override
-    public List<Expression> getUsedExpressions() {
-        return Collections.singletonList(operand);
     }
 }

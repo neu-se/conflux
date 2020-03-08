@@ -35,7 +35,7 @@ public final class CastOperation implements UnaryOperation {
 
     @Override
     public String format(Expression expression) {
-        return String.format("(%s) %s", desc, expression);
+        return String.format("((%s) %s)", desc, expression);
     }
 
     @Override

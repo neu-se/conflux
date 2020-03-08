@@ -4,9 +4,12 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.gmu.swe.phosphor.ignored.control.binding.LoopConstancyCalculator;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
 import org.junit.experimental.theories.DataPoints;
@@ -75,7 +78,8 @@ public class SSAMethodTest {
                 if(statement.definesVariable()) {
                     definitions.put(statement.getDefinedVariable(), block);
                 }
-                if(!SSAMethod.isPhiFunctionStatement(statement)) {
+                if(!(statement instanceof AssignmentStatement
+                        && ((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction)) {
                     for(VariableExpression use : statement.getUsedVariables()) {
                         if(!uses.containsKey(use)) {
                             uses.put(use, new HashSet<>());
@@ -92,6 +96,13 @@ public class SSAMethodTest {
                         usingBlock, definingBlock), cfg.getDominatorSets().get(usingBlock).contains(definingBlock));
             }
         }
+    }
+
+    @Theory
+    public void temp(Method method) throws Exception {
+        SSAMethod ssaMethod = convertToSSA(method);
+        FlowGraph<SSABasicBlock> cfg = ssaMethod.getControlFlowGraph();
+        LoopConstancyCalculator.propagateVariables(ssaMethod);
     }
 
     @DataPoints

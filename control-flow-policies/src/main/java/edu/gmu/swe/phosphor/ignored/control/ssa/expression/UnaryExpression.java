@@ -17,6 +17,14 @@ public final class UnaryExpression implements Expression {
         this.operand = operand;
     }
 
+    public UnaryOperation getOperation() {
+        return operation;
+    }
+
+    public Expression getOperand() {
+        return operand;
+    }
+
     @Override
     public String toString() {
         return operation.format(operand);

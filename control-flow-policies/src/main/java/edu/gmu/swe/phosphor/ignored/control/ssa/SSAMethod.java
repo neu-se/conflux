@@ -3,10 +3,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa;
 import edu.columbia.cs.psl.phosphor.control.graph.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.*;
 
@@ -122,32 +119,6 @@ public class SSAMethod {
         return false;
     }
 
-    public Map<VariableExpression, Expression> propagateVariables() {
-        Map<VariableExpression, Expression> definitions = new HashMap<>();
-        for(SSABasicBlock block : controlFlowGraph.getVertices()) {
-            for(Statement statement : block.getStatements()) {
-                if(statement.definesVariable() && statement instanceof AssignmentStatement) {
-                    definitions.put(statement.getDefinedVariable(),
-                            ((AssignmentStatement) statement).getRightHandSide());
-                }
-            }
-        }
-        PropagationTransformer transformer = new PropagationTransformer(definitions);
-        boolean changed;
-        do {
-            changed = false;
-            for(VariableExpression assignee : definitions.keySet()) {
-                Expression assigned = definitions.get(assignee);
-                Expression transformed = assigned.transform(transformer, assignee);
-                if(!assigned.equals(transformed)) {
-                    changed = true;
-                    definitions.put(assignee, transformed);
-                }
-            }
-        } while(changed);
-        return definitions;
-    }
-
     public List<Statement> createStatementList() {
         List<Statement> list = new LinkedList<>();
         List<SSABasicBlock> blocks = new LinkedList<>(getControlFlowGraph().getVertices());
@@ -195,10 +166,4 @@ public class SSAMethod {
         }
         return builder.build();
     }
-
-    public static boolean isPhiFunctionStatement(Statement statement) {
-        return statement instanceof AssignmentStatement
-                && ((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction;
-    }
-
 }

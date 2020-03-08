@@ -1,7 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
@@ -23,7 +22,7 @@ public final class IfStatement implements Statement {
 
     @Override
     public String toString() {
-        return String.format("if(%s) goto %s", condition, target);
+        return String.format("if %s goto %s", condition, target);
     }
 
     @Override
@@ -60,15 +59,5 @@ public final class IfStatement implements Statement {
     @Override
     public List<VariableExpression> getUsedVariables() {
         return usedVariables;
-    }
-
-    @Override
-    public Expression getDefinedExpression() {
-        return null;
-    }
-
-    @Override
-    public List<Expression> getUsedExpressions() {
-        return Collections.singletonList(condition);
     }
 }

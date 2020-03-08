@@ -17,7 +17,7 @@ public final class NewExpression implements Expression {
 
     @Override
     public String toString() {
-        return String.format("new %s", desc);
+        return String.format("(new %s)", desc);
     }
 
     @Override

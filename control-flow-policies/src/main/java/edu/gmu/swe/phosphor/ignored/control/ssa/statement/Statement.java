@@ -19,14 +19,6 @@ public interface Statement {
 
     List<VariableExpression> getUsedVariables();
 
-    default boolean definesExpression() {
-        return getDefinedExpression() != null;
-    }
-
-    Expression getDefinedExpression();
-
-    List<Expression> getUsedExpressions();
-
     static List<VariableExpression> gatherVersionedExpressions(Expression e1) {
         List<VariableExpression> expressions = new LinkedList<>();
         if(e1 != null) {

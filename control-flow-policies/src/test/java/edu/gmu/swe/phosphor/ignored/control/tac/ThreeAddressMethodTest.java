@@ -6,8 +6,6 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
-import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
-import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethodTestMethods;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -111,35 +109,35 @@ public class ThreeAddressMethodTest {
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(0), new ArrayExpression(new StackElement(0), new StackElement(1))),
+                new AssignmentStatement(new StackElement(0), new ArrayAccess(new StackElement(0), new StackElement(1))),
                 //
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(1), new ArrayExpression(new StackElement(1), new StackElement(2))),
+                new AssignmentStatement(new StackElement(1), new ArrayAccess(new StackElement(1), new StackElement(2))),
                 //
                 new AssignmentStatement(new StackElement(2), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(3), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(2), new ArrayExpression(new StackElement(2), new StackElement(3))),
+                new AssignmentStatement(new StackElement(2), new ArrayAccess(new StackElement(2), new StackElement(3))),
                 //
                 new AssignmentStatement(new StackElement(3), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(4), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(3), new ArrayExpression(new StackElement(3), new StackElement(4))),
+                new AssignmentStatement(new StackElement(3), new ArrayAccess(new StackElement(3), new StackElement(4))),
                 //
                 new AssignmentStatement(new StackElement(4), new LocalVariable(4)),
                 new AssignmentStatement(new StackElement(5), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(4), new ArrayExpression(new StackElement(4), new StackElement(5))),
+                new AssignmentStatement(new StackElement(4), new ArrayAccess(new StackElement(4), new StackElement(5))),
                 //
                 new AssignmentStatement(new StackElement(5), new LocalVariable(5)),
                 new AssignmentStatement(new StackElement(6), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(5), new ArrayExpression(new StackElement(5), new StackElement(6))),
+                new AssignmentStatement(new StackElement(5), new ArrayAccess(new StackElement(5), new StackElement(6))),
                 //
                 new AssignmentStatement(new StackElement(6), new LocalVariable(6)),
                 new AssignmentStatement(new StackElement(7), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(6), new ArrayExpression(new StackElement(6), new StackElement(7))),
+                new AssignmentStatement(new StackElement(6), new ArrayAccess(new StackElement(6), new StackElement(7))),
                 //
                 new AssignmentStatement(new StackElement(7), new LocalVariable(7)),
                 new AssignmentStatement(new StackElement(8), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(7), new ArrayExpression(new StackElement(7), new StackElement(8))),
+                new AssignmentStatement(new StackElement(7), new ArrayAccess(new StackElement(7), new StackElement(8))),
                 //
                 new InvokeStatement(new InvokeExpression(OWNER, "example", null, new Expression[]{
                         new StackElement(0),
@@ -165,42 +163,42 @@ public class ThreeAddressMethodTest {
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.L0),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.F0),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.D0),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(4)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(5)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(6)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(7)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.NULL),
-                new AssignmentStatement(new ArrayExpression(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
                 //
                 new ReturnStatement(null)
         ));
@@ -725,9 +723,9 @@ public class ThreeAddressMethodTest {
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new AssignmentStatement(new StackElement(0), new FieldExpression(OWNER, "i", new StackElement(0))),
+                new AssignmentStatement(new StackElement(0), new FieldAccess(OWNER, "i", new StackElement(0))),
                 IdleStatement.POP,
-                new AssignmentStatement(new StackElement(0), new FieldExpression(OWNER, "b", null)),
+                new AssignmentStatement(new StackElement(0), new FieldAccess(OWNER, "b", null)),
                 IdleStatement.POP,
                 new ReturnStatement(null)
         ));
@@ -741,10 +739,10 @@ public class ThreeAddressMethodTest {
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I1),
-                new AssignmentStatement(new FieldExpression(OWNER, "b", null), new StackElement(0)),
+                new AssignmentStatement(new FieldAccess(OWNER, "b", null), new StackElement(0)),
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
-                new AssignmentStatement(new FieldExpression(OWNER, "i", new StackElement(0)), new StackElement(1)),
+                new AssignmentStatement(new FieldAccess(OWNER, "i", new StackElement(0)), new StackElement(1)),
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -993,35 +991,35 @@ public class ThreeAddressMethodTest {
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.NOT_EQUAL, new StackElement(0),
                         ConstantExpression.I0), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.EQUAL, new StackElement(0),
                         ConstantExpression.I0), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new IfStatement(new ConditionExpression(Condition.LESS_THAN, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.LESS_THAN, new StackElement(0),
                         ConstantExpression.I0), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new IfStatement(new ConditionExpression(Condition.GREATER_THAN_OR_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.GREATER_THAN_OR_EQUAL, new StackElement(0),
                         ConstantExpression.I0), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new IfStatement(new ConditionExpression(Condition.GREATER_THAN, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.GREATER_THAN, new StackElement(0),
                         ConstantExpression.I0), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new IfStatement(new ConditionExpression(Condition.LESS_THAN_OR_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.LESS_THAN_OR_EQUAL, new StackElement(0),
                         ConstantExpression.I0), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
-                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.EQUAL, new StackElement(0),
                         ConstantExpression.NULL), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
-                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.NOT_EQUAL, new StackElement(0),
                         ConstantExpression.NULL), l0),
                 //
                 new LabelStatement(l0),
@@ -1040,43 +1038,43 @@ public class ThreeAddressMethodTest {
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
-                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.EQUAL, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
-                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.NOT_EQUAL, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I1),
-                new IfStatement(new ConditionExpression(Condition.LESS_THAN, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.LESS_THAN, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I2),
-                new IfStatement(new ConditionExpression(Condition.GREATER_THAN_OR_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.GREATER_THAN_OR_EQUAL, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I3),
 
-                new IfStatement(new ConditionExpression(Condition.GREATER_THAN, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.GREATER_THAN, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I4),
-                new IfStatement(new ConditionExpression(Condition.LESS_THAN_OR_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.LESS_THAN_OR_EQUAL, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
-                new IfStatement(new ConditionExpression(Condition.EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.EQUAL, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
-                new IfStatement(new ConditionExpression(Condition.NOT_EQUAL, new StackElement(0),
+                new IfStatement(new BinaryExpression(BinaryOperation.NOT_EQUAL, new StackElement(0),
                         new StackElement(1)), l0),
                 //
                 new LabelStatement(l0),

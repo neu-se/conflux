@@ -4,12 +4,12 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
-public final class ArrayExpression implements Expression {
+public final class ArrayAccess implements Expression {
 
     private final Expression arrayRef;
     private final Expression index;
 
-    public ArrayExpression(Expression arrayRef, Expression index) {
+    public ArrayAccess(Expression arrayRef, Expression index) {
         if(arrayRef == null || index == null) {
             throw new NullPointerException();
         }
@@ -26,10 +26,10 @@ public final class ArrayExpression implements Expression {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof ArrayExpression)) {
+        } else if(!(o instanceof ArrayAccess)) {
             return false;
         }
-        ArrayExpression that = (ArrayExpression) o;
+        ArrayAccess that = (ArrayAccess) o;
         if(!arrayRef.equals(that.arrayRef)) {
             return false;
         }
@@ -57,7 +57,7 @@ public final class ArrayExpression implements Expression {
     }
 
     @Override
-    public ArrayExpression transform(VariableTransformer transformer) {
-        return new ArrayExpression(arrayRef.transform(transformer), index.transform(transformer));
+    public ArrayAccess transform(VariableTransformer transformer) {
+        return new ArrayAccess(arrayRef.transform(transformer), index.transform(transformer));
     }
 }

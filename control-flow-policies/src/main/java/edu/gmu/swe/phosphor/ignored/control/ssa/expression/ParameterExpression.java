@@ -28,7 +28,7 @@ public class ParameterExpression implements Expression {
 
     @Override
     public String toString() {
-        return "<param " + parameterNumber + ">";
+        return "param" + parameterNumber;
     }
 
     @Override

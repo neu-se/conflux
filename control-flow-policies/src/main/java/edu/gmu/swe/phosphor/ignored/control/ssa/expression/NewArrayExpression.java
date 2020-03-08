@@ -44,7 +44,7 @@ public final class NewArrayExpression implements Expression {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("new ")
+        StringBuilder builder = new StringBuilder("(new ")
                 .append(type.getClassName());
         for(Expression dim : dims) {
             builder.append("[");
@@ -53,7 +53,7 @@ public final class NewArrayExpression implements Expression {
             }
             builder.append("]");
         }
-        return builder.toString();
+        return builder.append(")").toString();
     }
 
     @Override

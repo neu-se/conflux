@@ -4,13 +4,13 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
-public final class FieldExpression implements Expression {
+public final class FieldAccess implements Expression {
 
     public final String owner;
     public final String name;
     public final Expression receiver;
 
-    public FieldExpression(String owner, String name, Expression receiver) {
+    public FieldAccess(String owner, String name, Expression receiver) {
         if(owner == null || name == null) {
             throw new NullPointerException();
         }
@@ -44,10 +44,10 @@ public final class FieldExpression implements Expression {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof FieldExpression)) {
+        } else if(!(o instanceof FieldAccess)) {
             return false;
         }
-        FieldExpression that = (FieldExpression) o;
+        FieldAccess that = (FieldAccess) o;
         if(!owner.equals(that.owner)) {
             return false;
         }
@@ -71,11 +71,11 @@ public final class FieldExpression implements Expression {
     }
 
     @Override
-    public FieldExpression transform(VariableTransformer transformer) {
+    public FieldAccess transform(VariableTransformer transformer) {
         if(receiver == null) {
             return this;
         } else {
-            return new FieldExpression(owner, name, receiver.transform(transformer));
+            return new FieldAccess(owner, name, receiver.transform(transformer));
         }
     }
 }

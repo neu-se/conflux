@@ -43,7 +43,7 @@ public final class InstanceOfOperation implements UnaryOperation {
 
     @Override
     public String format(Expression expression) {
-        return String.format("%s instanceof %s", expression, desc);
+        return String.format("(%s instanceof %s)", expression, desc);
     }
 
     @Override

@@ -43,9 +43,9 @@ public class IfInsnConverter extends InsnConverter {
 
     @Override
     protected Statement[] process(AbstractInsnNode insn, Frame<TypeValue> frame) {
-        Condition condition = Condition.getInstance(insn);
-        Expression leftHandSide = new StackElement(frame.getStackSize() - 2);
-        Expression rightHandSide = new StackElement(frame.getStackSize() - 1);
+        BinaryOperation operation = BinaryOperation.getInstance(insn);
+        Expression operand1 = new StackElement(frame.getStackSize() - 2);
+        Expression operand2 = new StackElement(frame.getStackSize() - 1);
         switch(insn.getOpcode()) {
             case IFEQ:
             case IFNE:
@@ -53,15 +53,15 @@ public class IfInsnConverter extends InsnConverter {
             case IFGE:
             case IFGT:
             case IFLE:
-                leftHandSide = rightHandSide;
-                rightHandSide = ConstantExpression.I0;
+                operand1 = operand2;
+                operand2 = ConstantExpression.I0;
                 break;
             case IFNULL:
             case IFNONNULL:
-                leftHandSide = rightHandSide;
-                rightHandSide = ConstantExpression.NULL;
+                operand1 = operand2;
+                operand2 = ConstantExpression.NULL;
         }
-        ConditionExpression expression = new ConditionExpression(condition, leftHandSide, rightHandSide);
+        BinaryExpression expression = new BinaryExpression(operation, operand1, operand2);
         return new Statement[]{new IfStatement(expression, ((JumpInsnNode) insn).label.getLabel())};
     }
 }
