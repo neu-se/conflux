@@ -7,7 +7,6 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 public class SSABasicBlock {
 
     private final List<Statement> statements;
-    private final Map<AbstractInsnNode, List<Statement>> statementMap;
     private final int index;
 
     public SSABasicBlock(List<Statement> statements, Map<AbstractInsnNode, Statement[]> statementMap, int index) {
@@ -16,7 +15,6 @@ public class SSABasicBlock {
         for(AbstractInsnNode insn : statementMap.keySet()) {
             temp.put(insn, Collections.unmodifiableList(Arrays.asList(statementMap.get(insn))));
         }
-        this.statementMap = Collections.unmodifiableMap(temp);
         this.index = index;
     }
 
@@ -26,9 +24,5 @@ public class SSABasicBlock {
 
     public List<Statement> getStatements() {
         return statements;
-    }
-
-    public Map<AbstractInsnNode, List<Statement>> getStatementMap() {
-        return statementMap;
     }
 }

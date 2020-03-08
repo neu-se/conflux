@@ -3,6 +3,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class GoToStatement implements Statement {
@@ -47,12 +48,22 @@ public final class GoToStatement implements Statement {
     }
 
     @Override
-    public VariableExpression definedVariable() {
+    public VariableExpression getDefinedVariable() {
         return null;
     }
 
     @Override
-    public List<VariableExpression> usedVariables() {
+    public List<VariableExpression> getUsedVariables() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Expression getDefinedExpression() {
+        return null;
+    }
+
+    @Override
+    public List<Expression> getUsedExpressions() {
         return Collections.emptyList();
     }
 }

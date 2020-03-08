@@ -5,6 +5,7 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LookupSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TableSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
@@ -122,12 +123,22 @@ public final class SwitchStatement implements Statement {
     }
 
     @Override
-    public VariableExpression definedVariable() {
+    public VariableExpression getDefinedVariable() {
         return null;
     }
 
     @Override
-    public List<VariableExpression> usedVariables() {
+    public List<VariableExpression> getUsedVariables() {
         return usedVariables;
+    }
+
+    @Override
+    public Expression getDefinedExpression() {
+        return null;
+    }
+
+    @Override
+    public List<Expression> getUsedExpressions() {
+        return Collections.singletonList(value);
     }
 }

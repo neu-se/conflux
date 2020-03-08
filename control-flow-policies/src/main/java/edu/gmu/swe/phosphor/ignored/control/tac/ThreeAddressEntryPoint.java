@@ -25,6 +25,10 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
         return threeAddressStatements;
     }
 
+    public List<Statement> getSsaStatements() {
+        return ssaStatements;
+    }
+
     @Override
     public void addPhiFunctionForVariable(VariableExpression expression) {
 

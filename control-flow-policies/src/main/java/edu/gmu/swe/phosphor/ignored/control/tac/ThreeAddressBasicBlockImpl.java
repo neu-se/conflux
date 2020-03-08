@@ -33,6 +33,10 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
         return threeAddressStatementList;
     }
 
+    public Map<AbstractInsnNode, Statement[]>  getSsaStatements() {
+        return ssaStatements;
+    }
+
     private List<AssignmentStatement> createPhiFunctions() {
         List<AssignmentStatement> phiFunctions = new LinkedList<>();
         for(VariableExpression expr : phiValues.keySet()) {

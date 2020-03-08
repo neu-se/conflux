@@ -4,8 +4,9 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
 import org.junit.experimental.theories.DataPoints;
@@ -14,7 +15,6 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Method;
-import java.util.Iterator;
 
 import static edu.gmu.swe.phosphor.ignored.control.ControlAnalysisTestUtil.getMethodNode;
 import static org.junit.Assert.assertTrue;
@@ -30,9 +30,9 @@ public class SSAMethodTest {
     public void assignmentsUniquelyNamed(Method method) throws Exception {
         SSAMethod ssaMethod = convertToSSA(method);
         List<VariableExpression> allDefinitions = new LinkedList<>();
-        for(Statement s : createStatementList(ssaMethod)) {
+        for(Statement s : ssaMethod.createStatementList()) {
             if(s.definesVariable()) {
-                allDefinitions.add(s.definedVariable());
+                allDefinitions.add(s.getDefinedVariable());
             }
         }
         // Maps local variable indices to sets of versions
@@ -73,10 +73,10 @@ public class SSAMethodTest {
         for(SSABasicBlock block : cfg.getVertices()) {
             for(Statement statement : block.getStatements()) {
                 if(statement.definesVariable()) {
-                    definitions.put(statement.definedVariable(), block);
+                    definitions.put(statement.getDefinedVariable(), block);
                 }
-                if(!isPhiFunctionStatement(statement)) {
-                    for(VariableExpression use : statement.usedVariables()) {
+                if(!SSAMethod.isPhiFunctionStatement(statement)) {
+                    for(VariableExpression use : statement.getUsedVariables()) {
                         if(!uses.containsKey(use)) {
                             uses.put(use, new HashSet<>());
                         }
@@ -94,60 +94,6 @@ public class SSAMethodTest {
         }
     }
 
-    @Theory
-    public void testPropagateVariables(Method method) throws Exception {
-        SSAMethod ssaMethod = convertToSSA(method);
-        PropagationTransformer transformer = new PropagationTransformer(ssaMethod.propagateVariables());
-        List<Statement> statements = new LinkedList<>();
-        for(Statement statement : createStatementList(ssaMethod)) {
-            statements.add(statement.transform(transformer));
-        }
-        removeDeadCode(statements);
-        String original = format(createStatementList(ssaMethod));
-        String propagated = format(statements);
-        // TODO
-    }
-
-    private static void removeDeadCode(List<Statement> statements) {
-        boolean changed;
-        do {
-            changed = false;
-            Map<Statement, VariableExpression> definingStatements = new HashMap<>();
-            Map<VariableExpression, VariableExpression> usedVariables = new HashMap<>();
-            for(Statement s : statements) {
-                if(s.definesVariable() && s instanceof AssignmentStatement) {
-                    Expression rhs = ((AssignmentStatement) s).getRightHandSide();
-                    if(!(rhs instanceof InvokeExpression)) {
-                        definingStatements.put(s, s.definedVariable());
-                    }
-                }
-                for(VariableExpression use : s.usedVariables()) {
-                    usedVariables.put(use, use);
-                }
-            }
-            Iterator<Statement> itr = statements.iterator();
-            while(itr.hasNext()) {
-                Statement s = itr.next();
-                if(definingStatements.containsKey(s)) {
-                    VariableExpression e = definingStatements.get(s);
-                    if(!usedVariables.containsKey(e)) {
-                        itr.remove();
-                        changed = true;
-                    }
-                }
-            }
-
-        } while(changed);
-    }
-
-    private static String format(List<Statement> statements) {
-        List<String> s = new LinkedList<>();
-        for(Statement statement : statements) {
-            s.add(statement.toString());
-        }
-        return String.join("\n", s);
-    }
-
     @DataPoints
     public static Method[] methods() {
         List<Method> methods = new LinkedList<>();
@@ -163,20 +109,5 @@ public class SSAMethodTest {
         MethodNode methodNode = getMethodNode(method.getDeclaringClass(), method.getName());
         String owner = Type.getInternalName(method.getDeclaringClass());
         return new SSAMethod(new ThreeAddressMethod(owner, methodNode));
-    }
-
-    private static List<Statement> createStatementList(SSAMethod ssaMethod) {
-        List<Statement> list = new LinkedList<>();
-        List<SSABasicBlock> blocks = new LinkedList<>(ssaMethod.getControlFlowGraph().getVertices());
-        Collections.sort(blocks, (object1, object2) -> Integer.compare(object1.getIndex(), object2.getIndex()));
-        for(SSABasicBlock block : blocks) {
-            list.addAll(block.getStatements());
-        }
-        return list;
-    }
-
-    private static boolean isPhiFunctionStatement(Statement statement) {
-        return statement instanceof AssignmentStatement
-                && ((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction;
     }
 }

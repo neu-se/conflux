@@ -1,28 +1,29 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class IfStatement implements Statement {
 
-    private final Expression conditionExpression;
+    private final Expression condition;
     private final Label target;
     private final transient List<VariableExpression> usedVariables;
 
-    public IfStatement(Expression conditionExpression, Label target) {
-        if(conditionExpression == null || target == null) {
+    public IfStatement(Expression condition, Label target) {
+        if(condition == null || target == null) {
             throw new NullPointerException();
         }
-        this.conditionExpression = conditionExpression;
+        this.condition = condition;
         this.target = target;
-        usedVariables = Statement.gatherVersionedExpressions(conditionExpression);
+        usedVariables = Statement.gatherVersionedExpressions(condition);
     }
 
     @Override
     public String toString() {
-        return String.format("if(%s) goto %s", conditionExpression, target);
+        return String.format("if(%s) goto %s", condition, target);
     }
 
     @Override
@@ -33,7 +34,7 @@ public final class IfStatement implements Statement {
             return false;
         }
         IfStatement that = (IfStatement) o;
-        if(!conditionExpression.equals(that.conditionExpression)) {
+        if(!condition.equals(that.condition)) {
             return false;
         }
         return target.equals(that.target);
@@ -41,23 +42,33 @@ public final class IfStatement implements Statement {
 
     @Override
     public int hashCode() {
-        int result = conditionExpression.hashCode();
+        int result = condition.hashCode();
         result = 31 * result + target.hashCode();
         return result;
     }
 
     @Override
     public IfStatement transform(VariableTransformer transformer) {
-        return new IfStatement(conditionExpression.transform(transformer), target);
+        return new IfStatement(condition.transform(transformer), target);
     }
 
     @Override
-    public VariableExpression definedVariable() {
+    public VariableExpression getDefinedVariable() {
         return null;
     }
 
     @Override
-    public List<VariableExpression> usedVariables() {
+    public List<VariableExpression> getUsedVariables() {
         return usedVariables;
+    }
+
+    @Override
+    public Expression getDefinedExpression() {
+        return null;
+    }
+
+    @Override
+    public List<Expression> getUsedExpressions() {
+        return Collections.singletonList(condition);
     }
 }

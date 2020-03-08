@@ -26,6 +26,7 @@ public class ThreeAddressExitPoint extends ExitPoint implements ThreeAddressBasi
 
     }
 
+
     @Override
     public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
 

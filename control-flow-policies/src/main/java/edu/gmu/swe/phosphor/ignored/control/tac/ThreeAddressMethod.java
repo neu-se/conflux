@@ -99,13 +99,13 @@ public class ThreeAddressMethod {
         for(Statement[] statements : statementMap.values()) {
             for(Statement statement : statements) {
                 if(statement.definesVariable()) {
-                    definedVariables.add(statement.definedVariable());
+                    definedVariables.add(statement.getDefinedVariable());
                 }
             }
         }
         for(Statement statement : parameterDefinitions) {
             if(statement.definesVariable()) {
-                definedVariables.add(statement.definedVariable());
+                definedVariables.add(statement.getDefinedVariable());
             }
         }
         return definedVariables;
