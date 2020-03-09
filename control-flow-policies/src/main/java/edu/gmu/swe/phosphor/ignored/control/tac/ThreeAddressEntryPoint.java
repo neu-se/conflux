@@ -5,7 +5,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.ProcessVersionStackTransformer;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionAssigningTransformer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
@@ -41,7 +41,7 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
 
     @Override
     public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
-        ProcessVersionStackTransformer transformer = new ProcessVersionStackTransformer(versionStacks);
+        VersionAssigningTransformer transformer = new VersionAssigningTransformer(versionStacks);
         ssaStatements = new LinkedList<>();
         for(Statement statement : threeAddressStatements) {
             ssaStatements.add(statement.transform(transformer));

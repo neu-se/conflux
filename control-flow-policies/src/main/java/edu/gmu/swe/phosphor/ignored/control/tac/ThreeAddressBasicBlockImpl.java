@@ -1,18 +1,17 @@
 package edu.gmu.swe.phosphor.ignored.control.tac;
 
-import edu.columbia.cs.psl.phosphor.control.graph.SimpleBasicBlock;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.ProcessVersionStackTransformer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionAssigningTransformer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
-public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements ThreeAddressBasicBlock {
+public class ThreeAddressBasicBlockImpl implements ThreeAddressBasicBlock {
 
     private final Map<VariableExpression, Set<VariableExpression>> phiValues = new HashMap<>();
     private final Map<VariableExpression, VariableExpression> phiAssignees = new HashMap<>();
@@ -20,8 +19,7 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
     private final Map<AbstractInsnNode, Statement[]> ssaStatements = new LinkedHashMap<>();
     private final List<Statement> threeAddressStatementList;
 
-    public ThreeAddressBasicBlockImpl(AbstractInsnNode[] instructions, int identifier, ThreeAddressMethod method) {
-        super(instructions, identifier);
+    public ThreeAddressBasicBlockImpl(AbstractInsnNode[] instructions, ThreeAddressMethod method) {
         for(AbstractInsnNode insn : instructions) {
             threeAddressStatements.put(insn, method.getStatements(insn));
         }
@@ -33,7 +31,7 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
         return threeAddressStatementList;
     }
 
-    public Map<AbstractInsnNode, Statement[]>  getSsaStatements() {
+    public Map<AbstractInsnNode, Statement[]> getSsaStatements() {
         return ssaStatements;
     }
 
@@ -62,7 +60,7 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
 
     @Override
     public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
-        ProcessVersionStackTransformer transformer = new ProcessVersionStackTransformer(versionStacks);
+        VersionAssigningTransformer transformer = new VersionAssigningTransformer(versionStacks);
         for(VariableExpression expression : phiValues.keySet()) {
             phiAssignees.put(expression, versionStacks.get(expression).createNewVersion());
         }

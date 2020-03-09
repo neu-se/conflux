@@ -3,65 +3,43 @@ package edu.gmu.swe.phosphor.ignored.control.binding;
 import edu.columbia.cs.psl.phosphor.control.graph.BasicBlock;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.InsnList;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
-import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.PropagationTransformer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
-import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
-
-import java.util.Iterator;
-import java.util.function.Predicate;
 
 /**
  * Calculates the loop-relative constancy of each variable (local variable or stack element) definition.
  * <p>
  * Let s be an assignment statement for some representation in static single assignment form which assigns a
  * variable, x_v, the value of an expression, e.
- * The definition of x_v is constant relative to a natural loop, L, that contains the statement s, if along all
+ * The value of x_v is constant relative to a natural loop, L, that contains the statement s, if along all
  * paths from the header of L consisting only of vertices contained in L, x_v is either undefined or
  * its definition is always equal to the same value.
  * <p>
- * E -> T | (unary_op T) | (T binary_op T)
- * T -> array_access | constant | field_access | invoke_expression | new_expression | new_array_expression
- * | parameter_expression | phi_function | variable
+ * The expression e is comprised of a combination of subexpressions and operations. The expression is said to be
+ * non-constant with respect to L if at least one of its subexpressions is non-constant with respect to L.
+ * A subexpression e' is constant with respect to L if one of the following conditions is met:
+ * <ul>
+ *     <li>e' is a constant</li>
+ *     <li>e' is a parameter expression whose definition is constant with respect to L</li>
+ *     <li>e' is a variable expression whose definition is constant with respect to L</li>
+ * </ul>
+ * If e' is a new expression, new array expression, or a phi function, then it can vary with respect to all loops that
+ * contain it. If e' is an array access, field access, or invoke expression, then we conservatively say that e is
+ * non-constant with respect to all loops that contain it.
  */
 public class LoopConstancyCalculator {
 
-    private final Map<AbstractInsnNode, StatementInfo> insnStatementMap;
-    private final StatementInfo parameterInfo;
-
     public LoopConstancyCalculator(String owner, MethodNode methodNode) throws AnalyzerException {
-        ThreeAddressMethod threeAddressMethod = new ThreeAddressMethod(owner, methodNode);
-        SSAMethod ssaMethod = new SSAMethod(threeAddressMethod);
-        PropagationTransformer transformer = new PropagationTransformer(propagateVariables(ssaMethod));
-        InsnList instructions = threeAddressMethod.getOriginalMethod().instructions;
-        insnStatementMap = new LinkedHashMap<>();
-        Iterator<AbstractInsnNode> itr = instructions.iterator();
-        while(itr.hasNext()) {
-            AbstractInsnNode insn = itr.next();
-            Statement[] threeAddressStatements = threeAddressMethod.getStatements(insn);
-            Statement[] ssaStatements = ssaMethod.getStatements(insn);
-            Statement[] propagatedStatements = new Statement[ssaStatements.length];
-            for(int i = 0; i < ssaStatements.length; i++) {
-                propagatedStatements[i] = ssaStatements[i].transform(transformer);
-            }
-            StatementInfo info = new StatementInfo(insn, threeAddressStatements, ssaStatements, propagatedStatements);
-            insnStatementMap.put(insn, info);
-        }
-        Statement[] threeAddressStatements = threeAddressMethod.getParameterDefinitions().toArray(new Statement[0]);
-        Statement[] ssaStatements = ssaMethod.getParameterDefinitions().toArray(new Statement[0]);
-        Statement[] propagatedStatements = new Statement[ssaStatements.length];
-        for(int i = 0; i < ssaStatements.length; i++) {
-            propagatedStatements[i] = ssaStatements[i].transform(transformer);
-        }
-        parameterInfo = new StatementInfo(null, threeAddressStatements, ssaStatements, propagatedStatements);
+        SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
+        PropagationTransformer transformer = new PropagationTransformer(propagateVariables(ssaMethod.getSsaControlFlowGraph()));
     }
 
     /**
@@ -77,7 +55,7 @@ public class LoopConstancyCalculator {
     public static <T extends BasicBlock> boolean interveningFieldRedefinitionPossible(AbstractInsnNode source,
                                                                                       AbstractInsnNode target, FlowGraph<T> cfg,
                                                                                       Map<AbstractInsnNode, T> insnBlockMap, FieldAccess expression) {
-        return checkAllPaths(source, target, cfg, insnBlockMap, abstractInsnNode -> false);
+        return false;
     }
 
     /**
@@ -91,55 +69,12 @@ public class LoopConstancyCalculator {
     public static <T extends BasicBlock> boolean interveningArrayRedefinitionPossible(AbstractInsnNode source, AbstractInsnNode target,
                                                                                       FlowGraph<T> cfg,
                                                                                       Map<AbstractInsnNode, T> insnBlockMap) {
-        return checkAllPaths(source, target, cfg, insnBlockMap, abstractInsnNode -> false);
-    }
-
-    public static <T extends BasicBlock> boolean checkAllPaths(AbstractInsnNode source, AbstractInsnNode target,
-                                                               FlowGraph<T> cfg, Map<AbstractInsnNode, T> insnBlockMap,
-                                                               Predicate<AbstractInsnNode> predicate) {
-        T sourceBlock = insnBlockMap.get(source);
-        T targetBlock = insnBlockMap.get(target);
-        Set<T> visited = new HashSet<>();
-        SinglyLinkedList<T> queue = new SinglyLinkedList<>();
-        if(checkInstructions(source.getNext(), sourceBlock.getLastInsn(), predicate)) {
-            return true;
-        }
-        queue.enqueue(sourceBlock);
-        visited.add(sourceBlock);
-        while(!queue.isEmpty()) {
-            for(T successor : cfg.getSuccessors(queue.removeFirst())) {
-                if(successor.equals(targetBlock)) {
-                    if(successor.getFirstInsn() == target || target.getPrevious() == null) {
-                        return false;
-                    } else {
-                        return checkInstructions(successor.getFirstInsn(), target.getPrevious(), predicate);
-                    }
-                } else if(visited.add(successor)) {
-                    if(checkInstructions(successor.getFirstInsn(), successor.getLastInsn(), predicate)) {
-                        return true;
-                    }
-                    queue.enqueue(successor);
-                }
-            }
-        }
         return false;
     }
 
-    public static boolean checkInstructions(AbstractInsnNode start, AbstractInsnNode end, Predicate<AbstractInsnNode> predicate) {
-        while(start != null) {
-            if(predicate.test(start)) {
-                return true;
-            } else if(start == end) {
-                break;
-            }
-            start = start.getNext();
-        }
-        return false;
-    }
-
-    public static Map<VariableExpression, Expression> propagateVariables(SSAMethod method) {
+    public static Map<VariableExpression, Expression> propagateVariables(FlowGraph<SSABasicBlock> graph) {
         Map<VariableExpression, Expression> definitions = new HashMap<>();
-        for(SSABasicBlock block : method.getControlFlowGraph().getVertices()) {
+        for(SSABasicBlock block : graph.getVertices()) {
             for(Statement statement : block.getStatements()) {
                 if(statement.definesVariable() && statement instanceof AssignmentStatement) {
                     Expression valueExpr = ((AssignmentStatement) statement).getRightHandSide();
@@ -178,21 +113,6 @@ public class LoopConstancyCalculator {
             return canPropagate(operand);
         } else {
             return false;
-        }
-    }
-
-    private static class StatementInfo {
-        private final AbstractInsnNode insn;
-        private final Statement[] threeAddressStatements;
-        private final Statement[] ssaStatements;
-        private final Statement[] propagatedStatements;
-
-        public StatementInfo(AbstractInsnNode insn, Statement[] threeAddressStatements, Statement[] ssaStatements,
-                             Statement[] propagatedStatements) {
-            this.insn = insn;
-            this.threeAddressStatements = threeAddressStatements;
-            this.ssaStatements = ssaStatements;
-            this.propagatedStatements = propagatedStatements;
         }
     }
 }

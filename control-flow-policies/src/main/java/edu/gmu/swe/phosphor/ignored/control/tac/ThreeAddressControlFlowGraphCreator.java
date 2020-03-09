@@ -1,103 +1,46 @@
 package edu.gmu.swe.phosphor.ignored.control.tac;
 
-import edu.columbia.cs.psl.phosphor.control.graph.ControlFlowGraphCreator;
-import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
-import edu.columbia.cs.psl.phosphor.control.graph.FlowGraphBuilder;
+import edu.columbia.cs.psl.phosphor.control.graph.BaseControlFlowGraphCreator;
+import edu.columbia.cs.psl.phosphor.control.graph.BasicBlock;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TryCatchBlockNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 
-public class ThreeAddressControlFlowGraphCreator extends ControlFlowGraphCreator<ThreeAddressBasicBlock> {
+public class ThreeAddressControlFlowGraphCreator extends BaseControlFlowGraphCreator {
 
     private final ThreeAddressMethod method;
-
-    private FlowGraphBuilder<ThreeAddressBasicBlock> builder = new FlowGraphBuilder<>();
+    private final Map<BasicBlock, ThreeAddressBasicBlock> shadowMap = new HashMap<>();
 
     public ThreeAddressControlFlowGraphCreator(ThreeAddressMethod method) {
         super(true);
         this.method = method;
     }
 
+    public Map<BasicBlock, ThreeAddressBasicBlock> getShadowMap() {
+        return shadowMap;
+    }
+
     @Override
     protected void addEntryPoint() {
-        builder.addEntryPoint(new ThreeAddressEntryPoint(method));
+        super.addEntryPoint();
+        BasicBlock block = super.builder.getEntryPoint();
+        ThreeAddressBasicBlock shadow = new ThreeAddressEntryPoint(method);
+        shadowMap.put(block, shadow);
     }
 
     @Override
     protected void addExitPoint() {
-        builder.addExitPoint(new ThreeAddressExitPoint());
+        super.addExitPoint();
+        BasicBlock block = super.builder.getExitPoint();
+        ThreeAddressBasicBlock shadow = new ThreeAddressExitPoint();
+        shadowMap.put(block, shadow);
     }
 
     @Override
-    protected ThreeAddressBasicBlock addBasicBlock(AbstractInsnNode[] instructions, int index) {
-        ThreeAddressBasicBlock basicBlock = new ThreeAddressBasicBlockImpl(instructions, index, method);
-        builder.addVertex(basicBlock);
-        return basicBlock;
-    }
-
-    @Override
-    protected void addEntryExitEdge() {
-        builder.addEdge(builder.getEntryPoint(), builder.getExitPoint());
-    }
-
-    @Override
-    protected void addStandardEdgeFromEntryPoint(ThreeAddressBasicBlock target) {
-        builder.addEdge(builder.getEntryPoint(), target);
-    }
-
-    @Override
-    protected void addExceptionalEdgeFromEntryPoint(ThreeAddressBasicBlock target, TryCatchBlockNode tryCatchBlockNode) {
-        builder.addEdge(builder.getEntryPoint(), target);
-    }
-
-    @Override
-    protected void addExceptionalEdge(ThreeAddressBasicBlock source, ThreeAddressBasicBlock target) {
-        builder.addEdge(source, target);
-    }
-
-    @Override
-    protected void addStandardEdgeToExitPoint(ThreeAddressBasicBlock source) {
-        builder.addEdge(source, builder.getExitPoint());
-    }
-
-    @Override
-    protected void addExceptionalEdgeToExitPoint(ThreeAddressBasicBlock source) {
-        builder.addEdge(source, builder.getExitPoint());
-    }
-
-    @Override
-    protected void addSequentialEdge(ThreeAddressBasicBlock source, ThreeAddressBasicBlock target) {
-        builder.addEdge(source, target);
-    }
-
-    @Override
-    protected void addUnconditionalJumpEdge(ThreeAddressBasicBlock source, ThreeAddressBasicBlock target) {
-        builder.addEdge(source, target);
-    }
-
-    @Override
-    protected void addBranchTakenEdge(ThreeAddressBasicBlock source, ThreeAddressBasicBlock target) {
-        builder.addEdge(source, target);
-    }
-
-    @Override
-    protected void addBranchNotTakenEdge(ThreeAddressBasicBlock source, ThreeAddressBasicBlock target) {
-        builder.addEdge(source, target);
-    }
-
-    @Override
-    protected void addNonDefaultCaseSwitchEdge(ThreeAddressBasicBlock source, ThreeAddressBasicBlock target) {
-        builder.addEdge(source, target);
-    }
-
-    @Override
-    protected void addDefaultCaseSwitchEdge(ThreeAddressBasicBlock source, ThreeAddressBasicBlock target) {
-        builder.addEdge(source, target);
-    }
-
-    @Override
-    protected FlowGraph<ThreeAddressBasicBlock> buildGraph() {
-        FlowGraph<ThreeAddressBasicBlock> graph = builder.build();
-        builder = new FlowGraphBuilder<>();
-        return graph;
+    protected BasicBlock addBasicBlock(AbstractInsnNode[] instructions, int index) {
+        BasicBlock block = super.addBasicBlock(instructions, index);
+        ThreeAddressBasicBlock shadow = new ThreeAddressBasicBlockImpl(instructions, method);
+        shadowMap.put(block, shadow);
+        return block;
     }
 }

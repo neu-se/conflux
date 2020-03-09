@@ -12,7 +12,6 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.converter.InsnConverter;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ParameterExpression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
@@ -44,7 +43,7 @@ public class ThreeAddressMethod {
             frameMap.put(insn, frames[i]);
         }
         int i = 0;
-        for(LocalVariable local : computeParameterLocals(originalMethod)) {
+        for(LocalVariable local : computeParameterDefinitions(originalMethod)) {
             AssignmentStatement definition = new AssignmentStatement(local, new ParameterExpression(i++));
             parameterDefinitions.add(definition);
         }
@@ -111,21 +110,6 @@ public class ThreeAddressMethod {
         return definedVariables;
     }
 
-    public boolean isDefinedAtInstruction(AbstractInsnNode insn, VariableExpression expr) {
-        int index = expr instanceof LocalVariable ? ((LocalVariable) expr).getIndex() : ((StackElement) expr).getIndex();
-        Frame<TypeValue> frame = frameMap.get(insn);
-        if(frame != null) {
-            if(expr instanceof LocalVariable) {
-                return index < frame.getLocals()
-                        && frame.getLocal(index) != TypeValue.UNINITIALIZED_VALUE;
-            } else {
-                return index < frame.getStackSize()
-                        && frame.getStack(index) != TypeValue.UNINITIALIZED_VALUE;
-            }
-        }
-        return false;
-    }
-
     private static Statement[] createStatements(AbstractInsnNode instruction, Frame<TypeValue> frame) {
         if(frame == null) {
             return new Statement[0];
@@ -134,7 +118,7 @@ public class ThreeAddressMethod {
         }
     }
 
-    private static List<LocalVariable> computeParameterLocals(MethodNode method) {
+    private static List<LocalVariable> computeParameterDefinitions(MethodNode method) {
         List<LocalVariable> params = new LinkedList<>();
         int currentLocal = 0;
         boolean isInstanceMethod = (method.access & ACC_STATIC) == 0;

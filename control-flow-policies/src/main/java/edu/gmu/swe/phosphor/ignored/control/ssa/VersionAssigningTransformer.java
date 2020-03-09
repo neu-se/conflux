@@ -4,11 +4,11 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
-public final class ProcessVersionStackTransformer implements VariableTransformer {
+public final class VersionAssigningTransformer implements VariableTransformer {
 
     private final Map<VariableExpression, VersionStack> versionStacks;
 
-    public ProcessVersionStackTransformer(Map<VariableExpression, VersionStack> versionStacks) {
+    public VersionAssigningTransformer(Map<VariableExpression, VersionStack> versionStacks) {
         this.versionStacks = versionStacks;
     }
 

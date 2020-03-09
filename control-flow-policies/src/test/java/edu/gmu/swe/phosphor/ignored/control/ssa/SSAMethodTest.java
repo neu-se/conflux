@@ -4,14 +4,12 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.binding.LoopConstancyCalculator;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
-import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -70,7 +68,7 @@ public class SSAMethodTest {
     @Theory
     public void definitionDominatesUse(Method method) throws Exception {
         SSAMethod ssaMethod = convertToSSA(method);
-        FlowGraph<SSABasicBlock> cfg = ssaMethod.getControlFlowGraph();
+        FlowGraph<SSABasicBlock> cfg = ssaMethod.getSsaControlFlowGraph();
         Map<VariableExpression, SSABasicBlock> definitions = new HashMap<>();
         Map<VariableExpression, Set<SSABasicBlock>> uses = new HashMap<>();
         for(SSABasicBlock block : cfg.getVertices()) {
@@ -98,13 +96,6 @@ public class SSAMethodTest {
         }
     }
 
-    @Theory
-    public void temp(Method method) throws Exception {
-        SSAMethod ssaMethod = convertToSSA(method);
-        FlowGraph<SSABasicBlock> cfg = ssaMethod.getControlFlowGraph();
-        LoopConstancyCalculator.propagateVariables(ssaMethod);
-    }
-
     @DataPoints
     public static Method[] methods() {
         List<Method> methods = new LinkedList<>();
@@ -119,6 +110,6 @@ public class SSAMethodTest {
         assumeTrue(method != null);
         MethodNode methodNode = getMethodNode(method.getDeclaringClass(), method.getName());
         String owner = Type.getInternalName(method.getDeclaringClass());
-        return new SSAMethod(new ThreeAddressMethod(owner, methodNode));
+        return new SSAMethod(owner, methodNode);
     }
 }
