@@ -1,7 +1,6 @@
-package edu.gmu.swe.phosphor.ignored.control.binding.trace;
+package edu.gmu.swe.phosphor.ignored.control.binding;
 
 import edu.columbia.cs.psl.phosphor.PhosphorInstructionInfo;
-import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
 
 import java.util.Iterator;
@@ -11,7 +10,7 @@ public class FrameConstancyInfo implements PhosphorInstructionInfo {
     private final int invocationLevel;
     private final SinglyLinkedList<LoopLevel> argumentLevels = new SinglyLinkedList<>();
 
-    FrameConstancyInfo(int invocationLevel) {
+    public FrameConstancyInfo(int invocationLevel) {
         this.invocationLevel = invocationLevel;
     }
 
@@ -23,7 +22,7 @@ public class FrameConstancyInfo implements PhosphorInstructionInfo {
         return argumentLevels.size();
     }
 
-    void pushArgumentLevel(LoopLevel level) {
+    public void pushArgumentLevel(LoopLevel level) {
         argumentLevels.push(level);
     }
 

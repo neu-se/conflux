@@ -86,6 +86,10 @@ public final class InvokeExpression implements Expression {
         return receiver;
     }
 
+    public Expression[] getArguments() {
+        return arguments.clone();
+    }
+
     public InvocationType getType() {
         return type;
     }

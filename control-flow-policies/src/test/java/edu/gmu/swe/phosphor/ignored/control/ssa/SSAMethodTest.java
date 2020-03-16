@@ -31,9 +31,13 @@ public class SSAMethodTest {
     public void assignmentsUniquelyNamed(Method method) throws Exception {
         SSAMethod ssaMethod = convertToSSA(method);
         List<VariableExpression> allDefinitions = new LinkedList<>();
-        for(Statement s : ssaMethod.createStatementList()) {
-            if(s.definesVariable()) {
-                allDefinitions.add(s.getDefinedVariable());
+        for(AnnotatedBasicBlock block : ssaMethod.getControlFlowGraph().getVertices()) {
+            for(AnnotatedInstruction i : block.getInstructions()) {
+                for(Statement s : i.getRawStatements()) {
+                    if(s.definesVariable()) {
+                        allDefinitions.add(s.getDefinedVariable());
+                    }
+                }
             }
         }
         // Maps local variable indices to sets of versions
@@ -68,28 +72,30 @@ public class SSAMethodTest {
     @Theory
     public void definitionDominatesUse(Method method) throws Exception {
         SSAMethod ssaMethod = convertToSSA(method);
-        FlowGraph<SSABasicBlock> cfg = ssaMethod.getSsaControlFlowGraph();
-        Map<VariableExpression, SSABasicBlock> definitions = new HashMap<>();
-        Map<VariableExpression, Set<SSABasicBlock>> uses = new HashMap<>();
-        for(SSABasicBlock block : cfg.getVertices()) {
-            for(Statement statement : block.getStatements()) {
-                if(statement.definesVariable()) {
-                    definitions.put(statement.getDefinedVariable(), block);
-                }
-                if(!(statement instanceof AssignmentStatement
-                        && ((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction)) {
-                    for(VariableExpression use : statement.getUsedVariables()) {
-                        if(!uses.containsKey(use)) {
-                            uses.put(use, new HashSet<>());
+        FlowGraph<AnnotatedBasicBlock> cfg = ssaMethod.getControlFlowGraph();
+        Map<VariableExpression, AnnotatedBasicBlock> definitions = new HashMap<>();
+        Map<VariableExpression, Set<AnnotatedBasicBlock>> uses = new HashMap<>();
+        for(AnnotatedBasicBlock block : cfg.getVertices()) {
+            for(AnnotatedInstruction i : block.getInstructions()) {
+                for(Statement statement : i.getRawStatements()) {
+                    if(statement.definesVariable()) {
+                        definitions.put(statement.getDefinedVariable(), block);
+                    }
+                    if(!(statement instanceof AssignmentStatement
+                            && ((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction)) {
+                        for(VariableExpression use : statement.getUsedVariables()) {
+                            if(!uses.containsKey(use)) {
+                                uses.put(use, new HashSet<>());
+                            }
+                            uses.get(use).add(block);
                         }
-                        uses.get(use).add(block);
                     }
                 }
             }
         }
         for(VariableExpression usedExpression : uses.keySet()) {
-            SSABasicBlock definingBlock = definitions.get(usedExpression);
-            for(SSABasicBlock usingBlock : uses.get(usedExpression)) {
+            AnnotatedBasicBlock definingBlock = definitions.get(usedExpression);
+            for(AnnotatedBasicBlock usingBlock : uses.get(usedExpression)) {
                 assertTrue(String.format("Use of %s in %s is not dominated by its definition in %s", usedExpression,
                         usingBlock, definingBlock), cfg.getDominatorSets().get(usingBlock).contains(definingBlock));
             }

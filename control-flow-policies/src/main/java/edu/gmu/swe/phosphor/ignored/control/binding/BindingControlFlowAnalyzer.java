@@ -10,8 +10,6 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.binding.trace.FrameConstancyInfo;
-import edu.gmu.swe.phosphor.ignored.control.binding.trace.TracingInterpreter;
 
 import java.util.Iterator;
 
@@ -73,9 +71,9 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     private FlowGraph<BasicBlock> controlFlowGraph;
 
     /**
-     * Interpreter used to determine the constancy level of instructions in the method
+     * Used to determine the constancy level of instructions in the method
      */
-    private TracingInterpreter interpreter;
+    private LoopLevelTracer tracer;
 
     /**
      * A mapping between each instruction in the method and the natural loops that contain it
@@ -104,7 +102,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                 BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges);
                 controlFlowGraph = creator.createControlFlowGraph(methodNode);
                 containingLoopMap = calculateContainingLoops();
-                interpreter = new TracingInterpreter(owner, methodNode, containingLoopMap, controlFlowGraph);
+                tracer = new LoopLevelTracer(owner, methodNode);
                 bindingEdges = processBindingEdges(bindingEdges);
                 markBranchEnds(bindingEdges);
                 markBranchStarts(bindingEdges);
@@ -157,7 +155,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                 instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(CONSTANT_LOOP_LEVEL)));
             } else if(OpcodesUtil.isArrayStore(insn.getOpcode()) || OpcodesUtil.isFieldStoreInsn(insn.getOpcode())
                     || OpcodesUtil.isLocalVariableStoreInsn(insn.getOpcode())) {
-                instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(interpreter.getLoopLevel(insn))));
+                instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(tracer.getLoopLevelMap().get(insn))));
             }
         }
     }
@@ -175,7 +173,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
             }
         }
         for(AbstractInsnNode insn : methodCalls) {
-            FrameConstancyInfo constancyInfo = interpreter.generateMethodConstancyInfo(insn);
+            FrameConstancyInfo constancyInfo = tracer.generateMethodConstancyInfo(insn);
             instructions.insertBefore(insn, new LdcInsnNode(constancyInfo));
         }
     }
@@ -333,7 +331,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     private void calculateLoopLevels(Set<BindingBranchEdge> bindingEdges) {
         for(BindingBranchEdge bindingEdge : bindingEdges) {
-            LoopLevel level = interpreter.getLoopLevel(bindingEdge.source.getLastInsn());
+            LoopLevel level = tracer.getLoopLevelMap().get(bindingEdge.source.getLastInsn());
             if(level instanceof LoopLevel.VariantLoopLevel && ((LoopLevel.VariantLoopLevel) level).getLevelOffset() != 0) {
                 int revisableLoops = calculateRevisableContainingLoops(bindingEdge);
                 if(((LoopLevel.VariantLoopLevel) level).getLevelOffset() > revisableLoops) {

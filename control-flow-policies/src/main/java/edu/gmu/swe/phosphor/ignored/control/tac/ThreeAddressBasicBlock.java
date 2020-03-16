@@ -1,15 +1,21 @@
 package edu.gmu.swe.phosphor.ignored.control.tac;
 
+import edu.columbia.cs.psl.phosphor.control.graph.BasicBlock;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
+import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedBasicBlock;
+import edu.gmu.swe.phosphor.ignored.control.ssa.PropagationTransformer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
-public interface ThreeAddressBasicBlock {
+public interface ThreeAddressBasicBlock extends BasicBlock {
 
     List<Statement> getThreeAddressStatements();
+
+    List<Statement> getSSAStatements();
+
+    int getIndex();
 
     void addPhiFunctionForVariable(VariableExpression expression);
 
@@ -17,5 +23,5 @@ public interface ThreeAddressBasicBlock {
 
     void processStatements(Map<VariableExpression, VersionStack> versionStacks);
 
-    SSABasicBlock createSSABasicBlock(int index);
+    AnnotatedBasicBlock createSSABasicBlock(PropagationTransformer transformer);
 }

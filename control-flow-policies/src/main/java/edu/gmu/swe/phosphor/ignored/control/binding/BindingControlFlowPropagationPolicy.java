@@ -9,7 +9,6 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.MethodVisitor;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.VariantLoopLevel;
-import edu.gmu.swe.phosphor.ignored.control.binding.trace.FrameConstancyInfo;
 
 import java.util.Iterator;
 

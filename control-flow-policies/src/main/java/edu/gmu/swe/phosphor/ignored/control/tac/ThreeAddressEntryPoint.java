@@ -5,9 +5,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionAssigningTransformer;
-import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.gmu.swe.phosphor.ignored.control.ssa.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
@@ -25,8 +23,14 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
         return threeAddressStatements;
     }
 
-    public List<Statement> getSsaStatements() {
+    @Override
+    public List<Statement> getSSAStatements() {
         return ssaStatements;
+    }
+
+    @Override
+    public int getIndex() {
+        return -1;
     }
 
     @Override
@@ -50,7 +54,12 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
     }
 
     @Override
-    public SSABasicBlock createSSABasicBlock(int index) {
-        return new SSABasicBlock(ssaStatements, Collections.emptyMap(), index);
+    public AnnotatedBasicBlock createSSABasicBlock(PropagationTransformer transformer) {
+        List<Statement> processedStatements = new LinkedList<>();
+        for(Statement rawStatement : ssaStatements) {
+            processedStatements.add(rawStatement.transform(transformer));
+        }
+        AnnotatedInstruction insn = new AnnotatedInstruction(null, ssaStatements, processedStatements);
+        return new AnnotatedBasicBlock(getIndex(), Collections.singletonList(insn));
     }
 }

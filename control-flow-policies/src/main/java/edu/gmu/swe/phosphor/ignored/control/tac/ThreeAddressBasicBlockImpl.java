@@ -1,25 +1,27 @@
 package edu.gmu.swe.phosphor.ignored.control.tac;
 
+import edu.columbia.cs.psl.phosphor.control.graph.SimpleBasicBlock;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.SSABasicBlock;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionAssigningTransformer;
-import edu.gmu.swe.phosphor.ignored.control.ssa.VersionStack;
+import edu.gmu.swe.phosphor.ignored.control.ssa.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
-public class ThreeAddressBasicBlockImpl implements ThreeAddressBasicBlock {
+public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements ThreeAddressBasicBlock {
 
     private final Map<VariableExpression, Set<VariableExpression>> phiValues = new HashMap<>();
     private final Map<VariableExpression, VariableExpression> phiAssignees = new HashMap<>();
     private final Map<AbstractInsnNode, Statement[]> threeAddressStatements = new LinkedHashMap<>();
     private final Map<AbstractInsnNode, Statement[]> ssaStatements = new LinkedHashMap<>();
     private final List<Statement> threeAddressStatementList;
+    private List<AssignmentStatement> phiFunctions;
+    private List<Statement> ssaStatementsList;
 
-    public ThreeAddressBasicBlockImpl(AbstractInsnNode[] instructions, ThreeAddressMethod method) {
+    public ThreeAddressBasicBlockImpl(AbstractInsnNode[] instructions, int index, ThreeAddressMethod method) {
+        super(instructions, index);
         for(AbstractInsnNode insn : instructions) {
             threeAddressStatements.put(insn, method.getStatements(insn));
         }
@@ -31,17 +33,46 @@ public class ThreeAddressBasicBlockImpl implements ThreeAddressBasicBlock {
         return threeAddressStatementList;
     }
 
-    public Map<AbstractInsnNode, Statement[]> getSsaStatements() {
-        return ssaStatements;
+    @Override
+    public List<Statement> getSSAStatements() {
+        initializeSSAStatements();
+        return ssaStatementsList;
     }
 
-    private List<AssignmentStatement> createPhiFunctions() {
-        List<AssignmentStatement> phiFunctions = new LinkedList<>();
-        for(VariableExpression expr : phiValues.keySet()) {
-            PhiFunction phi = new PhiFunction(phiValues.get(expr));
-            phiFunctions.add(new AssignmentStatement(phiAssignees.get(expr), phi));
+    @Override
+    public int getIndex() {
+        return getIdentifier() + 1;
+    }
+
+    private void initializePhiFunctions() {
+        if(phiFunctions == null) {
+            phiFunctions = new LinkedList<>();
+            for(VariableExpression expr : phiValues.keySet()) {
+                PhiFunction phi = new PhiFunction(phiValues.get(expr));
+                phiFunctions.add(new AssignmentStatement(phiAssignees.get(expr), phi));
+            }
         }
-        return phiFunctions;
+    }
+
+    private void initializeSSAStatements() {
+        if(ssaStatementsList == null) {
+            initializePhiFunctions();
+            ssaStatementsList = new LinkedList<>();
+            boolean foundLabel = false;
+            for(AbstractInsnNode insn : ssaStatements.keySet()) {
+                for(Statement s : ssaStatements.get(insn)) {
+                    ssaStatementsList.add(s);
+                }
+                if(insn instanceof LabelNode && !foundLabel) {
+                    foundLabel = true;
+                    ssaStatementsList.addAll(phiFunctions);
+                }
+            }
+            if(!foundLabel) {
+                ssaStatementsList.addAll(phiFunctions);
+            }
+            ssaStatementsList = Collections.unmodifiableList(ssaStatementsList);
+        }
     }
 
     @Override
@@ -75,22 +106,31 @@ public class ThreeAddressBasicBlockImpl implements ThreeAddressBasicBlock {
     }
 
     @Override
-    public SSABasicBlock createSSABasicBlock(int index) {
-        List<Statement> statements = new LinkedList<>();
+    public AnnotatedBasicBlock createSSABasicBlock(PropagationTransformer transformer) {
+        initializeSSAStatements();
+        List<AnnotatedInstruction> instructions = new LinkedList<>();
+        List<Statement> processedPhiFunctions = new LinkedList<>();
+        for(Statement phiFunction : phiFunctions) {
+            processedPhiFunctions.add(phiFunction.transform(transformer));
+        }
         boolean foundLabel = false;
         for(AbstractInsnNode insn : ssaStatements.keySet()) {
-            for(Statement s : ssaStatements.get(insn)) {
-                statements.add(s);
+            List<Statement> rawStatements = new LinkedList<>();
+            List<Statement> processedStatements = new LinkedList<>();
+            for(Statement rawStatement : ssaStatements.get(insn)) {
+                rawStatements.add(rawStatement);
+                processedStatements.add(rawStatement.transform(transformer));
             }
+            instructions.add(new AnnotatedInstruction(insn, rawStatements, processedStatements));
             if(insn instanceof LabelNode && !foundLabel) {
                 foundLabel = true;
-                statements.addAll(createPhiFunctions());
+                instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
             }
         }
         if(!foundLabel) {
-            statements.addAll(createPhiFunctions());
+            instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
         }
-        return new SSABasicBlock(statements, ssaStatements, index);
+        return new AnnotatedBasicBlock(getIndex(), instructions);
     }
 
     public static <T> List<T> flattenMap(Map<?, T[]> map) {

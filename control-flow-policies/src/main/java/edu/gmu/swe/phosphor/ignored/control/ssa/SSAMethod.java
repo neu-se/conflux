@@ -1,7 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
-import edu.columbia.cs.psl.phosphor.control.graph.*;
-import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
+import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
@@ -9,20 +8,14 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerExce
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressControlFlowGraphCreator;
-import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressEntryPoint;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
 
-import java.util.function.Function;
-
 import static edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue.UNINITIALIZED_VALUE;
-import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.calculateContainingLoops;
-import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.createInsnBlockMap;
 
 /**
  * Uses algorithms from the following for placing phi functions and renaming variables:
@@ -32,18 +25,11 @@ import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.createInsnBlock
  */
 public class SSAMethod {
 
-    private final List<Statement> parameterDefinitions;
-
     /**
      * The control flow graph for the method includes edges from instructions that can potentially throw an exception
      * handled by one of its exception handlers to the start of that exception handler.
      */
-    private final FlowGraph<BasicBlock> controlFlowGraph;
-
-    /**
-     * A unmodifiable mapping from each instruction in the method to the basic block that contains it.
-     */
-    private final Map<AbstractInsnNode, BasicBlock> insnBlockMap;
+    private final FlowGraph<AnnotatedBasicBlock> controlFlowGraph;
 
     /**
      * An unmodifiable mapping from each instruction in the method to a frame representing the state of local variables
@@ -51,56 +37,48 @@ public class SSAMethod {
      */
     private final Map<AbstractInsnNode, Frame<TypeValue>> frameMap;
 
-    /**
-     * An unmodifiable mapping from each instruction in the method to an unmodifiable set containing of
-     * natural loops that contain the instruction.
-     */
-    private final Map<BasicBlock, Set<NaturalLoop<BasicBlock>>> containingLoopsMap;
+    private final Map<VariableExpression, Expression> propagationMap;
 
-    private final Map<BasicBlock, ThreeAddressBasicBlock> blockShadowMap;
-    private final FlowGraph<SSABasicBlock> ssaControlFlowGraph;
+    private final PropagationTransformer transformer;
 
     public SSAMethod(String owner, MethodNode method) throws AnalyzerException {
         ThreeAddressMethod threeAddressMethod = new ThreeAddressMethod(owner, method);
-        ThreeAddressControlFlowGraphCreator creator = new ThreeAddressControlFlowGraphCreator(threeAddressMethod);
-        controlFlowGraph = creator.createControlFlowGraph(method, threeAddressMethod.calculateExplicitExceptions());
-        blockShadowMap = creator.getShadowMap();
-        insnBlockMap = Collections.unmodifiableMap(createInsnBlockMap(controlFlowGraph));
+        FlowGraph<ThreeAddressBasicBlock> tacGraph = new ThreeAddressControlFlowGraphCreator(threeAddressMethod)
+                .createControlFlowGraph(method, threeAddressMethod.calculateExplicitExceptions());
         frameMap = Collections.unmodifiableMap(new HashMap<>(threeAddressMethod.getFrameMap()));
-        containingLoopsMap = Collections.unmodifiableMap(calculateContainingLoops(controlFlowGraph));
-        placePhiFunctions();
-        renameVariables(threeAddressMethod.collectDefinedVariables());
-        parameterDefinitions = initializeParameterDefinitions();
-        ssaControlFlowGraph = createSSAControlFlowGraph();
+        placePhiFunctions(tacGraph);
+        renameVariables(tacGraph, threeAddressMethod.collectDefinedVariables());
+        propagationMap = Collections.unmodifiableMap(propagateVariables(tacGraph));
+        transformer = new PropagationTransformer(propagationMap);
+        controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, vertex -> vertex.createSSABasicBlock(transformer));
     }
 
-    private List<Statement> initializeParameterDefinitions() {
-        ThreeAddressEntryPoint entry = (ThreeAddressEntryPoint) blockShadowMap.get(controlFlowGraph.getEntryPoint());
-        return entry.getSsaStatements();
-    }
-
-    public FlowGraph<BasicBlock> getControlFlowGraph() {
+    public FlowGraph<AnnotatedBasicBlock> getControlFlowGraph() {
         return controlFlowGraph;
     }
 
-    public FlowGraph<SSABasicBlock> getSsaControlFlowGraph() {
-        return ssaControlFlowGraph;
+    public Map<AbstractInsnNode, Frame<TypeValue>> getFrameMap() {
+        return frameMap;
     }
 
-    public List<Statement> getParameterDefinitions() {
-        return parameterDefinitions;
+    public Map<VariableExpression, Expression> getPropagationMap() {
+        return propagationMap;
     }
 
-    private void placePhiFunctions() {
-        Map<VariableExpression, Set<BasicBlock>> persistentVarDefs = locatePersistentVarDefs();
+    public PropagationTransformer getTransformer() {
+        return transformer;
+    }
+
+    private void placePhiFunctions(FlowGraph<ThreeAddressBasicBlock> tacGraph) {
+        Map<VariableExpression, Set<ThreeAddressBasicBlock>> persistentVarDefs = locatePersistentVarDefs(tacGraph);
         for(VariableExpression expr : persistentVarDefs.keySet()) {
-            LinkedList<BasicBlock> workingSet = new LinkedList<>(persistentVarDefs.get(expr));
-            Set<BasicBlock> visited = new HashSet<>(workingSet);
+            LinkedList<ThreeAddressBasicBlock> workingSet = new LinkedList<>(persistentVarDefs.get(expr));
+            Set<ThreeAddressBasicBlock> visited = new HashSet<>(workingSet);
             while(!workingSet.isEmpty()) {
-                BasicBlock x = workingSet.poll();
-                for(BasicBlock y : controlFlowGraph.getDominanceFrontiers().get(x)) {
+                ThreeAddressBasicBlock x = workingSet.poll();
+                for(ThreeAddressBasicBlock y : tacGraph.getDominanceFrontiers().get(x)) {
                     if(isDefinedAtFrame(frameMap.get(y.getFirstInsn()), expr)) {
-                        addPhiFunctionForVariable(y, expr);
+                        y.addPhiFunctionForVariable(expr);
                     }
                     if(visited.add(y)) {
                         workingSet.add(y);
@@ -110,59 +88,13 @@ public class SSAMethod {
         }
     }
 
-    private void addPhiFunctionForVariable(BasicBlock y, VariableExpression expr) {
-        blockShadowMap.get(y).addPhiFunctionForVariable(expr);
-    }
-
-    private void renameVariables(Set<VariableExpression> definedExpressions) {
-        Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
-        for(VariableExpression expression : definedExpressions) {
-            versionStacks.put(expression, new VersionStack(expression));
-        }
-        search(controlFlowGraph.getEntryPoint(), versionStacks);
-    }
-
-    private void search(BasicBlock block, Map<VariableExpression, VersionStack> versionStacks) {
-        for(VersionStack stack : versionStacks.values()) {
-            stack.processingBlock();
-        }
-        processStatements(block, versionStacks);
-        for(BasicBlock successor : controlFlowGraph.getSuccessors(block)) {
-            addPhiFunctionValues(successor, versionStacks);
-        }
-        for(BasicBlock child : controlFlowGraph.getDominatorTree().get(block)) {
-            search(child, versionStacks);
-        }
-        for(VersionStack stack : versionStacks.values()) {
-            stack.finishedProcessingBlock();
-        }
-    }
-
-    private void addPhiFunctionValues(BasicBlock successor, Map<VariableExpression, VersionStack> versionStacks) {
-        blockShadowMap.get(successor).addPhiFunctionValues(versionStacks);
-    }
-
-    private void processStatements(BasicBlock block, Map<VariableExpression, VersionStack> versionStacks) {
-        blockShadowMap.get(block).processStatements(versionStacks);
-    }
-
-    public List<Statement> createStatementList() {
-        List<Statement> list = new LinkedList<>();
-        List<SSABasicBlock> blocks = new LinkedList<>(ssaControlFlowGraph.getVertices());
-        Collections.sort(blocks, (object1, object2) -> Integer.compare(object1.getIndex(), object2.getIndex()));
-        for(SSABasicBlock block : blocks) {
-            list.addAll(block.getStatements());
-        }
-        return list;
-    }
-
-    private Map<VariableExpression, Set<BasicBlock>> locatePersistentVarDefs() {
-        Map<VariableExpression, Set<BasicBlock>> persistentVarDefs = new HashMap<>();
-        for(BasicBlock block : controlFlowGraph.getVertices()) {
-            for(Statement s : getThreeAddressStatements(block)) {
+    private Map<VariableExpression, Set<ThreeAddressBasicBlock>> locatePersistentVarDefs(FlowGraph<ThreeAddressBasicBlock> tacGraph) {
+        Map<VariableExpression, Set<ThreeAddressBasicBlock>> persistentVarDefs = new HashMap<>();
+        for(ThreeAddressBasicBlock block : tacGraph.getVertices()) {
+            for(Statement s : block.getThreeAddressStatements()) {
                 if(s.definesVariable()) {
                     VariableExpression expr = s.getDefinedVariable();
-                    if(isPersistentDefinition(block, expr)) {
+                    if(isPersistentDefinition(tacGraph, block, expr)) {
                         if(!persistentVarDefs.containsKey(expr)) {
                             persistentVarDefs.put(expr, new HashSet<>());
                         }
@@ -174,12 +106,9 @@ public class SSAMethod {
         return persistentVarDefs;
     }
 
-    private Iterable<? extends Statement> getThreeAddressStatements(BasicBlock block) {
-        return blockShadowMap.get(block).getThreeAddressStatements();
-    }
-
-    private boolean isPersistentDefinition(BasicBlock block, VariableExpression expr) {
-        for(BasicBlock successor : controlFlowGraph.getSuccessors(block)) {
+    private boolean isPersistentDefinition(FlowGraph<ThreeAddressBasicBlock> tacGraph,
+                                           ThreeAddressBasicBlock block, VariableExpression expr) {
+        for(ThreeAddressBasicBlock successor : tacGraph.getSuccessors(block)) {
             if(isDefinedAtFrame(frameMap.get(successor.getFirstInsn()), expr)) {
                 return true;
             }
@@ -187,22 +116,29 @@ public class SSAMethod {
         return false;
     }
 
-    private FlowGraph<SSABasicBlock> createSSAControlFlowGraph() {
-        Function<BasicBlock, SSABasicBlock> converter = new Function<BasicBlock, SSABasicBlock>() {
-            @Override
-            public SSABasicBlock apply(BasicBlock vertex) {
-                int rank = -2;
-                if(vertex instanceof EntryPoint) {
-                    rank = -1;
-                } else if(vertex instanceof ExitPoint) {
-                    rank = controlFlowGraph.getVertices().size() - 1;
-                } else if(vertex instanceof SimpleBasicBlock) {
-                    rank = ((SimpleBasicBlock) vertex).getIdentifier() + 1;
-                }
-                return blockShadowMap.get(vertex).createSSABasicBlock(rank);
-            }
-        };
-        return FlowGraphUtil.convertVertices(controlFlowGraph, converter);
+    private static void renameVariables(FlowGraph<ThreeAddressBasicBlock> tacGraph, Set<VariableExpression> definedExpressions) {
+        Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
+        for(VariableExpression expression : definedExpressions) {
+            versionStacks.put(expression, new VersionStack(expression));
+        }
+        search(tacGraph, tacGraph.getEntryPoint(), versionStacks);
+    }
+
+    private static void search(FlowGraph<ThreeAddressBasicBlock> tacGraph, ThreeAddressBasicBlock block,
+                               Map<VariableExpression, VersionStack> versionStacks) {
+        for(VersionStack stack : versionStacks.values()) {
+            stack.processingBlock();
+        }
+        block.processStatements(versionStacks);
+        for(ThreeAddressBasicBlock successor : tacGraph.getSuccessors(block)) {
+            successor.addPhiFunctionValues(versionStacks);
+        }
+        for(ThreeAddressBasicBlock child : tacGraph.getDominatorTree().get(block)) {
+            search(tacGraph, child, versionStacks);
+        }
+        for(VersionStack stack : versionStacks.values()) {
+            stack.finishedProcessingBlock();
+        }
     }
 
     private static boolean isDefinedAtFrame(Frame<TypeValue> frame, VariableExpression expr) {
@@ -216,5 +152,49 @@ public class SSAMethod {
             }
         }
         return false;
+    }
+
+    public static Map<VariableExpression, Expression> propagateVariables(FlowGraph<ThreeAddressBasicBlock> tacGraph) {
+        Map<VariableExpression, Expression> definitions = new HashMap<>();
+        for(ThreeAddressBasicBlock block : tacGraph.getVertices()) {
+            for(Statement statement : block.getSSAStatements()) {
+                if(statement.definesVariable() && statement instanceof AssignmentStatement) {
+                    Expression valueExpr = ((AssignmentStatement) statement).getRightHandSide();
+                    if(canPropagate(valueExpr)) {
+                        definitions.put(statement.getDefinedVariable(), valueExpr);
+                    }
+                }
+            }
+        }
+        PropagationTransformer transformer = new PropagationTransformer(definitions);
+        boolean changed;
+        do {
+            changed = false;
+            for(VariableExpression assignee : definitions.keySet()) {
+                Expression assigned = definitions.get(assignee);
+                Expression transformed = assigned.transform(transformer, assignee);
+                if(!assigned.equals(transformed)) {
+                    changed = true;
+                    definitions.put(assignee, transformed);
+                }
+            }
+        } while(changed);
+        return definitions;
+    }
+
+    public static boolean canPropagate(Expression valueExpr) {
+        if(valueExpr instanceof ConstantExpression || valueExpr instanceof ParameterExpression
+                || valueExpr instanceof VariableExpression) {
+            return true;
+        } else if(valueExpr instanceof BinaryExpression) {
+            Expression operand1 = ((BinaryExpression) valueExpr).getOperand1();
+            Expression operand2 = ((BinaryExpression) valueExpr).getOperand2();
+            return canPropagate(operand1) && canPropagate(operand2);
+        } else if(valueExpr instanceof UnaryExpression) {
+            Expression operand = ((UnaryExpression) valueExpr).getOperand();
+            return canPropagate(operand);
+        } else {
+            return false;
+        }
     }
 }
