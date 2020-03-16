@@ -6,10 +6,13 @@ import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TryCatchBlockNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.converter.InsnConverter;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.CaughtExceptionExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ParameterExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
@@ -27,9 +30,10 @@ public class ThreeAddressMethod {
 
     private final String owner;
     private final MethodNode originalMethod;
-    private Map<AbstractInsnNode, Statement[]> statementMap = new HashMap<>();
+    private Map<AbstractInsnNode, Statement[]> statementMap = new LinkedHashMap<>();
     private Map<AbstractInsnNode, Frame<TypeValue>> frameMap = new HashMap<>();
     private List<Statement> parameterDefinitions = new LinkedList<>();
+    private Map<AbstractInsnNode, CaughtExceptionExpression> exceptionHandlerStarts = new HashMap<>();
 
     public ThreeAddressMethod(String owner, MethodNode originalMethod) throws AnalyzerException {
         this.owner = owner;
@@ -50,6 +54,11 @@ public class ThreeAddressMethod {
         statementMap = Collections.unmodifiableMap(statementMap);
         frameMap = Collections.unmodifiableMap(frameMap);
         parameterDefinitions = Collections.unmodifiableList(parameterDefinitions);
+        int nextCaughtExceptionId = 0;
+        for(TryCatchBlockNode tryCatch : originalMethod.tryCatchBlocks) {
+            exceptionHandlerStarts.put(tryCatch.handler, new CaughtExceptionExpression(nextCaughtExceptionId++));
+        }
+        exceptionHandlerStarts = Collections.unmodifiableMap(exceptionHandlerStarts);
     }
 
     public String getOwner() {
@@ -83,10 +92,18 @@ public class ThreeAddressMethod {
             if(insn.getOpcode() == ATHROW && frame != null) {
                 TypeValue top = frame.getStack(frame.getStackSize() - 1);
                 Type type = top.getType();
-                explicitExceptions.put(insn, type.getClassName().replace(".", "/"));
+                if(type == null) {
+                    explicitExceptions.put(insn, "java/lang/Throwable");
+                } else {
+                    explicitExceptions.put(insn, type.getClassName().replace(".", "/"));
+                }
             }
         }
         return explicitExceptions;
+    }
+
+    public Map<AbstractInsnNode, CaughtExceptionExpression> getExceptionHandlerStarts() {
+        return exceptionHandlerStarts;
     }
 
     /**
@@ -108,6 +125,20 @@ public class ThreeAddressMethod {
             }
         }
         return definedVariables;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for(Statement s : parameterDefinitions) {
+            builder.append(s.toString()).append("\n");
+        }
+        for(Statement[] statements : statementMap.values()) {
+            for(Statement s : statements) {
+                builder.append(s.toString()).append("\n");
+            }
+        }
+        return builder.toString();
     }
 
     private static Statement[] createStatements(AbstractInsnNode instruction, Frame<TypeValue> frame) {

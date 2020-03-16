@@ -19,10 +19,12 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 public class LoopLevelTracer {
 
+    private final MethodNode methodNode;
     private final SSAMethod ssaMethod;
     private final FlowGraph<AnnotatedBasicBlock> graph;
     private final Map<VariableExpression, ConstancyLevel> definitionConstancyLevels = new HashMap<>();
@@ -34,6 +36,7 @@ public class LoopLevelTracer {
     private final Map<VariableExpression, AbstractInsnNode> rawDefinitionInsnMap = new HashMap<>();
 
     public LoopLevelTracer(String owner, MethodNode methodNode) throws AnalyzerException {
+        this.methodNode = methodNode;
         ssaMethod = new SSAMethod(owner, methodNode);
         graph = ssaMethod.getControlFlowGraph();
         containingLoops = FlowGraphUtil.calculateContainingLoops(graph);
@@ -106,7 +109,9 @@ public class LoopLevelTracer {
             return new ParameterDependent((ParameterExpression) e);
         } else if(e instanceof VariableExpression) {
             ConstancyLevel defConstancy = definitionConstancyLevels.get(e);
-            if(defConstancy instanceof LoopVariant) {
+            if(defConstancy == null) {
+                return new LoopVariant(candidateLoops);
+            } else if(defConstancy instanceof LoopVariant) {
                 return new LoopVariant((LoopVariant) defConstancy, candidateLoops);
             } else {
                 return defConstancy;
@@ -151,6 +156,13 @@ public class LoopLevelTracer {
                     }
                     map.put(ai.getOriginalInstruction(), cl.toLoopLevel());
                 }
+            }
+        }
+        Iterator<AbstractInsnNode> itr = methodNode.instructions.iterator();
+        while(itr.hasNext()) {
+            AbstractInsnNode insn = itr.next();
+            if(!map.containsKey(insn)) {
+                map.put(insn, LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL);
             }
         }
         return map;
@@ -241,6 +253,9 @@ public class LoopLevelTracer {
             candidateLoops = Collections.emptySet();
         }
         int invocationLevel = candidateLoops.size();
+        if(!insnMap.containsKey(insn)) {
+            return null;
+        }
         Statement statement = insnMap.get(insn).getProcessedStatements().get(0);
         InvokeExpression expr;
         if(statement instanceof AssignmentStatement) {
@@ -275,6 +290,10 @@ public class LoopLevelTracer {
     private boolean checkAllPaths(AbstractInsnNode source, AbstractInsnNode target, Predicate<AbstractInsnNode> predicate) {
         AnnotatedBasicBlock sourceBlock = blockMap.get(source);
         AnnotatedBasicBlock targetBlock = blockMap.get(target);
+        if(graph.getVertices().size() > 10 && sourceBlock != targetBlock) {
+            // Conservatively return true for large graphs when the source block is not the target block.
+            return true;
+        }
         Set<List<AnnotatedBasicBlock>> simplePaths = FlowGraphUtil.getAllSimplePaths(graph, sourceBlock, targetBlock);
         for(List<AnnotatedBasicBlock> simplePath : simplePaths) {
             for(AnnotatedBasicBlock block : simplePath) {

@@ -4,6 +4,7 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class LabelStatement implements Statement {
@@ -31,6 +32,15 @@ public final class LabelStatement implements Statement {
     @Override
     public String toString() {
         return label.toString();
+    }
+
+    @Override
+    public String toString(Map<Label, String> labelNames) {
+        if(labelNames.containsKey(label)) {
+            return labelNames.get(label);
+        } else {
+            return toString();
+        }
     }
 
     @Override

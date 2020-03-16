@@ -1,6 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.control.tac;
 
 import edu.columbia.cs.psl.phosphor.control.graph.EntryPoint;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
@@ -61,5 +62,17 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
         }
         AnnotatedInstruction insn = new AnnotatedInstruction(null, ssaStatements, processedStatements);
         return new AnnotatedBasicBlock(getIndex(), Collections.singletonList(insn));
+    }
+
+    @Override
+    public String toDotString(Map<Label, String> labelNames) {
+        StringBuilder builder = new StringBuilder("\"ENTRY\\n");
+        for(int i = 0; i < getThreeAddressStatements().size(); i++) {
+            builder.append(getThreeAddressStatements().get(i).toString(labelNames).replace("\"", "\\\""));
+            if(i != getThreeAddressStatements().size() - 1) {
+                builder.append("\\n");
+            }
+        }
+        return builder.append("\"").toString();
     }
 }

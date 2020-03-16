@@ -20,13 +20,17 @@ public class VersionStack {
         this.baseExpression = baseExpression;
     }
 
+    public boolean hasCurrentExpression() {
+        return !currentVersion.peek().isEmpty();
+    }
+
     public VariableExpression getCurrentExpression() {
         return currentVersion.peek().peek();
     }
 
     public VariableExpression createNewVersion() {
         VariableExpression previous = null;
-        if(!currentVersion.peek().isEmpty()) {
+        if(hasCurrentExpression()) {
             previous = getCurrentExpression();
         }
         VariableExpression v = baseExpression.setVersion(nextVersion++);

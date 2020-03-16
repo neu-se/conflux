@@ -1,14 +1,12 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
+import com.sun.beans.decoder.DocumentHandler;
 import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import org.junit.experimental.theories.DataPoints;
@@ -17,6 +15,7 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Method;
+import java.util.GregorianCalendar;
 
 import static edu.gmu.swe.phosphor.ignored.control.ControlAnalysisTestUtil.getMethodNode;
 import static org.junit.Assert.assertTrue;
@@ -103,10 +102,32 @@ public class SSAMethodTest {
         }
     }
 
+    /**
+     * Checks that each PhiFunction has at least two values.
+     */
+    @Theory
+    public void phiFunctionsHaveAtLeastTwoValues(Method method) throws Exception {
+        SSAMethod ssaMethod = convertToSSA(method);
+        FlowGraph<AnnotatedBasicBlock> cfg = ssaMethod.getControlFlowGraph();
+        for(AnnotatedBasicBlock block : cfg.getVertices()) {
+            for(AnnotatedInstruction i : block.getInstructions()) {
+                for(Statement statement : i.getRawStatements()) {
+                    if(statement instanceof AssignmentStatement) {
+                        Expression rhs = ((AssignmentStatement) statement).getRightHandSide();
+                        if(rhs instanceof PhiFunction) {
+                            assertTrue(((PhiFunction) rhs).getValues().length >= 2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @DataPoints
     public static Method[] methods() {
         List<Method> methods = new LinkedList<>();
-        List<Class<?>> targetClasses = Arrays.asList(String.class, HashMap.class, LinkedList.class, Lister.class);
+        List<Class<?>> targetClasses = Arrays.asList(String.class, HashMap.class, LinkedList.class, Lister.class,
+                DocumentHandler.class, GregorianCalendar.class);
         for(Class<?> targetClass : targetClasses) {
             methods.addAll(Arrays.asList(targetClass.getMethods()));
         }

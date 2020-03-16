@@ -1,5 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.InvokeExpression;
@@ -13,6 +14,10 @@ public interface Statement {
 
     default boolean definesVariable() {
         return getDefinedVariable() != null;
+    }
+
+    default String toString(Map<Label, String> labelNames) {
+        return toString();
     }
 
     VariableExpression getDefinedVariable();

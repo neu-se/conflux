@@ -174,7 +174,9 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         }
         for(AbstractInsnNode insn : methodCalls) {
             FrameConstancyInfo constancyInfo = tracer.generateMethodConstancyInfo(insn);
-            instructions.insertBefore(insn, new LdcInsnNode(constancyInfo));
+            if(constancyInfo != null) {
+                instructions.insertBefore(insn, new LdcInsnNode(constancyInfo));
+            }
         }
     }
 

@@ -82,12 +82,14 @@ public class SSAMethod {
             Set<ThreeAddressBasicBlock> visited = new HashSet<>(workingSet);
             while(!workingSet.isEmpty()) {
                 ThreeAddressBasicBlock x = workingSet.poll();
-                for(ThreeAddressBasicBlock y : tacGraph.getDominanceFrontiers().get(x)) {
-                    if(isDefinedAtFrame(frameMap.get(y.getFirstInsn()), expr)) {
-                        y.addPhiFunctionForVariable(expr);
-                    }
-                    if(visited.add(y)) {
-                        workingSet.add(y);
+                if(tacGraph.getDominanceFrontiers().containsKey(x)) {
+                    for(ThreeAddressBasicBlock y : tacGraph.getDominanceFrontiers().get(x)) {
+                        if(isDefinedAtFrame(frameMap.get(y.getFirstInsn()), expr)) {
+                            y.addPhiFunctionForVariable(expr);
+                        }
+                        if(visited.add(y)) {
+                            workingSet.add(y);
+                        }
                     }
                 }
             }

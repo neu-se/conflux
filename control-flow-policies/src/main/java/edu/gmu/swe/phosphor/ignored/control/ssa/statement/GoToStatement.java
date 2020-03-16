@@ -3,6 +3,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class GoToStatement implements Statement {
@@ -23,6 +24,15 @@ public final class GoToStatement implements Statement {
     @Override
     public String toString() {
         return "goto " + target;
+    }
+
+    @Override
+    public String toString(Map<Label, String> labelNames) {
+        if(labelNames.containsKey(target)) {
+            return "goto " + labelNames.get(target);
+        } else {
+            return toString();
+        }
     }
 
     @Override

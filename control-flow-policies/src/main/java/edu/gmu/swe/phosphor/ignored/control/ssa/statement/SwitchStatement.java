@@ -6,6 +6,7 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LookupSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TableSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
@@ -83,6 +84,26 @@ public final class SwitchStatement implements Statement {
         }
         if(defaultLabel != null) {
             builder.append("\n\tdefault: goto ").append(defaultLabel).append(";");
+        }
+        return builder.append("\n}").toString();
+    }
+
+    @Override
+    public String toString(Map<Label, String> labelNames) {
+        StringBuilder builder = new StringBuilder("switch(").append(value).append(") {");
+        for(int i = 0; i < labels.length; i++) {
+            String labelName = labels[i].toString();
+            if(labelNames.containsKey(labels[i])) {
+                labelName = labelNames.get(labels[i]);
+            }
+            builder.append("\n\tcase ").append(keys[i]).append(": goto ").append(labelName).append(";");
+        }
+        if(defaultLabel != null) {
+            String labelName = defaultLabel.toString();
+            if(labelNames.containsKey(defaultLabel)) {
+                labelName = labelNames.get(defaultLabel);
+            }
+            builder.append("\n\tdefault: goto ").append(labelName).append(";");
         }
         return builder.append("\n}").toString();
     }

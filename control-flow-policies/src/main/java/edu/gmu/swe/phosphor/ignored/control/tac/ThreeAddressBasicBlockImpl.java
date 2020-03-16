@@ -1,11 +1,14 @@
 package edu.gmu.swe.phosphor.ignored.control.tac;
 
 import edu.columbia.cs.psl.phosphor.control.graph.SimpleBasicBlock;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
@@ -22,6 +25,11 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
 
     public ThreeAddressBasicBlockImpl(AbstractInsnNode[] instructions, int index, ThreeAddressMethod method) {
         super(instructions, index);
+        if(instructions.length > 0 && method.getExceptionHandlerStarts().containsKey(instructions[0])) {
+            AssignmentStatement s = new AssignmentStatement(new StackElement(0),
+                    method.getExceptionHandlerStarts().get(instructions[0]));
+            threeAddressStatements.put(null, new Statement[]{s});
+        }
         for(AbstractInsnNode insn : instructions) {
             threeAddressStatements.put(insn, method.getStatements(insn));
         }
@@ -85,7 +93,9 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
     @Override
     public void addPhiFunctionValues(Map<VariableExpression, VersionStack> versionStacks) {
         for(VariableExpression key : phiValues.keySet()) {
-            phiValues.get(key).add(versionStacks.get(key).getCurrentExpression());
+            if(versionStacks.get(key).hasCurrentExpression()) {
+                phiValues.get(key).add(versionStacks.get(key).getCurrentExpression());
+            }
         }
     }
 
@@ -131,6 +141,18 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
             instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
         }
         return new AnnotatedBasicBlock(getIndex(), instructions);
+    }
+
+    @Override
+    public String toDotString(Map<Label, String> labelNames) {
+        StringBuilder builder = new StringBuilder("\"");
+        for(int i = 0; i < getThreeAddressStatements().size(); i++) {
+            builder.append(getThreeAddressStatements().get(i).toString(labelNames).replace("\"", "\\\""));
+            if(i != getThreeAddressStatements().size() - 1) {
+                builder.append("\\n");
+            }
+        }
+        return builder.append("\"").toString();
     }
 
     public static <T> List<T> flattenMap(Map<?, T[]> map) {

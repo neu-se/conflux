@@ -2,6 +2,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
@@ -27,6 +28,15 @@ public final class IfStatement implements Statement {
     @Override
     public String toString() {
         return String.format("if %s goto %s", condition, target);
+    }
+
+    @Override
+    public String toString(Map<Label, String> labelNames) {
+        if(labelNames.containsKey(target)) {
+            return String.format("if %s goto %s", condition, labelNames.get(target));
+        } else {
+            return toString();
+        }
     }
 
     @Override

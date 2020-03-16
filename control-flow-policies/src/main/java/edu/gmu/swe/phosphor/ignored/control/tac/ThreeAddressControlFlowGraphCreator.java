@@ -3,8 +3,16 @@ package edu.gmu.swe.phosphor.ignored.control.tac;
 import edu.columbia.cs.psl.phosphor.control.graph.ControlFlowGraphCreator;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraphBuilder;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TryCatchBlockNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+
+import java.io.IOException;
+import java.io.StringWriter;
+
+import static edu.columbia.cs.psl.phosphor.control.graph.BasicBlock.getNumericLabelNames;
 
 public class ThreeAddressControlFlowGraphCreator extends ControlFlowGraphCreator<ThreeAddressBasicBlock> {
 
@@ -45,7 +53,7 @@ public class ThreeAddressControlFlowGraphCreator extends ControlFlowGraphCreator
 
     @Override
     protected void addExceptionalEdgeFromEntryPoint(ThreeAddressBasicBlock target, TryCatchBlockNode tryCatchBlockNode) {
-        builder.addEdge(builder.getEntryPoint(), target);
+
     }
 
     @Override
@@ -100,5 +108,19 @@ public class ThreeAddressControlFlowGraphCreator extends ControlFlowGraphCreator
         exit.setIndex(graph.getVertices().size() - 1);
         builder = new FlowGraphBuilder<>();
         return graph;
+    }
+
+    public static String createGraphString(String owner, MethodNode mn, FlowGraph<ThreeAddressBasicBlock> graph) {
+        Comparator<ThreeAddressBasicBlock> comparator = (b1, b2) -> Integer.compare(b1.getIndex(), b2.getIndex());
+        Map<Label, String> labelNames = getNumericLabelNames(mn.instructions);
+        StringWriter writer = new StringWriter();
+        try {
+            graph.write(writer, String.format("\"%s.%s%s\"", owner, mn.name, mn.desc), comparator,
+                    (b) -> b.toDotString(labelNames), 20);
+        } catch(IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return writer.toString();
     }
 }
