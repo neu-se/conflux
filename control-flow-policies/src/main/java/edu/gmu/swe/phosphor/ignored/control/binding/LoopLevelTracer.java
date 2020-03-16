@@ -1,7 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.binding;
 
 import edu.columbia.cs.psl.phosphor.control.OpcodesUtil;
-import edu.columbia.cs.psl.phosphor.control.graph.BasicBlock;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
@@ -18,9 +17,7 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedInstruction;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.InvokeStatement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 
 import java.util.function.Predicate;
 
@@ -33,33 +30,34 @@ public class LoopLevelTracer {
     private final Map<AbstractInsnNode, AnnotatedInstruction> insnMap = new HashMap<>();
     private final Map<AbstractInsnNode, AnnotatedBasicBlock> blockMap = new HashMap<>();
     private final Map<AbstractInsnNode, LoopLevel> loopLevelMap;
-    private final Map<VariableExpression, AbstractInsnNode> definitions = new HashMap<>();
-    private final Map<VariableExpression, Expression> rawDefinitions = new HashMap<>();
+    private final Map<VariableExpression, Expression> rawDefinitionValues = new HashMap<>();
+    private final Map<VariableExpression, AbstractInsnNode> rawDefinitionInsnMap = new HashMap<>();
 
     public LoopLevelTracer(String owner, MethodNode methodNode) throws AnalyzerException {
         ssaMethod = new SSAMethod(owner, methodNode);
         graph = ssaMethod.getControlFlowGraph();
         containingLoops = FlowGraphUtil.calculateContainingLoops(graph);
-        initializeInsnAndBlockMaps();
+        initializeMaps();
         initializeDefinitionConstancyLevels(graph.getEntryPoint());
-        for(AnnotatedBasicBlock block : graph.getVertices()) {
-            for(AnnotatedInstruction insn : block.getInstructions()) {
-                for(Statement rawStatement : insn.getRawStatements()) {
-                    if(rawStatement.definesVariable() && rawStatement instanceof AssignmentStatement) {
-                        rawDefinitions.put(rawStatement.getDefinedVariable(),
-                                ((AssignmentStatement) rawStatement).getRightHandSide());
-                    }
-                }
-            }
-        }
         loopLevelMap = Collections.unmodifiableMap(createLoopLevelMap());
     }
 
-    private void initializeInsnAndBlockMaps() {
+    private void initializeMaps() {
         for(AnnotatedBasicBlock block : graph.getVertices()) {
             for(AnnotatedInstruction ai : block.getInstructions()) {
                 insnMap.put(ai.getOriginalInstruction(), ai);
                 blockMap.put(ai.getOriginalInstruction(), block);
+            }
+        }
+        for(AnnotatedBasicBlock block : graph.getVertices()) {
+            for(AnnotatedInstruction insn : block.getInstructions()) {
+                for(Statement rawStatement : insn.getRawStatements()) {
+                    if(rawStatement.definesVariable() && rawStatement instanceof AssignmentStatement) {
+                        rawDefinitionValues.put(rawStatement.getDefinedVariable(),
+                                ((AssignmentStatement) rawStatement).getRightHandSide());
+                        rawDefinitionInsnMap.put(rawStatement.getDefinedVariable(), insn.getOriginalInstruction());
+                    }
+                }
             }
         }
     }
@@ -90,7 +88,6 @@ public class LoopLevelTracer {
             for(Statement s : i.getProcessedStatements()) {
                 if(s instanceof AssignmentStatement && s.definesVariable()) {
                     VariableExpression key = s.getDefinedVariable();
-                    definitions.put(key, i.getOriginalInstruction());
                     Expression e = ((AssignmentStatement) s).getRightHandSide();
                     Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops = containingLoops.get(block);
                     definitionConstancyLevels.put(key, calculateConstancyLevel(e, candidateLoops));
@@ -116,7 +113,7 @@ public class LoopLevelTracer {
             }
         } else if(e instanceof BinaryExpression) {
             ConstancyLevel c1 = calculateConstancyLevel(((BinaryExpression) e).getOperand1(), candidateLoops);
-            ConstancyLevel c2 = calculateConstancyLevel(((BinaryExpression) e).getOperand1(), candidateLoops);
+            ConstancyLevel c2 = calculateConstancyLevel(((BinaryExpression) e).getOperand2(), candidateLoops);
             return ConstancyLevel.merge(c1, c2);
         } else if(e instanceof UnaryExpression) {
             return calculateConstancyLevel(((UnaryExpression) e).getOperand(), candidateLoops);
@@ -128,28 +125,41 @@ public class LoopLevelTracer {
     private Map<AbstractInsnNode, LoopLevel> createLoopLevelMap() {
         Map<AbstractInsnNode, LoopLevel> map = new HashMap<>();
         for(AnnotatedBasicBlock block : graph.getVertices()) {
+            Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops = containingLoops.get(block);
             for(AnnotatedInstruction ai : block.getInstructions()) {
                 if(ai.getOriginalInstruction() != null) {
                     ConstancyLevel cl = ConstantLevel.CONSTANT_LEVEL;
                     for(Statement processedStatement : ai.getProcessedStatements()) {
+                        ConstancyLevel cl2 = ConstantLevel.CONSTANT_LEVEL;
                         if(processedStatement instanceof AssignmentStatement) {
-                            ConstancyLevel cl2 = calculateConstancyLevel(ai, (AssignmentStatement) processedStatement);
-                            cl = ConstancyLevel.merge(cl, cl2);
+                            cl2 = calculateConstancyLevel(ai, (AssignmentStatement) processedStatement, candidateLoops);
+                        } else if(processedStatement instanceof InvokeStatement) {
+                            cl2 = calculateConstancyLevel(((InvokeStatement) processedStatement).getExpression(), candidateLoops);
+                        } else if(processedStatement instanceof MonitorStatement) {
+                            cl2 = calculateConstancyLevel(((MonitorStatement) processedStatement).getOperand(), candidateLoops);
+                        } else if(processedStatement instanceof SwitchStatement) {
+                            cl2 = calculateConstancyLevel(((SwitchStatement) processedStatement).getValue(), candidateLoops);
+                        } else if(processedStatement instanceof IfStatement) {
+                            cl2 = calculateConstancyLevel(((IfStatement) processedStatement).getCondition(), candidateLoops);
+                        } else if(processedStatement instanceof ThrowStatement) {
+                            cl2 = calculateConstancyLevel(((ThrowStatement) processedStatement).getExpression(), candidateLoops);
+                        } else if(processedStatement instanceof ReturnStatement) {
+                            // TODO: also dependent on return value uses
+                            cl2 = calculateConstancyLevel(((ReturnStatement) processedStatement).getReturnValue(), candidateLoops);
                         }
+                        cl = ConstancyLevel.merge(cl, cl2);
                     }
                     map.put(ai.getOriginalInstruction(), cl.toLoopLevel());
                 }
-
             }
         }
         return map;
     }
 
-    private ConstancyLevel calculateConstancyLevel(AnnotatedInstruction ai, AssignmentStatement s) {
+    private ConstancyLevel calculateConstancyLevel(AnnotatedInstruction ai, AssignmentStatement s,
+                                                   Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops) {
         Expression lhs = s.getLeftHandSide();
         ConstancyLevel cl = ConstantLevel.CONSTANT_LEVEL;
-        AnnotatedBasicBlock block = blockMap.get(ai.getOriginalInstruction());
-        Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops = containingLoops.get(block);
         if(lhs instanceof FieldAccess) {
             Expression receiver = ((FieldAccess) lhs).getReceiver();
             cl = ConstancyLevel.merge(cl, calculateConstancyLevel(receiver, candidateLoops));
@@ -159,10 +169,13 @@ public class LoopLevelTracer {
             Expression index = ((ArrayAccess) lhs).getIndex();
             cl = ConstancyLevel.merge(cl, calculateConstancyLevel(index, candidateLoops));
         }
-        // TODO Check VariableExpressions lhs usages
-        for(Expression subExpression : gatherImpactingSubExpressions(ai, s)) {
-            // TODO here candidate loops should be defined wrt to the rhs
-            cl = ConstancyLevel.merge(cl, calculateConstancyLevel(subExpression, candidateLoops));
+        // TODO Check VariableExpressions lhs usages, have constancy be determined by max of uses
+        if(lhs instanceof FieldAccess || lhs instanceof ArrayAccess || lhs instanceof LocalVariable) {
+            for(Expression subExpression : gatherImpactingSubExpressions(ai, s)) {
+                cl = ConstancyLevel.merge(cl, calculateConstancyLevel(subExpression, candidateLoops));
+            }
+        } else {
+            cl = ConstancyLevel.merge(cl, calculateConstancyLevel(s.getRightHandSide(), candidateLoops));
         }
         return cl;
     }
@@ -170,12 +183,22 @@ public class LoopLevelTracer {
     private Set<Expression> gatherImpactingSubExpressions(AnnotatedInstruction ai, AssignmentStatement s) {
         Set<Expression> subExpressions = new HashSet<>();
         AssignmentStatement rawStatement = (AssignmentStatement) ai.getRawStatement(s);
-        gatherImpactingSubExpressions(rawStatement.getRightHandSide(), rawStatement.getLeftHandSide(), subExpressions);
+        Expression rhs = rawStatement.getRightHandSide();
+        Expression excluded = rawStatement.getLeftHandSide();
+        if(excluded instanceof LocalVariable) {
+            VariableExpression baseExpression = ((VariableExpression) excluded).setVersion(-1);
+            excluded = ssaMethod.getVersionStacks().get(baseExpression).getRedefines((VariableExpression) excluded);
+            if(excluded == null) {
+                return Collections.singleton(s.getRightHandSide());
+            }
+        }
+        gatherImpactingSubExpressions(rhs, excluded, subExpressions, ai.getOriginalInstruction());
         return subExpressions;
     }
 
-    private void gatherImpactingSubExpressions(Expression e, Expression excluded, Set<Expression> subExpressions) {
-        if(directMatch(e, excluded)) {
+    private void gatherImpactingSubExpressions(Expression e, Expression excluded, Set<Expression> subExpressions,
+                                               AbstractInsnNode target) {
+        if(e.equals(excluded)) {
             return;
         }
         Expression processed = e.transform(ssaMethod.getTransformer());
@@ -184,41 +207,40 @@ public class LoopLevelTracer {
         } else if(e instanceof ParameterExpression) {
             subExpressions.add(e);
         } else if(e instanceof BinaryExpression) {
-            gatherImpactingSubExpressions(((BinaryExpression) e).getOperand1(), excluded, subExpressions);
-            gatherImpactingSubExpressions(((BinaryExpression) e).getOperand2(), excluded, subExpressions);
+            gatherImpactingSubExpressions(((BinaryExpression) e).getOperand1(), excluded, subExpressions, target);
+            gatherImpactingSubExpressions(((BinaryExpression) e).getOperand2(), excluded, subExpressions, target);
         } else if(e instanceof UnaryExpression) {
-            gatherImpactingSubExpressions(((UnaryExpression) e).getOperand(), excluded, subExpressions);
-        } else if(e instanceof ArrayAccess && excluded instanceof ArrayAccess &&
-                e.transform(ssaMethod.getTransformer()).equals(excluded.transform(ssaMethod.getTransformer()))) {
-            // TODO CHECK for possible intervening redefinition
-            return;
-        } else if(e instanceof FieldAccess && excluded instanceof FieldAccess &&
-                e.transform(ssaMethod.getTransformer()).equals(excluded.transform(ssaMethod.getTransformer()))) {
-            // TODO CHECK for possible intervening redefinition
-            return;
+            gatherImpactingSubExpressions(((UnaryExpression) e).getOperand(), excluded, subExpressions, target);
         } else if(e instanceof VariableExpression) {
-            gatherImpactingSubExpressions(rawDefinitions.get(e), excluded, subExpressions);
+            Expression value = rawDefinitionValues.get(e);
+            AbstractInsnNode source = rawDefinitionInsnMap.get(e);
+            if(!isExcludedFieldOrArrayAccess(value, excluded, source, target)) {
+                gatherImpactingSubExpressions(value, excluded, subExpressions, target);
+            }
         } else {
             subExpressions.add(processed);
         }
     }
 
-    private boolean directMatch(Expression e, Expression target) {
-        if(target instanceof LocalVariable) {
-            int index = ((LocalVariable) target).getIndex();
-            if(e instanceof LocalVariable && ((LocalVariable) e).getIndex() == index) {
-                return true;
-            }
-            Expression processed = e.transform(ssaMethod.getTransformer());
-            if(processed instanceof LocalVariable && ((LocalVariable) processed).getIndex() == index) {
-                return true;
-            }
+    private boolean isExcludedFieldOrArrayAccess(Expression value, Expression excluded, AbstractInsnNode source,
+                                                 AbstractInsnNode target) {
+        Expression processedValue = value.transform(ssaMethod.getTransformer());
+        Expression processedExcluded = excluded.transform(ssaMethod.getTransformer());
+        if(processedValue.equals(processedExcluded)) {
+            return (processedValue instanceof ArrayAccess && processedExcluded instanceof ArrayAccess
+                    && !checkAllPaths(source, target, LoopLevelTracer::possibleArrayRedefinition))
+                    || (processedValue instanceof FieldAccess && processedExcluded instanceof FieldAccess
+                    && !checkAllPaths(source, target, LoopLevelTracer::possibleFieldRedefinition));
         }
-        return e.equals(target);
+        return false;
     }
 
     public FrameConstancyInfo generateMethodConstancyInfo(AbstractInsnNode insn) {
-        int invocationLevel = containingLoops.get(insn).size();
+        Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops = containingLoops.get(blockMap.get(insn));
+        if(candidateLoops == null) {
+            candidateLoops = Collections.emptySet();
+        }
+        int invocationLevel = candidateLoops.size();
         Statement statement = insnMap.get(insn).getProcessedStatements().get(0);
         InvokeExpression expr;
         if(statement instanceof AssignmentStatement) {
@@ -231,11 +253,11 @@ public class LoopLevelTracer {
         }
         FrameConstancyInfo info = new FrameConstancyInfo(invocationLevel);
         if(expr.getReceiver() != null) {
-            ConstancyLevel cl = calculateConstancyLevel(expr.getReceiver(), containingLoops.get(insn));
+            ConstancyLevel cl = calculateConstancyLevel(expr.getReceiver(), candidateLoops);
             info.pushArgumentLevel(cl.toLoopLevel());
         }
         for(Expression arg : expr.getArguments()) {
-            ConstancyLevel cl = calculateConstancyLevel(arg, containingLoops.get(insn));
+            ConstancyLevel cl = calculateConstancyLevel(arg, candidateLoops);
             info.pushArgumentLevel(cl.toLoopLevel());
         }
         return info;
@@ -247,60 +269,41 @@ public class LoopLevelTracer {
 
     /**
      * Returns true if there exists some execution path from the specified source instruction to the specified target
-     * insn that contains one of the following (excluding the source and target instructions):
-     * <ul>
-     *     <li>an InvokeDynamicInsnNode</li>
-     *     <li>a MethodInsnNode</li>
-     *     <li>an instruction that stores a value to a field</li>
-     * </ul>
+     * insn that contains an instruction (excluding the source and target instructions) for which the specified
+     * predicate returns true.
      */
-    public static <T extends BasicBlock> boolean interveningFieldRedefinitionPossible(AbstractInsnNode source,
-                                                                                      AbstractInsnNode target, FlowGraph<T> graph,
-                                                                                      Map<AbstractInsnNode, T> insnBlockMap) {
-        return checkAllPaths(source, target, graph, insnBlockMap, insn ->
-                insn instanceof InvokeDynamicInsnNode || insn instanceof MethodInsnNode || OpcodesUtil.isFieldStoreInsn(insn.getOpcode()));
-    }
-
-    /**
-     * Returns true if there exists some execution path from the specified source instruction to the specified target
-     * insn that contains one of the following (excluding the source and target instructions):
-     * <ul>
-     *     <li>an InvokeDynamicInsnNode</li>
-     *     <li>a MethodInsnNode</li>
-     *     <li>an instruction that stores a value to an array</li>
-     * </ul>
-     */
-    public static <T extends BasicBlock> boolean interveningArrayRedefinitionPossible(AbstractInsnNode source, AbstractInsnNode target,
-                                                                                      FlowGraph<T> graph,
-                                                                                      Map<AbstractInsnNode, T> insnBlockMap) {
-        return checkAllPaths(source, target, graph, insnBlockMap, insn ->
-                insn instanceof InvokeDynamicInsnNode || insn instanceof MethodInsnNode || OpcodesUtil.isArrayStore(insn.getOpcode()));
-    }
-
-    private static <T extends BasicBlock> boolean checkAllPaths(AbstractInsnNode source, AbstractInsnNode target,
-                                                                FlowGraph<T> graph,
-                                                                Map<AbstractInsnNode, T> insnBlockMap, Predicate<AbstractInsnNode> predicate) {
-        T sourceBlock = insnBlockMap.get(source);
-        T targetBlock = insnBlockMap.get(target);
-        Set<List<T>> simplePaths = FlowGraphUtil.getAllSimplePaths(graph, sourceBlock, targetBlock);
-        for(List<T> simplePath : simplePaths) {
-            for(T block : simplePath) {
+    private boolean checkAllPaths(AbstractInsnNode source, AbstractInsnNode target, Predicate<AbstractInsnNode> predicate) {
+        AnnotatedBasicBlock sourceBlock = blockMap.get(source);
+        AnnotatedBasicBlock targetBlock = blockMap.get(target);
+        Set<List<AnnotatedBasicBlock>> simplePaths = FlowGraphUtil.getAllSimplePaths(graph, sourceBlock, targetBlock);
+        for(List<AnnotatedBasicBlock> simplePath : simplePaths) {
+            for(AnnotatedBasicBlock block : simplePath) {
                 AbstractInsnNode insn = block.getFirstInsn();
                 if(block == sourceBlock) {
                     insn = source.getNext();
                 }
                 AbstractInsnNode end = block.getLastInsn();
-                if(block == targetBlock) {
-                    end = target;
-                }
-                while(insn != null && insn != end) {
+                while(insn != null && insn != target) {
                     if(predicate.test(insn)) {
                         return true;
+                    }
+                    if(insn == end) {
+                        break;
                     }
                     insn = insn.getNext();
                 }
             }
         }
         return false;
+    }
+
+    private static boolean possibleArrayRedefinition(AbstractInsnNode insn) {
+        return insn instanceof InvokeDynamicInsnNode
+                || insn instanceof MethodInsnNode || OpcodesUtil.isArrayStore(insn.getOpcode());
+    }
+
+    private static boolean possibleFieldRedefinition(AbstractInsnNode insn) {
+        return insn instanceof InvokeDynamicInsnNode
+                || insn instanceof MethodInsnNode || OpcodesUtil.isFieldStoreInsn(insn.getOpcode());
     }
 }

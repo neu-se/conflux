@@ -14,10 +14,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.F_NEW;
-import static edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethodTestMethods.OWNER;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.ArrayLengthOperation.ARRAY_LENGTH;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.InvocationType.*;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.NegateOperation.NEGATE;
+import static edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethodTestMethods.OWNER;
 import static org.junit.Assert.assertEquals;
 
 public class ThreeAddressMethodTest {
@@ -952,8 +952,8 @@ public class ThreeAddressMethodTest {
     @Test
     public void testTableSwitch() throws Exception {
         MethodNode methodNode = ThreeAddressMethodTestMethods.tableSwitch();
-        Label l0 = getFirstLabel(methodNode);
         ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        Label l0 = getFirstLabel(methodNode, method);
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
@@ -969,8 +969,8 @@ public class ThreeAddressMethodTest {
     @Test
     public void testLookupSwitch() throws Exception {
         MethodNode methodNode = ThreeAddressMethodTestMethods.lookupSwitch();
-        Label l0 = getFirstLabel(methodNode);
         ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        Label l0 = getFirstLabel(methodNode, method);
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
@@ -986,8 +986,8 @@ public class ThreeAddressMethodTest {
     @Test
     public void testUnaryIf() throws Exception {
         MethodNode methodNode = ThreeAddressMethodTestMethods.unaryIf();
-        Label l0 = getFirstLabel(methodNode);
         ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        Label l0 = getFirstLabel(methodNode, method);
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
@@ -1032,8 +1032,8 @@ public class ThreeAddressMethodTest {
     @Test
     public void testBinaryIf() throws Exception {
         MethodNode methodNode = ThreeAddressMethodTestMethods.binaryIf();
-        Label l0 = getFirstLabel(methodNode);
         ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        Label l0 = getFirstLabel(methodNode, method);
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
@@ -1124,12 +1124,13 @@ public class ThreeAddressMethodTest {
         assertEquals(expectedStatements, actualStatements);
     }
 
-    private static Label getFirstLabel(MethodNode methodNode) {
+    private static Label getFirstLabel(MethodNode methodNode, ThreeAddressMethod method) {
         Iterator<AbstractInsnNode> itr = methodNode.instructions.iterator();
         while(itr.hasNext()) {
             AbstractInsnNode insn = itr.next();
             if(insn instanceof LabelNode) {
-                return ((LabelNode) insn).getLabel();
+                LabelStatement s = (LabelStatement) method.getStatements(insn)[0];
+                return s.getLabel();
             }
         }
         throw new IllegalArgumentException();

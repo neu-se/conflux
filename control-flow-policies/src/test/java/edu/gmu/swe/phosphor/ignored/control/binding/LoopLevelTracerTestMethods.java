@@ -876,7 +876,7 @@ class LoopLevelTracerTestMethods {
         //int[] a = new int[5]; // variant +0
         //for(/*constant */ int i = 0; i < a.length; i++) {
         //    if(a[i] == 0) {
-        //        z = i; // variant +1
+        //        z = i; // variant +0
         //        break;
         //    }
         //}

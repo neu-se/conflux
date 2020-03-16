@@ -1,5 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
@@ -105,7 +106,7 @@ public class SSAMethodTest {
     @DataPoints
     public static Method[] methods() {
         List<Method> methods = new LinkedList<>();
-        List<Class<?>> targetClasses = Arrays.asList(String.class, HashMap.class, LinkedList.class);
+        List<Class<?>> targetClasses = Arrays.asList(String.class, HashMap.class, LinkedList.class, Lister.class);
         for(Class<?> targetClass : targetClasses) {
             methods.addAll(Arrays.asList(targetClass.getMethods()));
         }

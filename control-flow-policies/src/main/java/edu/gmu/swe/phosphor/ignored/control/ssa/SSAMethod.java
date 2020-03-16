@@ -41,6 +41,8 @@ public class SSAMethod {
 
     private final PropagationTransformer transformer;
 
+    private final Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
+
     public SSAMethod(String owner, MethodNode method) throws AnalyzerException {
         ThreeAddressMethod threeAddressMethod = new ThreeAddressMethod(owner, method);
         FlowGraph<ThreeAddressBasicBlock> tacGraph = new ThreeAddressControlFlowGraphCreator(threeAddressMethod)
@@ -63,6 +65,10 @@ public class SSAMethod {
 
     public Map<VariableExpression, Expression> getPropagationMap() {
         return propagationMap;
+    }
+
+    public Map<VariableExpression, VersionStack> getVersionStacks() {
+        return Collections.unmodifiableMap(versionStacks);
     }
 
     public PropagationTransformer getTransformer() {
@@ -116,16 +122,14 @@ public class SSAMethod {
         return false;
     }
 
-    private static void renameVariables(FlowGraph<ThreeAddressBasicBlock> tacGraph, Set<VariableExpression> definedExpressions) {
-        Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
+    private void renameVariables(FlowGraph<ThreeAddressBasicBlock> tacGraph, Set<VariableExpression> definedExpressions) {
         for(VariableExpression expression : definedExpressions) {
             versionStacks.put(expression, new VersionStack(expression));
         }
-        search(tacGraph, tacGraph.getEntryPoint(), versionStacks);
+        search(tacGraph, tacGraph.getEntryPoint());
     }
 
-    private static void search(FlowGraph<ThreeAddressBasicBlock> tacGraph, ThreeAddressBasicBlock block,
-                               Map<VariableExpression, VersionStack> versionStacks) {
+    private void search(FlowGraph<ThreeAddressBasicBlock> tacGraph, ThreeAddressBasicBlock block) {
         for(VersionStack stack : versionStacks.values()) {
             stack.processingBlock();
         }
@@ -134,7 +138,7 @@ public class SSAMethod {
             successor.addPhiFunctionValues(versionStacks);
         }
         for(ThreeAddressBasicBlock child : tacGraph.getDominatorTree().get(block)) {
-            search(tacGraph, child, versionStacks);
+            search(tacGraph, child);
         }
         for(VersionStack stack : versionStacks.values()) {
             stack.finishedProcessingBlock();

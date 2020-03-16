@@ -127,7 +127,7 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
                 instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
             }
         }
-        if(!foundLabel) {
+        if(!foundLabel && !phiFunctions.isEmpty()) {
             instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
         }
         return new AnnotatedBasicBlock(getIndex(), instructions);

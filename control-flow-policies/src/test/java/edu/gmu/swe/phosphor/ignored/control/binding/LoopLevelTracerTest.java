@@ -277,7 +277,7 @@ public class LoopLevelTracerTest {
                 CONSTANT_LOOP_LEVEL,
                 new VariantLoopLevel(0),
                 CONSTANT_LOOP_LEVEL,
-                new VariantLoopLevel(1)
+                new VariantLoopLevel(0)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), loopLevelMap));
     }

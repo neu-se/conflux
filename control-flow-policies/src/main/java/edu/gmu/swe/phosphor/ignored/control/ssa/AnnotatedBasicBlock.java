@@ -1,8 +1,13 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.InsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 
 public class AnnotatedBasicBlock {
+
+    private static final InsnNode NOP_INSN = new InsnNode(Opcodes.NOP);
 
     private final List<AnnotatedInstruction> instructions;
     private final int index;
@@ -39,6 +44,25 @@ public class AnnotatedBasicBlock {
     @Override
     public String toString() {
         return getRawStatementsString();
+    }
+
+    public AbstractInsnNode getFirstInsn() {
+        for(AnnotatedInstruction insn : instructions) {
+            if(insn.getOriginalInstruction() != null) {
+                return insn.getOriginalInstruction();
+            }
+        }
+        return NOP_INSN;
+    }
+
+    public AbstractInsnNode getLastInsn() {
+        for(int i = instructions.size() - 1; i >= 0; i--) {
+            AnnotatedInstruction insn = instructions.get(i);
+            if(insn.getOriginalInstruction() != null) {
+                return insn.getOriginalInstruction();
+            }
+        }
+        return NOP_INSN;
     }
 
     public static Collection<AnnotatedBasicBlock> sort(Collection<AnnotatedBasicBlock> blocks) {

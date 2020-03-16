@@ -20,6 +20,10 @@ public final class IfStatement implements Statement {
         usedVariables = Statement.gatherVersionedExpressions(condition);
     }
 
+    public Expression getCondition() {
+        return condition;
+    }
+
     @Override
     public String toString() {
         return String.format("if %s goto %s", condition, target);
