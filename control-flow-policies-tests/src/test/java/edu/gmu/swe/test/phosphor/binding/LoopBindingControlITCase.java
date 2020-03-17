@@ -3,6 +3,7 @@ package edu.gmu.swe.test.phosphor.binding;
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.gmu.swe.test.phosphor.BaseMultiTaintClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -79,6 +80,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
     }
 
     @Test
+    @Ignore("z = i is considered to be outside of the loop")
     public void testIndexOfBreak() {
         int z = 0;
         int[] a = new int[5];
