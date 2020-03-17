@@ -3,6 +3,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.InsnNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 
 public class AnnotatedBasicBlock {
@@ -26,19 +27,35 @@ public class AnnotatedBasicBlock {
     }
 
     public String getRawStatementsString() {
-        List<String> l = new LinkedList<>();
+        StringBuilder builder = new StringBuilder();
+        int x = 0;
         for(AnnotatedInstruction i : instructions) {
-            l.add(i.getRawStatementString());
+            String s = i.getRawStatementString();
+            if(s.length() > 0) {
+                builder.append(s);
+                if(x != instructions.size() - 1) {
+                    builder.append("\n");
+                }
+            }
+            x++;
         }
-        return String.join("\n", l);
+        return builder.toString();
     }
 
     public String getProcessedStatementsString() {
-        List<String> l = new LinkedList<>();
+        StringBuilder builder = new StringBuilder();
+        int x = 0;
         for(AnnotatedInstruction i : instructions) {
-            l.add(i.getProcessedStatementString());
+            String s = i.getProcessedStatementString();
+            if(s.length() > 0) {
+                builder.append(s);
+                if(x != instructions.size() - 1) {
+                    builder.append("\n");
+                }
+            }
+            x++;
         }
-        return String.join("\n", l);
+        return builder.toString();
     }
 
     @Override

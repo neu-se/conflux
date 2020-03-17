@@ -182,27 +182,28 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     /**
      * Adds ExitLoopLevelInfo nodes at the beginning of each basic block v for each edge (u,v) in the
-     * control flow graph such that u is containing in some loop l and v is not contained in l.
+     * control flow graph such that u is contained in some loop l and v is not contained in l.
      */
     private void markLoopExits() {
         Set<NaturalLoop<BasicBlock>> loops = controlFlowGraph.getNaturalLoops();
         for(NaturalLoop<BasicBlock> loop : loops) {
             BasicBlock header = loop.getHeader();
-            if(header instanceof SimpleBasicBlock) {
-                Set<SimpleBasicBlock> exits = new HashSet<>();
-                for(BasicBlock vertex : loop.getVertices()) {
-                    for(BasicBlock target : controlFlowGraph.getSuccessors(vertex)) {
-                        if(target instanceof SimpleBasicBlock && !loop.contains(target)) {
-                            exits.add((SimpleBasicBlock) target);
-                        }
+            Set<SimpleBasicBlock> exits = new HashSet<>();
+            for(BasicBlock vertex : loop.getVertices()) {
+                for(BasicBlock target : controlFlowGraph.getSuccessors(vertex)) {
+                    if(target instanceof BindingBranchEdge) {
+                        target = ((BindingBranchEdge) target).target;
+                    }
+                    if(target instanceof SimpleBasicBlock && !loop.contains(target)) {
+                        exits.add((SimpleBasicBlock) target);
                     }
                 }
-                int numContainingLoops = containingLoopMap.get(header.getFirstInsn()).size();
-                ExitLoopLevelInfo exitLoopLevelInfo = new ExitLoopLevelInfo(numContainingLoops);
-                for(BasicBlock exit : exits) {
-                    AbstractInsnNode nextInsn = findNextPrecedableInstruction(exit.getFirstInsn());
-                    instructions.insertBefore(nextInsn, new LdcInsnNode(exitLoopLevelInfo));
-                }
+            }
+            int numContainingLoops = containingLoopMap.get(header.getFirstInsn()).size();
+            ExitLoopLevelInfo exitLoopLevelInfo = new ExitLoopLevelInfo(numContainingLoops);
+            for(BasicBlock exit : exits) {
+                AbstractInsnNode nextInsn = findNextPrecedableInstruction(exit.getFirstInsn());
+                instructions.insertBefore(nextInsn, new LdcInsnNode(exitLoopLevelInfo));
             }
         }
     }

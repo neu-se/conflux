@@ -134,11 +134,15 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
             instructions.add(new AnnotatedInstruction(insn, rawStatements, processedStatements));
             if(insn instanceof LabelNode && !foundLabel) {
                 foundLabel = true;
-                instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
+                if(!phiFunctions.isEmpty()) {
+                    instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
+                }
             }
         }
         if(!foundLabel && !phiFunctions.isEmpty()) {
-            instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
+            if(!phiFunctions.isEmpty()) {
+                instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
+            }
         }
         return new AnnotatedBasicBlock(getIndex(), instructions);
     }

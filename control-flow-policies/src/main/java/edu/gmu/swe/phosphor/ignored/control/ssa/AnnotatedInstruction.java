@@ -1,6 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
@@ -43,18 +44,28 @@ public class AnnotatedInstruction {
     }
 
     public String getRawStatementString() {
-        List<String> l = new LinkedList<>();
+        StringBuilder builder = new StringBuilder();
+        int index = 0;
         for(Statement s : rawStatements) {
-            l.add(s.toString());
+            builder.append(s.toString());
+            if(index != rawStatements.size() - 1) {
+                builder.append("\n");
+            }
+            index++;
         }
-        return String.join("\n", l);
+        return builder.toString();
     }
 
     public String getProcessedStatementString() {
-        List<String> l = new LinkedList<>();
+        StringBuilder builder = new StringBuilder();
+        int index = 0;
         for(Statement s : processedStatements) {
-            l.add(s.toString());
+            builder.append(s.toString());
+            if(index != processedStatements.size() - 1) {
+                builder.append("\n");
+            }
+            index++;
         }
-        return String.join("\n", l);
+        return builder.toString();
     }
 }
