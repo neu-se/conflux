@@ -38,7 +38,7 @@ public class ThreeAddressMethod {
     public ThreeAddressMethod(String owner, MethodNode originalMethod) throws AnalyzerException {
         this.owner = owner;
         this.originalMethod = originalMethod;
-        TypeInterpreter interpreter = new TypeInterpreter(owner, originalMethod);
+        TypeInterpreter interpreter = new TypeInterpreter(originalMethod);
         Frame<TypeValue>[] frames = new PhosphorOpcodeIgnoringAnalyzer<>(interpreter).analyze(owner, originalMethod);
         Iterator<AbstractInsnNode> itr = originalMethod.instructions.iterator();
         for(int i = 0; itr.hasNext(); i++) {

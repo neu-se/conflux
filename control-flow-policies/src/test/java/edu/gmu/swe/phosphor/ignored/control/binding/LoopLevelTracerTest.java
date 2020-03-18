@@ -9,6 +9,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.DependentLoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.VariantLoopLevel;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Iterator;

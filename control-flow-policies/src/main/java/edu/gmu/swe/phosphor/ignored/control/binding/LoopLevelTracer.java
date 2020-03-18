@@ -34,6 +34,7 @@ public class LoopLevelTracer {
     private final Map<AbstractInsnNode, LoopLevel> loopLevelMap;
     private final Map<VariableExpression, Expression> rawDefinitionValues = new HashMap<>();
     private final Map<VariableExpression, AbstractInsnNode> rawDefinitionInsnMap = new HashMap<>();
+    private final Map<VariableExpression, Set<Statement>> rawUsesMap = new HashMap<>();
 
     public LoopLevelTracer(String owner, MethodNode methodNode) throws AnalyzerException {
         this.methodNode = methodNode;
@@ -59,6 +60,18 @@ public class LoopLevelTracer {
                         rawDefinitionValues.put(rawStatement.getDefinedVariable(),
                                 ((AssignmentStatement) rawStatement).getRightHandSide());
                         rawDefinitionInsnMap.put(rawStatement.getDefinedVariable(), insn.getOriginalInstruction());
+                    }
+                }
+            }
+        }
+        for(AnnotatedBasicBlock block : graph.getVertices()) {
+            for(AnnotatedInstruction insn : block.getInstructions()) {
+                for(Statement s : insn.getRawStatements()) {
+                    for(VariableExpression e : s.getUsedVariables()) {
+                        if(!rawUsesMap.containsKey(e)) {
+                            rawUsesMap.put(e, new HashSet<>());
+                        }
+                        rawUsesMap.get(e).add(s);
                     }
                 }
             }
@@ -149,8 +162,9 @@ public class LoopLevelTracer {
                         } else if(processedStatement instanceof ThrowStatement) {
                             cl2 = calculateConstancyLevel(((ThrowStatement) processedStatement).getExpression(), candidateLoops);
                         } else if(processedStatement instanceof ReturnStatement) {
-                            // TODO: also dependent on return value uses
                             cl2 = calculateConstancyLevel(((ReturnStatement) processedStatement).getReturnValue(), candidateLoops);
+                            // Add a dependency on the return value
+                            cl2 = ConstancyLevel.merge(cl2, new ParameterDependent(ssaMethod.getNumberOfParameters()));
                         }
                         cl = ConstancyLevel.merge(cl, cl2);
                     }
@@ -180,8 +194,9 @@ public class LoopLevelTracer {
             cl = ConstancyLevel.merge(cl, calculateConstancyLevel(arrayRef, candidateLoops));
             Expression index = ((ArrayAccess) lhs).getIndex();
             cl = ConstancyLevel.merge(cl, calculateConstancyLevel(index, candidateLoops));
+        } else if(lhs instanceof VariableExpression) {
+            cl = calculateMaximumOfDirectUses((VariableExpression) lhs, candidateLoops);
         }
-        // TODO Check VariableExpressions lhs usages, have constancy be determined by max of uses
         if(lhs instanceof FieldAccess || lhs instanceof ArrayAccess || lhs instanceof LocalVariable) {
             for(Expression subExpression : gatherImpactingSubExpressions(ai, s)) {
                 cl = ConstancyLevel.merge(cl, calculateConstancyLevel(subExpression, candidateLoops));
@@ -260,7 +275,6 @@ public class LoopLevelTracer {
         InvokeExpression expr;
         if(statement instanceof AssignmentStatement) {
             expr = (InvokeExpression) ((AssignmentStatement) statement).getRightHandSide();
-            // TODO check uses of assigned expression determine the return value's constancy level
         } else if(statement instanceof InvokeStatement) {
             expr = ((InvokeStatement) statement).getExpression();
         } else {
@@ -275,11 +289,43 @@ public class LoopLevelTracer {
             ConstancyLevel cl = calculateConstancyLevel(arg, candidateLoops);
             info.pushArgumentLevel(cl.toLoopLevel());
         }
+        if(statement.definesVariable()) {
+            ConstancyLevel cl = calculateMaximumOfDirectUses(statement.getDefinedVariable(), candidateLoops);
+            info.pushArgumentLevel(cl.toLoopLevel());
+        }
         return info;
     }
 
     public Map<AbstractInsnNode, LoopLevel> getLoopLevelMap() {
         return loopLevelMap;
+    }
+
+    private ConstancyLevel calculateMaximumOfDirectUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops) {
+        ConstancyLevel cl = ConstantLevel.CONSTANT_LEVEL;
+        if(rawUsesMap.containsKey(expr)) {
+            for(Statement s : rawUsesMap.get(expr)) {
+                if(s instanceof AssignmentStatement) {
+                    Expression lhs = ((AssignmentStatement) s).getLeftHandSide();
+                    if(lhs instanceof FieldAccess) {
+                        Expression receiver = ((FieldAccess) lhs).getReceiver();
+                        cl = ConstancyLevel.merge(cl, calculateConstancyLevel(receiver, candidateLoops));
+                    } else if(lhs instanceof ArrayAccess) {
+                        Expression arrayRef = ((ArrayAccess) lhs).getArrayRef();
+                        cl = ConstancyLevel.merge(cl, calculateConstancyLevel(arrayRef, candidateLoops));
+                        Expression index = ((ArrayAccess) lhs).getIndex();
+                        cl = ConstancyLevel.merge(cl, calculateConstancyLevel(index, candidateLoops));
+                    }
+                    if(((AssignmentStatement) s).getRightHandSide() instanceof InvokeExpression) {
+                        return new LoopVariant(candidateLoops);
+                    }
+                } else if(s instanceof ReturnStatement) {
+                    cl = ConstancyLevel.merge(cl, new ParameterDependent(ssaMethod.getNumberOfParameters()));
+                } else if(s instanceof InvokeStatement) {
+                    return new LoopVariant(candidateLoops);
+                }
+            }
+        }
+        return cl;
     }
 
     /**

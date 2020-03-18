@@ -39,6 +39,11 @@ interface ConstancyLevel {
     final class ParameterDependent implements ConstancyLevel {
         private BitSet dependencies;
 
+        ParameterDependent(int dependency) {
+            dependencies = new BitSet(dependency + 1);
+            dependencies.add(dependency);
+        }
+
         ParameterDependent(ParameterExpression expr) {
             dependencies = new BitSet(expr.getParameterNumber() + 1);
             dependencies.add(expr.getParameterNumber());

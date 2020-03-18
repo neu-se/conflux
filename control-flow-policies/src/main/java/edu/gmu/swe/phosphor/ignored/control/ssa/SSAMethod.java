@@ -43,8 +43,11 @@ public class SSAMethod {
 
     private final Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
 
+    private final int numberOfParameters;
+
     public SSAMethod(String owner, MethodNode method) throws AnalyzerException {
         ThreeAddressMethod threeAddressMethod = new ThreeAddressMethod(owner, method);
+        numberOfParameters = threeAddressMethod.getParameterDefinitions().size();
         FlowGraph<ThreeAddressBasicBlock> tacGraph = new ThreeAddressControlFlowGraphCreator(threeAddressMethod)
                 .createControlFlowGraph(method, threeAddressMethod.calculateExplicitExceptions());
         frameMap = Collections.unmodifiableMap(new HashMap<>(threeAddressMethod.getFrameMap()));
@@ -53,6 +56,10 @@ public class SSAMethod {
         propagationMap = Collections.unmodifiableMap(propagateVariables(tacGraph));
         transformer = new PropagationTransformer(propagationMap);
         controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, vertex -> vertex.createSSABasicBlock(transformer));
+    }
+
+    public int getNumberOfParameters() {
+        return numberOfParameters;
     }
 
     public FlowGraph<AnnotatedBasicBlock> getControlFlowGraph() {
