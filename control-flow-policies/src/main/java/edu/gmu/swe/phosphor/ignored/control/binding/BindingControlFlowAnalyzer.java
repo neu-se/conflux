@@ -151,11 +151,16 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         Iterator<AbstractInsnNode> itr = instructions.iterator();
         while(itr.hasNext()) {
             AbstractInsnNode insn = itr.next();
-            if(OpcodesUtil.isPushConstantOpcode(insn.getOpcode()) || insn.getOpcode() == IINC) {
-                instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(CONSTANT_LOOP_LEVEL)));
-            } else if(OpcodesUtil.isArrayStore(insn.getOpcode()) || OpcodesUtil.isFieldStoreInsn(insn.getOpcode())
-                    || OpcodesUtil.isLocalVariableStoreInsn(insn.getOpcode())) {
-                instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(tracer.getLoopLevelMap().get(insn))));
+            if(OpcodesUtil.isArrayStore(insn.getOpcode())
+                    || OpcodesUtil.isFieldStoreInsn(insn.getOpcode())
+                    || OpcodesUtil.isLocalVariableStoreInsn(insn.getOpcode())
+                    || OpcodesUtil.isPushConstantOpcode(insn.getOpcode())
+                    || insn.getOpcode() == IINC) {
+                if(tracer.getLoopLevelMap().containsKey(insn)) {
+                    instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(tracer.getLoopLevelMap().get(insn))));
+                } else {
+                    instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(CONSTANT_LOOP_LEVEL)));
+                }
             }
         }
     }
