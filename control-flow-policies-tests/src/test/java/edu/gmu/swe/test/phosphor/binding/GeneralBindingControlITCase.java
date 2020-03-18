@@ -11,19 +11,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class GeneralBindingControlITCase extends BaseMultiTaintClass {
 
-    private static class Parent {
-        int i;
-        Parent(int i) {
-            this.i = i;
-        }
-    }
-
-    private static class Child extends Parent {
-        Child(boolean b) {
-            super(b ? 55 : 429);
-        }
-    }
-
     @Test
     public void testBasicSwitch() {
         int x = MultiTainter.taintedInt(88, "testBasicSwitch");
@@ -151,6 +138,20 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
         assertTaintHasOnlyLabels(MultiTainter.getTaint(result), 0, 1, 2, 3, 4);
     }
 
+    @Test
+    public void testGetCharsTaintedReference() {
+        char[] c = new char[4];
+        String s = MultiTainter.taintedReference("012", 0);
+        s.getChars(0, 3, c, 0);
+        for(int i = 0; i < c.length; i++) {
+            if(i > 2) {
+                assertNullOrEmpty(MultiTainter.getTaint(c[i]));
+            } else {
+                assertTaintHasOnlyLabel(MultiTainter.getTaint(c[i]), 0);
+            }
+        }
+    }
+
     @Ignore(value = "Loop formed via recursive call")
     @Test
     public void testRecursiveArrayEqualsFalse() {
@@ -233,6 +234,20 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
     public static void taintWithIndices(int[] a) {
         for(int i = 0; i < a.length; i++) {
             a[i] = MultiTainter.taintedInt(a[i], i);
+        }
+    }
+
+    private static class Parent {
+        int i;
+
+        Parent(int i) {
+            this.i = i;
+        }
+    }
+
+    private static class Child extends Parent {
+        Child(boolean b) {
+            super(b ? 55 : 429);
         }
     }
 }

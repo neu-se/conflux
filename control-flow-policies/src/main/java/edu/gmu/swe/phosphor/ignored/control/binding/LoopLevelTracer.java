@@ -195,7 +195,7 @@ public class LoopLevelTracer {
             Expression index = ((ArrayAccess) lhs).getIndex();
             cl = ConstancyLevel.merge(cl, calculateConstancyLevel(index, candidateLoops));
         } else if(lhs instanceof VariableExpression) {
-            cl = calculateMaximumOfDirectUses((VariableExpression) lhs, candidateLoops);
+            cl = calculateMaximumOfDirectUses((VariableExpression) lhs, candidateLoops, false);
         }
         if(lhs instanceof FieldAccess || lhs instanceof ArrayAccess || lhs instanceof LocalVariable) {
             for(Expression subExpression : gatherImpactingSubExpressions(ai, s)) {
@@ -290,7 +290,7 @@ public class LoopLevelTracer {
             info.pushArgumentLevel(cl.toLoopLevel());
         }
         if(statement.definesVariable()) {
-            ConstancyLevel cl = calculateMaximumOfDirectUses(statement.getDefinedVariable(), candidateLoops);
+            ConstancyLevel cl = calculateMaximumOfDirectUses(statement.getDefinedVariable(), candidateLoops, true);
             info.pushArgumentLevel(cl.toLoopLevel());
         }
         return info;
@@ -300,7 +300,7 @@ public class LoopLevelTracer {
         return loopLevelMap;
     }
 
-    private ConstancyLevel calculateMaximumOfDirectUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops) {
+    private ConstancyLevel calculateMaximumOfDirectUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops, boolean includeMethodUses) {
         ConstancyLevel cl = ConstantLevel.CONSTANT_LEVEL;
         if(rawUsesMap.containsKey(expr)) {
             for(Statement s : rawUsesMap.get(expr)) {
@@ -320,7 +320,7 @@ public class LoopLevelTracer {
                     }
                 } else if(s instanceof ReturnStatement) {
                     cl = ConstancyLevel.merge(cl, new ParameterDependent(ssaMethod.getNumberOfParameters()));
-                } else if(s instanceof InvokeStatement) {
+                } else if(s instanceof InvokeStatement && includeMethodUses) {
                     return new LoopVariant(candidateLoops);
                 }
             }

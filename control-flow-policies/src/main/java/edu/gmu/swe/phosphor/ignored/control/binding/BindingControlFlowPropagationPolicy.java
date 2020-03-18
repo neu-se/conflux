@@ -7,7 +7,6 @@ import edu.columbia.cs.psl.phosphor.control.standard.BranchEnd;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.MethodVisitor;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.VariantLoopLevel;
 
 import java.util.Iterator;
@@ -80,20 +79,36 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
     }
 
     @Override
-    public void visitingFieldStore(boolean isStatic, Type type, boolean topCarriesTaint) {
+    public void visitingArrayStore(int opcode) {
         copyTag();
         COMBINE_TAGS.delegateVisit(delegate);
+    }
+
+    @Override
+    public void visitingArrayLoad(int opcode) {
+        delegate.visitInsn(DUP2);
+        COMBINE_TAGS.delegateVisit(delegate);
+        delegate.visitInsn(SWAP);
+        delegate.visitInsn(POP);
+    }
+
+    @Override
+    public void visitingFieldStore(int opcode, String owner, String name, String descriptor) {
+        copyTag();
+        COMBINE_TAGS.delegateVisit(delegate);
+    }
+
+    @Override
+    public void visitingInstanceFieldLoad(String owner, String name, String descriptor) {
+        delegate.visitInsn(DUP2);
+        COMBINE_TAGS.delegateVisit(delegate);
+        delegate.visitInsn(SWAP);
+        delegate.visitInsn(POP);
     }
 
     @Override
     public void generateEmptyTaint() {
         copyTag();
-    }
-
-    @Override
-    public void visitingArrayStore() {
-        copyTag();
-        COMBINE_TAGS.delegateVisit(delegate);
     }
 
     private void copyTag() {
