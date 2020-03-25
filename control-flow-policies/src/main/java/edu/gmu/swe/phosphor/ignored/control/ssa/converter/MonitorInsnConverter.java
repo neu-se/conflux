@@ -1,10 +1,10 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.converter;
 
-import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.MonitorOperation;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Value;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.statement.MonitorOperation;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.MonitorStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
@@ -23,7 +23,7 @@ public class MonitorInsnConverter extends InsnConverter {
     }
 
     @Override
-    protected Statement[] process(AbstractInsnNode insn, Frame<TypeValue> frame) {
+    protected Statement[] process(AbstractInsnNode insn, Frame<? extends Value> frame) {
         StackElement first = new StackElement(frame.getStackSize() - 1);
         return new Statement[]{new MonitorStatement(MonitorOperation.getInstance(insn), first)};
     }

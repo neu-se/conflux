@@ -90,7 +90,7 @@ class LoopLevelTracerTestMethods {
         mn.visitVarInsn(ISTORE, 1);
         Label l0 = new Label();
         mn.visitLabel(l0);
-        mn.visitFrame(F_NEW, 1, new Object[]{INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 2, new Object[]{OWNER, INTEGER}, 0, new Object[0]);
         mn.visitVarInsn(ILOAD, 1);
         mn.visitInsn(ICONST_5);
         Label l1 = new Label();
@@ -119,7 +119,7 @@ class LoopLevelTracerTestMethods {
         mn.visitVarInsn(ISTORE, 1);
         Label l0 = new Label();
         mn.visitLabel(l0);
-        mn.visitFrame(F_NEW, 1, new Object[]{INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 2, new Object[]{OWNER, INTEGER}, 0, new Object[0]);
         mn.visitVarInsn(ILOAD, 1);
         mn.visitInsn(ICONST_5);
         Label l1 = new Label();
@@ -250,11 +250,11 @@ class LoopLevelTracerTestMethods {
         Label l1 = new Label();
         mn.visitJumpInsn(GOTO, l1);
         mn.visitLabel(l0);
-        mn.visitFrame(F_NEW, 3, new Object[]{INTEGER, INTEGER, LONG}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 6, new Object[]{INTEGER, INTEGER, INTEGER, LONG, TOP, INTEGER}, 0, new Object[0]);
         mn.visitIntInsn(BIPUSH, 9);
         mn.visitVarInsn(ISTORE, 5);
         mn.visitLabel(l1);
-        mn.visitFrame(F_NEW, 1, new Object[]{INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 6, new Object[]{INTEGER, INTEGER, INTEGER, LONG, TOP, INTEGER}, 0, new Object[0]);
         mn.visitVarInsn(ILOAD, 5);
         mn.visitVarInsn(ISTORE, 6);
         mn.visitIntInsn(SIPUSH, 130);
@@ -462,11 +462,11 @@ class LoopLevelTracerTestMethods {
         Label l1 = new Label();
         mn.visitJumpInsn(GOTO, l1);
         mn.visitLabel(l0);
-        mn.visitFrame(F_NEW, 1, new Object[]{INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 3, new Object[]{INTEGER, INTEGER, INTEGER}, 0, new Object[0]);
         mn.visitIntInsn(SIPUSH, 144);
         mn.visitVarInsn(ISTORE, 2);
         mn.visitLabel(l1);
-        mn.visitFrame(F_NEW, 2, new Object[]{INTEGER, INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 3, new Object[]{INTEGER, INTEGER, INTEGER}, 0, new Object[0]);
         mn.visitVarInsn(ILOAD, 2);
         mn.visitVarInsn(ILOAD, 1);
         mn.visitInsn(IMUL);
@@ -600,7 +600,7 @@ class LoopLevelTracerTestMethods {
         mn.visitVarInsn(ISTORE, 1);
         Label l0 = new Label();
         mn.visitLabel(l0);
-        mn.visitFrame(F_NEW, 1, new Object[]{INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 2, new Object[]{INTEGER, INTEGER}, 0, new Object[0]);
         mn.visitVarInsn(ILOAD, 1);
         mn.visitInsn(ICONST_5);
         Label l1 = new Label();
@@ -610,7 +610,7 @@ class LoopLevelTracerTestMethods {
         mn.visitIincInsn(1, 1);
         mn.visitJumpInsn(GOTO, l0);
         mn.visitLabel(l1);
-        mn.visitFrame(F_NEW, 0, new Object[0], 0, new Object[0]);
+        mn.visitFrame(F_NEW, 2, new Object[]{INTEGER, INTEGER}, 0, new Object[0]);
         mn.visitInsn(RETURN);
         mn.visitMaxs(2, 2);
         mn.visitEnd();
@@ -628,7 +628,7 @@ class LoopLevelTracerTestMethods {
         mn.visitVarInsn(ISTORE, 1);
         Label l0 = new Label();
         mn.visitLabel(l0);
-        mn.visitFrame(F_NEW, 1, new Object[]{INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 2, new Object[]{"[I", INTEGER}, 0, new Object[0]);
         mn.visitVarInsn(ILOAD, 1);
         mn.visitInsn(ICONST_5);
         Label l1 = new Label();
@@ -691,7 +691,7 @@ class LoopLevelTracerTestMethods {
         mn.visitVarInsn(ISTORE, 2);
         Label l0 = new Label();
         mn.visitLabel(l0);
-        mn.visitFrame(F_NEW, 1, new Object[]{INTEGER}, 0, new Object[0]);
+        mn.visitFrame(F_NEW, 3, new Object[]{"[I", "[I", INTEGER}, 0, new Object[0]);
         mn.visitVarInsn(ILOAD, 2);
         mn.visitInsn(ICONST_5);
         Label l1 = new Label();

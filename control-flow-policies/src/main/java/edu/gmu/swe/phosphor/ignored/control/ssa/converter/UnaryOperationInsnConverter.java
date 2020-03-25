@@ -1,8 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.converter;
 
-import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Value;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.UnaryExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.UnaryOperation;
@@ -49,7 +49,7 @@ public class UnaryOperationInsnConverter extends InsnConverter {
     }
 
     @Override
-    protected Statement[] process(AbstractInsnNode insn, Frame<TypeValue> frame) {
+    protected Statement[] process(AbstractInsnNode insn, Frame<? extends Value> frame) {
         StackElement first = new StackElement(frame.getStackSize() - 1);
         UnaryExpression expr = new UnaryExpression(UnaryOperation.getInstance(insn), first);
         return new Statement[]{new AssignmentStatement(first, expr)};

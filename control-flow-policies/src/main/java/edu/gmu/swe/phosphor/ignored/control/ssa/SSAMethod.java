@@ -1,7 +1,7 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa;
 
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
-import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
+import edu.columbia.cs.psl.phosphor.control.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -15,7 +15,7 @@ import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressControlFlowGraphCreator;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
 
-import static edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue.UNINITIALIZED_VALUE;
+import static edu.columbia.cs.psl.phosphor.control.type.TypeValue.UNINITIALIZED_VALUE;
 
 /**
  * Uses algorithms from the following for placing phi functions and renaming variables:

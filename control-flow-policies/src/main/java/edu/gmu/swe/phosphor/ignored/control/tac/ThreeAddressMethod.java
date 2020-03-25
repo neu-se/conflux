@@ -1,8 +1,8 @@
 package edu.gmu.swe.phosphor.ignored.control.tac;
 
+import edu.columbia.cs.psl.phosphor.control.type.TypeInterpreter;
+import edu.columbia.cs.psl.phosphor.control.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.PhosphorOpcodeIgnoringAnalyzer;
-import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeInterpreter;
-import edu.columbia.cs.psl.phosphor.instrumenter.analyzer.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
@@ -38,12 +38,12 @@ public class ThreeAddressMethod {
     public ThreeAddressMethod(String owner, MethodNode originalMethod) throws AnalyzerException {
         this.owner = owner;
         this.originalMethod = originalMethod;
-        TypeInterpreter interpreter = new TypeInterpreter(originalMethod);
+        TypeInterpreter interpreter = new TypeInterpreter(owner, originalMethod);
         Frame<TypeValue>[] frames = new PhosphorOpcodeIgnoringAnalyzer<>(interpreter).analyze(owner, originalMethod);
         Iterator<AbstractInsnNode> itr = originalMethod.instructions.iterator();
         for(int i = 0; itr.hasNext(); i++) {
             AbstractInsnNode insn = itr.next();
-            statementMap.put(insn, createStatements(insn, frames[i]));
+            statementMap.put(insn, converter.convert(insn, frames[i]));
             frameMap.put(insn, frames[i]);
         }
         int i = 0;
@@ -90,12 +90,9 @@ public class ThreeAddressMethod {
         for(AbstractInsnNode insn : statementMap.keySet()) {
             Frame<TypeValue> frame = frameMap.get(insn);
             if(insn.getOpcode() == ATHROW && frame != null) {
-                TypeValue top = frame.getStack(frame.getStackSize() - 1);
-                Type type = top.getType();
-                if(type == null) {
-                    explicitExceptions.put(insn, "java/lang/Throwable");
-                } else {
-                    explicitExceptions.put(insn, type.getClassName().replace(".", "/"));
+                Type type = frame.getStack(frame.getStackSize() - 1).getType();
+                if(type != null) {
+                    explicitExceptions.put(insn, type.getInternalName());
                 }
             }
         }
@@ -139,14 +136,6 @@ public class ThreeAddressMethod {
             }
         }
         return builder.toString();
-    }
-
-    private static Statement[] createStatements(AbstractInsnNode instruction, Frame<TypeValue> frame) {
-        if(frame == null) {
-            return new Statement[0];
-        } else {
-            return converter.convert(instruction, frame);
-        }
     }
 
     private static List<LocalVariable> computeParameterDefinitions(MethodNode method) {
