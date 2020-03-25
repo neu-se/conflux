@@ -6,10 +6,9 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
-@SuppressWarnings("unused")
-class LoopLevelTracerTestMethods {
+class LoopLevelTracerConstancyTestMethods {
 
-    public static final String OWNER = Type.getInternalName(LoopLevelTracerTestMethods.class);
+    public static final String OWNER = Type.getInternalName(LoopLevelTracerConstancyTestMethods.class);
 
     public static MethodNode arrayFieldSelfComputation() {
         //for(/* constant */ int i = 0; i < 5; i++) {

@@ -2,6 +2,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa;
 
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.type.TypeValue;
+import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -14,6 +15,7 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressControlFlowGraphCreator;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressMethod;
+import jdk.internal.org.objectweb.asm.Opcodes;
 
 import static edu.columbia.cs.psl.phosphor.control.type.TypeValue.UNINITIALIZED_VALUE;
 
@@ -37,41 +39,46 @@ public class SSAMethod {
      */
     private final Map<AbstractInsnNode, Frame<TypeValue>> frameMap;
 
-    private final Map<VariableExpression, Expression> propagationMap;
-
     private final PropagationTransformer transformer;
 
     private final Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
 
     private final int numberOfParameters;
 
+    private final List<Type> parameterTypes;
+
     public SSAMethod(String owner, MethodNode method) throws AnalyzerException {
         ThreeAddressMethod threeAddressMethod = new ThreeAddressMethod(owner, method);
+        parameterTypes = Collections.unmodifiableList(createParameterTypes(owner, method));
         numberOfParameters = threeAddressMethod.getParameterDefinitions().size();
         FlowGraph<ThreeAddressBasicBlock> tacGraph = new ThreeAddressControlFlowGraphCreator(threeAddressMethod)
                 .createControlFlowGraph(method, threeAddressMethod.calculateExplicitExceptions());
         frameMap = Collections.unmodifiableMap(new HashMap<>(threeAddressMethod.getFrameMap()));
         placePhiFunctions(tacGraph);
         renameVariables(tacGraph, threeAddressMethod.collectDefinedVariables());
-        propagationMap = Collections.unmodifiableMap(propagateVariables(tacGraph));
-        transformer = new PropagationTransformer(propagationMap);
+        transformer = new PropagationTransformer(propagateVariables(tacGraph));
         controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, vertex -> vertex.createSSABasicBlock(transformer));
+    }
+
+    private List<Type> createParameterTypes(String owner, MethodNode method) {
+        Type[] argTypes = Type.getArgumentTypes(method.desc);
+        LinkedList<Type> types = new LinkedList<>(Arrays.asList(argTypes));
+        if((method.access & Opcodes.ACC_STATIC) == 0) {
+            types.addFirst(Type.getType("L" + owner + ";"));
+        }
+        return types;
     }
 
     public int getNumberOfParameters() {
         return numberOfParameters;
     }
 
+    public List<Type> getParameterTypes() {
+        return parameterTypes;
+    }
+
     public FlowGraph<AnnotatedBasicBlock> getControlFlowGraph() {
         return controlFlowGraph;
-    }
-
-    public Map<AbstractInsnNode, Frame<TypeValue>> getFrameMap() {
-        return frameMap;
-    }
-
-    public Map<VariableExpression, Expression> getPropagationMap() {
-        return propagationMap;
     }
 
     public Map<VariableExpression, VersionStack> getVersionStacks() {

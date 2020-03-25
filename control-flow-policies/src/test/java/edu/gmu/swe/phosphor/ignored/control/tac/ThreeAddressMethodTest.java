@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.F_NEW;
+import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.ArrayLengthOperation.ARRAY_LENGTH;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.InvocationType.*;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.NegateOperation.NEGATE;
@@ -68,7 +68,8 @@ public class ThreeAddressMethodTest {
                 new AssignmentStatement(new StackElement(2), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(3), new LocalVariable(4)),
                 new AssignmentStatement(new StackElement(4), new LocalVariable(6)),
-                new InvokeStatement(new InvokeExpression(OWNER, "example", null, new Expression[]{
+                new InvokeStatement(new InvokeExpression(OWNER, "example", "(IJFDLjava/lang/Object;)V",
+                        null, new Expression[]{
                         new StackElement(0),
                         new StackElement(1),
                         new StackElement(2),
@@ -109,37 +110,46 @@ public class ThreeAddressMethodTest {
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(0), new ArrayAccess(new StackElement(0), new StackElement(1))),
+                new AssignmentStatement(new StackElement(0), new ArrayAccess(new StackElement(0), new StackElement(1),
+                        IALOAD)),
                 //
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(1), new ArrayAccess(new StackElement(1), new StackElement(2))),
+                new AssignmentStatement(new StackElement(1), new ArrayAccess(new StackElement(1), new StackElement(2),
+                        LALOAD)),
                 //
                 new AssignmentStatement(new StackElement(2), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(3), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(2), new ArrayAccess(new StackElement(2), new StackElement(3))),
+                new AssignmentStatement(new StackElement(2), new ArrayAccess(new StackElement(2), new StackElement(3),
+                        FALOAD)),
                 //
                 new AssignmentStatement(new StackElement(3), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(4), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(3), new ArrayAccess(new StackElement(3), new StackElement(4))),
+                new AssignmentStatement(new StackElement(3), new ArrayAccess(new StackElement(3), new StackElement(4),
+                        DALOAD)),
                 //
                 new AssignmentStatement(new StackElement(4), new LocalVariable(4)),
                 new AssignmentStatement(new StackElement(5), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(4), new ArrayAccess(new StackElement(4), new StackElement(5))),
+                new AssignmentStatement(new StackElement(4), new ArrayAccess(new StackElement(4), new StackElement(5),
+                        BALOAD)),
                 //
                 new AssignmentStatement(new StackElement(5), new LocalVariable(5)),
                 new AssignmentStatement(new StackElement(6), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(5), new ArrayAccess(new StackElement(5), new StackElement(6))),
+                new AssignmentStatement(new StackElement(5), new ArrayAccess(new StackElement(5), new StackElement(6),
+                        CALOAD)),
                 //
                 new AssignmentStatement(new StackElement(6), new LocalVariable(6)),
                 new AssignmentStatement(new StackElement(7), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(6), new ArrayAccess(new StackElement(6), new StackElement(7))),
+                new AssignmentStatement(new StackElement(6), new ArrayAccess(new StackElement(6), new StackElement(7),
+                        SALOAD)),
                 //
                 new AssignmentStatement(new StackElement(7), new LocalVariable(7)),
                 new AssignmentStatement(new StackElement(8), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(7), new ArrayAccess(new StackElement(7), new StackElement(8))),
+                new AssignmentStatement(new StackElement(7), new ArrayAccess(new StackElement(7), new StackElement(8),
+                        AALOAD)),
                 //
-                new InvokeStatement(new InvokeExpression(OWNER, "example", null, new Expression[]{
+                new InvokeStatement(new InvokeExpression(OWNER, "example", "(IJFDBCSLjava/lang/Object;)V",
+                        null, new Expression[]{
                         new StackElement(0),
                         new StackElement(1),
                         new StackElement(2),
@@ -163,42 +173,50 @@ public class ThreeAddressMethodTest {
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), IASTORE),
+                        new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.L0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), LASTORE),
+                        new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.F0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), FASTORE),
+                        new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.D0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), DASTORE),
+                        new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(4)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), BASTORE),
+                        new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(5)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), CASTORE),
+                        new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(6)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), SASTORE),
+                        new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(7)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.NULL),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)), new StackElement(2)),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), AASTORE),
+                        new StackElement(2)),
                 //
                 new ReturnStatement(null)
         ));
@@ -723,9 +741,9 @@ public class ThreeAddressMethodTest {
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new AssignmentStatement(new StackElement(0), new FieldAccess(OWNER, "i", new StackElement(0))),
+                new AssignmentStatement(new StackElement(0), new FieldAccess(OWNER, "i", "I", new StackElement(0))),
                 IdleStatement.POP,
-                new AssignmentStatement(new StackElement(0), new FieldAccess(OWNER, "b", null)),
+                new AssignmentStatement(new StackElement(0), new FieldAccess(OWNER, "b", "Z", null)),
                 IdleStatement.POP,
                 new ReturnStatement(null)
         ));
@@ -739,10 +757,11 @@ public class ThreeAddressMethodTest {
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), ConstantExpression.I1),
-                new AssignmentStatement(new FieldAccess(OWNER, "b", null), new StackElement(0)),
+                new AssignmentStatement(new FieldAccess(OWNER, "b", "Z", null), new StackElement(0)),
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
-                new AssignmentStatement(new FieldAccess(OWNER, "i", new StackElement(0)), new StackElement(1)),
+                new AssignmentStatement(new FieldAccess(OWNER, "i", "I", new StackElement(0)),
+                        new StackElement(1)),
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
@@ -750,13 +769,14 @@ public class ThreeAddressMethodTest {
 
     @Test
     public void testInvokeDynamic() throws Exception {
+        String desc1 = "(Ledu/gmu/swe/phosphor/ignored/control/ssa/ThreeAddressMethodTestMethods;)Ljava/util/function/Supplier;";
         MethodNode methodNode = ThreeAddressMethodTestMethods.invokeDynamic();
         ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression(null, "get", null,
+                        new InvokeExpression(null, "get", desc1, null,
                                 new Expression[]{new StackElement(0)},
                                 INVOKE_DYNAMIC)),
                 IdleStatement.POP,
@@ -764,25 +784,27 @@ public class ThreeAddressMethodTest {
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(1), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression(null, "get", null,
-                                new Expression[]{new StackElement(0), new StackElement(1)},
+                        new InvokeExpression(null, "get", "([Ljava/lang/String;I)Ljava/util/function/Supplier;",
+                                null, new Expression[]{new StackElement(0), new StackElement(1)},
                                 INVOKE_DYNAMIC)),
                 IdleStatement.POP,
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression(null, "get", null,
+                        new InvokeExpression(null, "get", desc1, null,
                                 new Expression[]{new StackElement(0)},
                                 INVOKE_DYNAMIC)),
                 IdleStatement.POP,
                 //
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression(null, "get", null, new Expression[]{}, INVOKE_DYNAMIC)),
+                        new InvokeExpression(null, "get", "()Ljava/util/function/Supplier;",
+                                null, new Expression[]{}, INVOKE_DYNAMIC)),
                 IdleStatement.POP,
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression(null, "compare", null, new Expression[]{new StackElement(0)},
+                        new InvokeExpression(null, "compare", "(Ljava/util/Comparator;)Ljava/util/Comparator;",
+                                null, new Expression[]{new StackElement(0)},
                                 INVOKE_DYNAMIC)),
                 IdleStatement.POP,
                 //
@@ -798,7 +820,7 @@ public class ThreeAddressMethodTest {
         List<Statement> actualStatements = createStatementList(method);
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
-                new InvokeStatement(new InvokeExpression("java/lang/Runnable", "run", new StackElement(0),
+                new InvokeStatement(new InvokeExpression("java/lang/Runnable", "run", "()V", new StackElement(0),
                         new Expression[0], INVOKE_INTERFACE)),
                 new ReturnStatement(null)
         ));
@@ -813,7 +835,8 @@ public class ThreeAddressMethodTest {
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression("java/lang/Object", "toString", new StackElement(0), new Expression[0],
+                        new InvokeExpression("java/lang/Object", "toString", "()Ljava/lang/String;",
+                                new StackElement(0), new Expression[0],
                                 INVOKE_VIRTUAL)),
                 IdleStatement.POP,
                 new ReturnStatement(null)
@@ -831,7 +854,7 @@ public class ThreeAddressMethodTest {
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(2), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(0),
-                        new InvokeExpression(OWNER, "example", null, new Expression[]{
+                        new InvokeExpression(OWNER, "example", "(III)I", null, new Expression[]{
                                 new StackElement(0),
                                 new StackElement(1),
                                 new StackElement(2)
@@ -850,8 +873,8 @@ public class ThreeAddressMethodTest {
                 new AssignmentStatement(new StackElement(0), new NewExpression("java/lang/String")),
                 new AssignmentStatement(new StackElement(1), new StackElement(0)),
                 new AssignmentStatement(new StackElement(2), new LocalVariable(0)),
-                new InvokeStatement(new InvokeExpression("java/lang/String", "<init>", new StackElement(1),
-                        new Expression[]{new StackElement(2)}, INVOKE_SPECIAL)),
+                new InvokeStatement(new InvokeExpression("java/lang/String", "<init>", "([C)V",
+                        new StackElement(1), new Expression[]{new StackElement(2)}, INVOKE_SPECIAL)),
                 IdleStatement.POP,
                 new ReturnStatement(null)
         ));
@@ -1114,7 +1137,8 @@ public class ThreeAddressMethodTest {
             expectedStatements.add(new AssignmentStatement(new StackElement(i),
                     new BinaryExpression(operation, new StackElement(i), new StackElement(i + 1))));
         }
-        expectedStatements.add(new InvokeStatement(new InvokeExpression(OWNER, "example", null, new Expression[]{
+        expectedStatements.add(new InvokeStatement(new InvokeExpression(OWNER, "example", "(IJFD)V",
+                null, new Expression[]{
                 new StackElement(0),
                 new StackElement(1),
                 new StackElement(2),

@@ -6,16 +6,18 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class FieldAccess implements Expression {
 
-    public final String owner;
-    public final String name;
-    public final Expression receiver;
+    private final String owner;
+    private final String name;
+    private final String desc;
+    private final Expression receiver;
 
-    public FieldAccess(String owner, String name, Expression receiver) {
-        if(owner == null || name == null) {
+    public FieldAccess(String owner, String name, String desc, Expression receiver) {
+        if(owner == null || name == null || desc == null) {
             throw new NullPointerException();
         }
         this.owner = owner;
         this.name = name;
+        this.desc = desc;
         this.receiver = receiver;
     }
 
@@ -25,6 +27,10 @@ public final class FieldAccess implements Expression {
 
     public String getName() {
         return name;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 
     public Expression getReceiver() {
@@ -54,6 +60,9 @@ public final class FieldAccess implements Expression {
         if(!name.equals(that.name)) {
             return false;
         }
+        if(!desc.equals(that.desc)) {
+            return false;
+        }
         return receiver != null ? receiver.equals(that.receiver) : that.receiver == null;
     }
 
@@ -61,6 +70,7 @@ public final class FieldAccess implements Expression {
     public int hashCode() {
         int result = owner.hashCode();
         result = 31 * result + name.hashCode();
+        result = 31 * result + desc.hashCode();
         result = 31 * result + (receiver != null ? receiver.hashCode() : 0);
         return result;
     }
@@ -75,7 +85,7 @@ public final class FieldAccess implements Expression {
         if(receiver == null) {
             return this;
         } else {
-            return new FieldAccess(owner, name, receiver.transform(transformer));
+            return new FieldAccess(owner, name, desc, receiver.transform(transformer));
         }
     }
 }

@@ -98,11 +98,11 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         instructions = methodNode.instructions;
         try {
             if(instructions.size() > 0) {
+                tracer = new LoopLevelTracer(owner, methodNode);
                 Set<BindingBranchEdge> bindingEdges = new HashSet<>();
-                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges);
+                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, tracer);
                 controlFlowGraph = creator.createControlFlowGraph(methodNode);
                 containingLoopMap = calculateContainingLoops();
-                tracer = new LoopLevelTracer(owner, methodNode);
                 bindingEdges = processBindingEdges(bindingEdges);
                 markBranchEnds(bindingEdges);
                 markBranchStarts(bindingEdges);
@@ -480,19 +480,30 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
          */
         private final Set<? super BindingBranchEdge> bindingBranchEdges;
 
-        BindingControlFlowGraphCreator(Set<? super BindingBranchEdge> bindingBranchEdges) {
+        /**
+         * Used to determine whether an IFEQ or IFNE instruction has a boolean condition
+         */
+        private final LoopLevelTracer tracer;
+
+        BindingControlFlowGraphCreator(Set<? super BindingBranchEdge> bindingBranchEdges, LoopLevelTracer tracer) {
             this.bindingBranchEdges = bindingBranchEdges;
+            this.tracer = tracer;
         }
 
         @Override
         protected void addBranchTakenEdge(BasicBlock source, BasicBlock target) {
-            switch(source.getLastInsn().getOpcode()) {
-                case IFEQ:
-                case IFNE:
+            AbstractInsnNode insn = source.getLastInsn();
+            switch(insn.getOpcode()) {
                 case IF_ICMPEQ:
                 case IF_ACMPEQ:
+                case IFEQ:
                     addBindingBranchEdge(source, target, true);
                     break;
+                case IFNE:
+                    if(tracer.isDoubleBindingConditionalBranch(insn)) {
+                        addBindingBranchEdge(source, target, false);
+                        break;
+                    }
                 default:
                     super.addBranchTakenEdge(source, target);
             }
@@ -500,13 +511,18 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
         @Override
         protected void addBranchNotTakenEdge(BasicBlock source, BasicBlock target) {
-            switch(source.getLastInsn().getOpcode()) {
-                case IFEQ:
+            AbstractInsnNode insn = source.getLastInsn();
+            switch(insn.getOpcode()) {
                 case IFNE:
                 case IF_ICMPNE:
                 case IF_ACMPNE:
                     addBindingBranchEdge(source, target, false);
                     break;
+                case IFEQ:
+                    if(tracer.isDoubleBindingConditionalBranch(insn)) {
+                        addBindingBranchEdge(source, target, false);
+                        break;
+                    }
                 default:
                     super.addBranchNotTakenEdge(source, target);
             }

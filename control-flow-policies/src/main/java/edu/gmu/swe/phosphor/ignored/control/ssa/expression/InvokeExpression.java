@@ -1,10 +1,11 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
+
+import java.util.Arrays;
 
 public final class InvokeExpression implements Expression {
 
@@ -17,6 +18,11 @@ public final class InvokeExpression implements Expression {
      * The name of the method, non-null.
      */
     private final String name;
+
+    /**
+     * The descriptor of the method, non-null.
+     */
+    private final String desc;
 
     /**
      * The receiver instance of the method call for INVOKEVIRTUAL, INVOKESPECIAL and INVOKEINTERFACE instructions.
@@ -34,8 +40,8 @@ public final class InvokeExpression implements Expression {
      */
     private final InvocationType type;
 
-    public InvokeExpression(String owner, String name, Expression receiver, Expression[] arguments, InvocationType type) {
-        if(name == null || type == null) {
+    public InvokeExpression(String owner, String name, String desc, Expression receiver, Expression[] arguments, InvocationType type) {
+        if(name == null || type == null || desc == null) {
             throw new NullPointerException();
         }
         switch(type) {
@@ -69,6 +75,7 @@ public final class InvokeExpression implements Expression {
         }
         this.owner = owner;
         this.name = name;
+        this.desc = desc;
         this.receiver = receiver;
         this.arguments = arguments.clone();
         this.type = type;
@@ -80,6 +87,10 @@ public final class InvokeExpression implements Expression {
 
     public String getName() {
         return name;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 
     public Expression getReceiver() {
@@ -131,6 +142,9 @@ public final class InvokeExpression implements Expression {
         if(!name.equals(that.name)) {
             return false;
         }
+        if(!desc.equals(that.desc)) {
+            return false;
+        }
         if(receiver != null ? !receiver.equals(that.receiver) : that.receiver != null) {
             return false;
         }
@@ -144,6 +158,7 @@ public final class InvokeExpression implements Expression {
     public int hashCode() {
         int result = owner != null ? owner.hashCode() : 0;
         result = 31 * result + name.hashCode();
+        result = 31 * result + desc.hashCode();
         result = 31 * result + (receiver != null ? receiver.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(arguments);
         result = 31 * result + type.hashCode();
@@ -165,6 +180,6 @@ public final class InvokeExpression implements Expression {
         for(int i = 0; i < arguments.length; i++) {
             processedArguments[i] = arguments[i].transform(transformer);
         }
-        return new InvokeExpression(owner, name, processedReceiver, processedArguments, type);
+        return new InvokeExpression(owner, name, desc, processedReceiver, processedArguments, type);
     }
 }

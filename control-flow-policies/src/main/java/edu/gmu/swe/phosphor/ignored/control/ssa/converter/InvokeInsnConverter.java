@@ -54,7 +54,7 @@ public class InvokeInsnConverter extends InsnConverter {
             receiver = new StackElement(frame.getStackSize() - arguments.size() - 1);
             popCount++;
         }
-        InvokeExpression expr = new InvokeExpression(owner, name, receiver, arguments.toArray(new Expression[0]), type);
+        InvokeExpression expr = new InvokeExpression(owner, name, desc, receiver, arguments.toArray(new Expression[0]), type);
         Statement statement;
         if(Type.getReturnType(desc) == Type.VOID_TYPE) {
             statement = new InvokeStatement(expr);
