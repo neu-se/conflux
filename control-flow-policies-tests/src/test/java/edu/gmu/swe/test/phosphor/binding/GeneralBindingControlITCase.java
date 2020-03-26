@@ -6,6 +6,8 @@ import edu.gmu.swe.test.phosphor.BaseMultiTaintClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.BitSet;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -150,6 +152,23 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
                 assertTaintHasOnlyLabel(MultiTainter.getTaint(c[i]), 0);
             }
         }
+    }
+
+    @Test
+    public void testBitSetGetTrue() {
+        BitSet b = new BitSet(10);
+        b.set(0);
+        int i = MultiTainter.taintedInt(0, 0);
+        boolean z = b.get(i);
+        assertTaintHasOnlyLabel(MultiTainter.getTaint(z), 0);
+    }
+
+    @Test
+    public void testBitSetGetFalse() {
+        BitSet b = new BitSet(10);
+        int i = MultiTainter.taintedInt(0, 0);
+        boolean z = b.get(i);
+        assertNullOrEmpty(MultiTainter.getTaint(z));
     }
 
     @Ignore(value = "Loop formed via recursive call")

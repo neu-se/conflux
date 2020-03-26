@@ -338,6 +338,9 @@ public class LoopLevelTracer {
                 case GREATER_THAN:
                 case GREATER_THAN_OR_EQUAL:
                 case LESS_THAN_OR_EQUAL:
+                case COMPARE:
+                case COMPARE_G:
+                case COMPARE_L:
                     return true;
                 case ADD:
                 case SUBTRACT:
@@ -347,9 +350,6 @@ public class LoopLevelTracer {
                 case SHIFT_LEFT:
                 case SHIFT_RIGHT:
                 case SHIFT_RIGHT_UNSIGNED:
-                case COMPARE:
-                case COMPARE_G:
-                case COMPARE_L:
                     return false;
             }
         } else if(e instanceof FieldAccess) {

@@ -47,23 +47,6 @@ public class ArrayIndexFlowBench {
         }
     }
 
-    /**
-     * Base64 encodes and then decodes a string using java.util.Base64. Checks that the output is labeled the same as
-     * the input.
-     */
-    @FlowBench(requiresBitLevelPrecision = true)
-    public void testBase64RoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
-        String value = "Lorem ipsum dolor sit amett"; // Note: length of value is divisible by 3
-        byte[] input = taintWithIndices((value + value).getBytes(), policy);
-        byte[] output = Base64.getDecoder().decode(Base64.getEncoder().encode(input.clone()));
-        for(int inputIndex = 0; inputIndex < input.length; inputIndex++) {
-            if(policy.inTaintedRange(inputIndex, input.length)) {
-                benchResult.check(Collections.singletonList(inputIndex), output[inputIndex]);
-            } else {
-                benchResult.checkEmpty(output[inputIndex]);
-            }
-        }
-    }
 
     /**
      * Base64 encodes a string using java.util.Base64. Checks that the union of the tags on groups of four output
