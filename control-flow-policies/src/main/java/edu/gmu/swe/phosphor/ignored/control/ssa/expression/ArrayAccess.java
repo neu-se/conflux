@@ -1,6 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.control.OpcodesUtil;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
@@ -9,18 +8,13 @@ public final class ArrayAccess implements Expression {
 
     private final Expression arrayRef;
     private final Expression index;
-    private final int originalOpcode;
 
-    public ArrayAccess(Expression arrayRef, Expression index, int originalOpcode) {
+    public ArrayAccess(Expression arrayRef, Expression index) {
         if(arrayRef == null || index == null) {
             throw new NullPointerException();
         }
-        if(!OpcodesUtil.isArrayStore(originalOpcode) && !OpcodesUtil.isArrayLoad(originalOpcode)) {
-            throw new IllegalArgumentException();
-        }
         this.arrayRef = arrayRef;
         this.index = index;
-        this.originalOpcode = originalOpcode;
     }
 
     @Override
@@ -57,10 +51,6 @@ public final class ArrayAccess implements Expression {
         return index;
     }
 
-    public int getOriginalOpcode() {
-        return originalOpcode;
-    }
-
     @Override
     public List<VariableExpression> referencedVariables() {
         return Statement.gatherVersionedExpressions(arrayRef, index);
@@ -68,6 +58,6 @@ public final class ArrayAccess implements Expression {
 
     @Override
     public ArrayAccess transform(VariableTransformer transformer) {
-        return new ArrayAccess(arrayRef.transform(transformer), index.transform(transformer), originalOpcode);
+        return new ArrayAccess(arrayRef.transform(transformer), index.transform(transformer));
     }
 }

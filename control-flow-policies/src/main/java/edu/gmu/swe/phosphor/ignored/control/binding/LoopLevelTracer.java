@@ -3,12 +3,10 @@ package edu.gmu.swe.phosphor.ignored.control.binding;
 import edu.columbia.cs.psl.phosphor.control.OpcodesUtil;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil;
 import edu.gmu.swe.phosphor.ignored.control.binding.ConstancyLevel.ConstantLevel;
@@ -37,9 +35,9 @@ public class LoopLevelTracer {
     private final Map<VariableExpression, AbstractInsnNode> rawDefinitionInsnMap = new HashMap<>();
     private final Map<VariableExpression, Set<Statement>> rawUsesMap = new HashMap<>();
 
-    public LoopLevelTracer(String owner, MethodNode methodNode) throws AnalyzerException {
+    public LoopLevelTracer(MethodNode methodNode, SSAMethod ssaMethod) {
         this.methodNode = methodNode;
-        ssaMethod = new SSAMethod(owner, methodNode);
+        this.ssaMethod = ssaMethod;
         graph = ssaMethod.getControlFlowGraph();
         containingLoops = FlowGraphUtil.calculateContainingLoops(graph);
         initializeMaps();
@@ -155,7 +153,7 @@ public class LoopLevelTracer {
                         } else if(processedStatement instanceof ReturnStatement) {
                             cl2 = calculateConstancyLevel(((ReturnStatement) processedStatement).getReturnValue(), candidateLoops);
                             // Add a dependency on the return value
-                            cl2 = ConstancyLevel.merge(cl2, new ParameterDependent(ssaMethod.getNumberOfParameters()));
+                            cl2 = ConstancyLevel.merge(cl2, new ParameterDependent(ssaMethod.getParameterTypes().size()));
                         }
                         cl = ConstancyLevel.merge(cl, cl2);
                     }
@@ -291,137 +289,6 @@ public class LoopLevelTracer {
         return loopLevelMap;
     }
 
-    public boolean isDoubleBindingConditionalBranch(AbstractInsnNode insn) {
-        if(!insnMap.containsKey(insn)) {
-            return false;
-        }
-        AnnotatedInstruction ai = insnMap.get(insn);
-        List<Statement> processedStatements = ai.getProcessedStatements();
-        if(processedStatements.size() != 1 || !(processedStatements.get(0) instanceof IfStatement)) {
-            return false;
-        }
-        Expression condition = ((IfStatement) processedStatements.get(0)).getCondition();
-        if(condition instanceof BinaryExpression) {
-            BinaryExpression be = (BinaryExpression) condition;
-            switch(be.getOperation()) {
-                case EQUAL:
-                case NOT_EQUAL:
-                case LESS_THAN:
-                case GREATER_THAN:
-                case GREATER_THAN_OR_EQUAL:
-                case LESS_THAN_OR_EQUAL:
-                    return couldBeBoolean(be.getOperand1()) && couldBeBoolean(be.getOperand2());
-            }
-        }
-        return false;
-    }
-
-    private boolean couldBeBoolean(Expression e) {
-        if(e instanceof CaughtExceptionExpression
-                || e instanceof DoubleConstantExpression
-                || e instanceof FloatConstantExpression
-                || e instanceof LongConstantExpression
-                || e instanceof ObjectConstantExpression
-                || e instanceof NewArrayExpression
-                || e instanceof NewExpression) {
-            return false;
-        } else if(e instanceof BinaryExpression) {
-            BinaryExpression be = (BinaryExpression) e;
-            switch(be.getOperation()) {
-                case BITWISE_OR:
-                case BITWISE_AND:
-                case BITWISE_XOR:
-                    return couldBeBoolean(be.getOperand1()) && couldBeBoolean(be.getOperand2());
-                case EQUAL:
-                case NOT_EQUAL:
-                case LESS_THAN:
-                case GREATER_THAN:
-                case GREATER_THAN_OR_EQUAL:
-                case LESS_THAN_OR_EQUAL:
-                case COMPARE:
-                case COMPARE_G:
-                case COMPARE_L:
-                    return true;
-                case ADD:
-                case SUBTRACT:
-                case MULTIPLY:
-                case DIVIDE:
-                case REMAINDER:
-                case SHIFT_LEFT:
-                case SHIFT_RIGHT:
-                case SHIFT_RIGHT_UNSIGNED:
-                    return false;
-            }
-        } else if(e instanceof FieldAccess) {
-            String desc = ((FieldAccess) e).getDesc();
-            return Type.getType(desc).getSort() == Type.BOOLEAN;
-        } else if(e instanceof IntegerConstantExpression) {
-            int constant = ((IntegerConstantExpression) e).getConstant();
-            return constant == 0 || constant == 1;
-        } else if(e instanceof InvokeExpression) {
-            String desc = ((InvokeExpression) e).getDesc();
-            return Type.getReturnType(desc).getSort() == Type.BOOLEAN;
-        } else if(e instanceof ParameterExpression) {
-            int paramNumber = ((ParameterExpression) e).getParameterNumber();
-            return ssaMethod.getParameterTypes().get(paramNumber).getSort() == Type.BOOLEAN;
-        } else if(e instanceof PhiFunction) {
-            // TODO
-            return true;
-        } else if(e instanceof UnaryExpression) {
-            return ((UnaryExpression) e).getOperation() instanceof InstanceOfOperation;
-        } else if(e instanceof VariableExpression && rawDefinitionValues.containsKey(e)) {
-            Expression processed = rawDefinitionValues.get(e).transform(ssaMethod.getTransformer(), (VariableExpression) e);
-            return couldBeBoolean(processed);
-        } else if(e instanceof ArrayAccess) {
-            Expression arrRef = ((ArrayAccess) e).getArrayRef();
-            return couldBeBooleanArray(arrRef, 1);
-        }
-        return true;
-    }
-
-    private boolean couldBeBooleanArray(Expression e, int dimensions) {
-        if(e instanceof NewArrayExpression) {
-            NewArrayExpression nae = (NewArrayExpression) e;
-            return nae.getDims().length == dimensions && nae.getType().getSort() == Type.BOOLEAN;
-        } else if(e instanceof FieldAccess) {
-            Type type = Type.getType(((FieldAccess) e).getDesc());
-            return couldBeBooleanArray(type, dimensions);
-        } else if(e instanceof InvokeExpression) {
-            Type type = Type.getReturnType(((InvokeExpression) e).getDesc());
-            return couldBeBooleanArray(type, dimensions);
-        } else if(e instanceof ParameterExpression) {
-            int paramNumber = ((ParameterExpression) e).getParameterNumber();
-            Type type = ssaMethod.getParameterTypes().get(paramNumber);
-            return couldBeBooleanArray(type, dimensions);
-        } else if(e instanceof PhiFunction) {
-            // TODO
-            return true;
-        } else if(e instanceof UnaryExpression) {
-            UnaryExpression ue = (UnaryExpression) e;
-            if(ue.getOperation() instanceof CastOperation) {
-                String desc = ((CastOperation) ue.getOperation()).getDesc();
-                Type type = Type.getType(desc);
-                return couldBeBooleanArray(type, dimensions);
-            }
-            return false;
-        } else if(e instanceof VariableExpression && rawDefinitionValues.containsKey(e)) {
-            Expression processed = rawDefinitionValues.get(e).transform(ssaMethod.getTransformer(), (VariableExpression) e);
-            return couldBeBooleanArray(processed, dimensions);
-        } else if(e instanceof ArrayAccess) {
-            Expression arrRef = ((ArrayAccess) e).getArrayRef();
-            return couldBeBooleanArray(arrRef, dimensions + 1);
-        }
-        return false;
-    }
-
-    private boolean couldBeBooleanArray(Type type, int dimensions) {
-        if(type.getSort() == Type.OBJECT) {
-            return type.equals(Type.getType(Object.class));
-        } else if(type.getSort() == Type.ARRAY) {
-            return type.getDimensions() == dimensions && type.getElementType().getSort() == Type.BOOLEAN;
-        }
-        return false;
-    }
 
     private ConstancyLevel calculateMaximumOfDirectUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops,
                                                         boolean includeMethodUses) {
@@ -443,7 +310,7 @@ public class LoopLevelTracer {
                         return new LoopVariant(candidateLoops);
                     }
                 } else if(s instanceof ReturnStatement) {
-                    cl = ConstancyLevel.merge(cl, new ParameterDependent(ssaMethod.getNumberOfParameters()));
+                    cl = ConstancyLevel.merge(cl, new ParameterDependent(ssaMethod.getParameterTypes().size()));
                 } else if(s instanceof InvokeStatement && includeMethodUses) {
                     return new LoopVariant(candidateLoops);
                 }

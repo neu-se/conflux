@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.binding;
+package edu.gmu.swe.phosphor.ignored.control.ssa;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
@@ -9,10 +9,10 @@ import org.junit.Test;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.IFEQ;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.IFNE;
-import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevelTracerBooleanConditionTestMethods.*;
+import static edu.gmu.swe.phosphor.ignored.control.ssa.TypeAnalyzerTestMethods.*;
 import static junit.framework.TestCase.assertSame;
 
-public class LoopLevelTracerBooleanConditionTest {
+public class TypeAnalyzerTest {
 
     @Test
     public void testBooleanReturnValue() throws AnalyzerException {
@@ -60,8 +60,7 @@ public class LoopLevelTracerBooleanConditionTest {
 
     @Test
     public void testBooleanConstant() throws AnalyzerException {
-        // False because branch outcome is always the same
-        checkConditionalBranches(booleanConstant(), false);
+        checkConditionalBranches(booleanConstant(), true);
     }
 
     @Test
@@ -93,11 +92,11 @@ public class LoopLevelTracerBooleanConditionTest {
     }
 
     private static void checkConditionalBranches(MethodNode mn, boolean expected) throws AnalyzerException {
-        LoopLevelTracer tracer = new LoopLevelTracer(OWNER, mn);
+        TypeAnalyzer analyzer = new TypeAnalyzer(new SSAMethod(OWNER, mn));
         List<AbstractInsnNode> conditionalBranches = ControlAnalysisTestUtil.filterInstructions(mn,
                 (i) -> i.getOpcode() == IFEQ || i.getOpcode() == IFNE);
         for(AbstractInsnNode insn : conditionalBranches) {
-            assertSame(expected, tracer.isDoubleBindingConditionalBranch(insn));
+            assertSame(expected, analyzer.isDoubleBindingBranch(insn));
         }
     }
 }

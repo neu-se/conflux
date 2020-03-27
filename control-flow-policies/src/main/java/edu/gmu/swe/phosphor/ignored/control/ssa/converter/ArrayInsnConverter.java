@@ -27,14 +27,14 @@ public class ArrayInsnConverter extends InsnConverter {
             StackElement arrayRef = new StackElement(frame.getStackSize() - 3);
             StackElement index = new StackElement(frame.getStackSize() - 2);
             StackElement value = new StackElement(frame.getStackSize() - 1);
-            Statement statement = new AssignmentStatement(new ArrayAccess(arrayRef, index, insn.getOpcode()), value);
+            Statement statement = new AssignmentStatement(new ArrayAccess(arrayRef, index), value);
             return new Statement[]{statement};
         } else if(OpcodesUtil.isArrayLoad(insn.getOpcode())) {
             // arrayref index
             StackElement arrayRef = new StackElement(frame.getStackSize() - 2);
             StackElement index = new StackElement(frame.getStackSize() - 1);
             Statement statement = new AssignmentStatement(new StackElement(frame.getStackSize() - 2),
-                    new ArrayAccess(arrayRef, index, insn.getOpcode()));
+                    new ArrayAccess(arrayRef, index));
             return new Statement[]{statement};
         } else {
             throw new IllegalArgumentException();

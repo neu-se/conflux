@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.binding;
+package edu.gmu.swe.phosphor.ignored.control.ssa;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
@@ -6,9 +6,9 @@ import jdk.nashorn.internal.codegen.types.Type;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
-public class LoopLevelTracerBooleanConditionTestMethods {
+public class TypeAnalyzerTestMethods {
 
-    public static final String OWNER = Type.getInternalName(LoopLevelTracerBooleanConditionTestMethods.class);
+    public static final String OWNER = Type.getInternalName(TypeAnalyzerTestMethods.class);
 
     public static MethodNode booleanReturnValue() {
         //public static void booleanReturnValue() {

@@ -110,43 +110,43 @@ public class ThreeAddressMethodTest {
         List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(0), new ArrayAccess(new StackElement(0), new StackElement(1),
-                        IALOAD)),
+                new AssignmentStatement(new StackElement(0), new ArrayAccess(new StackElement(0), new StackElement(1)
+                )),
                 //
                 new AssignmentStatement(new StackElement(1), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(1), new ArrayAccess(new StackElement(1), new StackElement(2),
-                        LALOAD)),
+                new AssignmentStatement(new StackElement(1), new ArrayAccess(new StackElement(1), new StackElement(2)
+                )),
                 //
                 new AssignmentStatement(new StackElement(2), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(3), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(2), new ArrayAccess(new StackElement(2), new StackElement(3),
-                        FALOAD)),
+                new AssignmentStatement(new StackElement(2), new ArrayAccess(new StackElement(2), new StackElement(3)
+                )),
                 //
                 new AssignmentStatement(new StackElement(3), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(4), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(3), new ArrayAccess(new StackElement(3), new StackElement(4),
-                        DALOAD)),
+                new AssignmentStatement(new StackElement(3), new ArrayAccess(new StackElement(3), new StackElement(4)
+                )),
                 //
                 new AssignmentStatement(new StackElement(4), new LocalVariable(4)),
                 new AssignmentStatement(new StackElement(5), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(4), new ArrayAccess(new StackElement(4), new StackElement(5),
-                        BALOAD)),
+                new AssignmentStatement(new StackElement(4), new ArrayAccess(new StackElement(4), new StackElement(5)
+                )),
                 //
                 new AssignmentStatement(new StackElement(5), new LocalVariable(5)),
                 new AssignmentStatement(new StackElement(6), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(5), new ArrayAccess(new StackElement(5), new StackElement(6),
-                        CALOAD)),
+                new AssignmentStatement(new StackElement(5), new ArrayAccess(new StackElement(5), new StackElement(6)
+                )),
                 //
                 new AssignmentStatement(new StackElement(6), new LocalVariable(6)),
                 new AssignmentStatement(new StackElement(7), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(6), new ArrayAccess(new StackElement(6), new StackElement(7),
-                        SALOAD)),
+                new AssignmentStatement(new StackElement(6), new ArrayAccess(new StackElement(6), new StackElement(7)
+                )),
                 //
                 new AssignmentStatement(new StackElement(7), new LocalVariable(7)),
                 new AssignmentStatement(new StackElement(8), ConstantExpression.I0),
-                new AssignmentStatement(new StackElement(7), new ArrayAccess(new StackElement(7), new StackElement(8),
-                        AALOAD)),
+                new AssignmentStatement(new StackElement(7), new ArrayAccess(new StackElement(7), new StackElement(8)
+                )),
                 //
                 new InvokeStatement(new InvokeExpression(OWNER, "example", "(IJFDBCSLjava/lang/Object;)V",
                         null, new Expression[]{
@@ -173,49 +173,49 @@ public class ThreeAddressMethodTest {
                 new AssignmentStatement(new StackElement(0), new LocalVariable(0)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), IASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(1)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.L0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), LASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(2)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.F0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), FASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(3)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.D0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), DASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(4)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), BASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(5)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), CASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(6)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.I0),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), SASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new AssignmentStatement(new StackElement(0), new LocalVariable(7)),
                 new AssignmentStatement(new StackElement(1), ConstantExpression.I0),
                 new AssignmentStatement(new StackElement(2), ConstantExpression.NULL),
-                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1), AASTORE),
+                new AssignmentStatement(new ArrayAccess(new StackElement(0), new StackElement(1)),
                         new StackElement(2)),
                 //
                 new ReturnStatement(null)

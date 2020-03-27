@@ -154,6 +154,7 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
         }
     }
 
+    @Ignore
     @Test
     public void testBitSetGetTrue() {
         BitSet b = new BitSet(10);

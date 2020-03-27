@@ -43,14 +43,14 @@ public class SSAMethod {
 
     private final Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
 
-    private final int numberOfParameters;
-
     private final List<Type> parameterTypes;
+
+    private final Type returnType;
 
     public SSAMethod(String owner, MethodNode method) throws AnalyzerException {
         ThreeAddressMethod threeAddressMethod = new ThreeAddressMethod(owner, method);
         parameterTypes = Collections.unmodifiableList(createParameterTypes(owner, method));
-        numberOfParameters = threeAddressMethod.getParameterDefinitions().size();
+        returnType = Type.getReturnType(method.desc);
         FlowGraph<ThreeAddressBasicBlock> tacGraph = new ThreeAddressControlFlowGraphCreator(threeAddressMethod)
                 .createControlFlowGraph(method, threeAddressMethod.calculateExplicitExceptions());
         frameMap = Collections.unmodifiableMap(new HashMap<>(threeAddressMethod.getFrameMap()));
@@ -60,17 +60,12 @@ public class SSAMethod {
         controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, vertex -> vertex.createSSABasicBlock(transformer));
     }
 
-    private List<Type> createParameterTypes(String owner, MethodNode method) {
-        Type[] argTypes = Type.getArgumentTypes(method.desc);
-        LinkedList<Type> types = new LinkedList<>(Arrays.asList(argTypes));
-        if((method.access & Opcodes.ACC_STATIC) == 0) {
-            types.addFirst(Type.getType("L" + owner + ";"));
-        }
-        return types;
+    public Map<AbstractInsnNode, Frame<TypeValue>> getFrameMap() {
+        return frameMap;
     }
 
-    public int getNumberOfParameters() {
-        return numberOfParameters;
+    public Type getReturnType() {
+        return returnType;
     }
 
     public List<Type> getParameterTypes() {
@@ -87,6 +82,15 @@ public class SSAMethod {
 
     public PropagationTransformer getTransformer() {
         return transformer;
+    }
+
+    private List<Type> createParameterTypes(String owner, MethodNode method) {
+        Type[] argTypes = Type.getArgumentTypes(method.desc);
+        LinkedList<Type> types = new LinkedList<>(Arrays.asList(argTypes));
+        if((method.access & Opcodes.ACC_STATIC) == 0) {
+            types.addFirst(Type.getObjectType(owner));
+        }
+        return types;
     }
 
     private void placePhiFunctions(FlowGraph<ThreeAddressBasicBlock> tacGraph) {

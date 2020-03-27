@@ -15,6 +15,10 @@ public final class NewExpression implements Expression {
         this.desc = desc;
     }
 
+    public String getDesc() {
+        return desc;
+    }
+
     @Override
     public String toString() {
         return String.format("(new %s)", desc);

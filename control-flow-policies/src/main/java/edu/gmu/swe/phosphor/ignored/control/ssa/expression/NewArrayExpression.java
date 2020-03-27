@@ -13,12 +13,7 @@ public final class NewArrayExpression implements Expression {
     private final Expression[] dims;
 
     public NewArrayExpression(String desc, Expression dim) {
-        if(desc == null || dim == null) {
-            throw new NullPointerException();
-        }
-        this.desc = desc;
-        this.type = Type.getType(desc);
-        this.dims = new Expression[]{dim};
+        this(desc, new Expression[]{dim});
     }
 
     public NewArrayExpression(String desc, Expression[] dims) {
@@ -28,10 +23,6 @@ public final class NewArrayExpression implements Expression {
         this.desc = desc;
         this.type = Type.getType(desc);
         this.dims = dims.clone();
-    }
-
-    public String getDesc() {
-        return desc;
     }
 
     public Type getType() {

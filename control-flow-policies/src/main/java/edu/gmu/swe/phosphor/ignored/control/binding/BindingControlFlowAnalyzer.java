@@ -10,6 +10,8 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
+import edu.gmu.swe.phosphor.ignored.control.ssa.TypeAnalyzer;
 
 import java.util.Iterator;
 
@@ -76,6 +78,11 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     private LoopLevelTracer tracer;
 
     /**
+     * Used to infer basic type information about expressions
+     */
+    private TypeAnalyzer typeAnalyzer;
+
+    /**
      * A mapping between each instruction in the method and the natural loops that contain it
      */
     private Map<AbstractInsnNode, Set<NaturalLoop<BasicBlock>>> containingLoopMap;
@@ -90,6 +97,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     }
 
     /**
+     * @param owner      the internal name of the declaring class of the method to be analyzed
      * @param methodNode the method to be analyzed and possibly modified
      */
     @Override
@@ -98,9 +106,11 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         instructions = methodNode.instructions;
         try {
             if(instructions.size() > 0) {
-                tracer = new LoopLevelTracer(owner, methodNode);
+                SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
+                tracer = new LoopLevelTracer(methodNode, ssaMethod);
+                typeAnalyzer = new TypeAnalyzer(ssaMethod);
                 Set<BindingBranchEdge> bindingEdges = new HashSet<>();
-                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, tracer);
+                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, typeAnalyzer);
                 controlFlowGraph = creator.createControlFlowGraph(methodNode);
                 containingLoopMap = calculateContainingLoops();
                 bindingEdges = processBindingEdges(bindingEdges);
@@ -113,7 +123,6 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         } catch(AnalyzerException e) {
             numberOfUniqueBranchIDs = 0;
         }
-
     }
 
     /**
@@ -483,11 +492,11 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         /**
          * Used to determine whether an IFEQ or IFNE instruction has a boolean condition
          */
-        private final LoopLevelTracer tracer;
+        private final TypeAnalyzer typeAnalyzer;
 
-        BindingControlFlowGraphCreator(Set<? super BindingBranchEdge> bindingBranchEdges, LoopLevelTracer tracer) {
+        BindingControlFlowGraphCreator(Set<? super BindingBranchEdge> bindingBranchEdges, TypeAnalyzer typeAnalyzer) {
             this.bindingBranchEdges = bindingBranchEdges;
-            this.tracer = tracer;
+            this.typeAnalyzer = typeAnalyzer;
         }
 
         @Override
@@ -500,7 +509,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                     addBindingBranchEdge(source, target, true);
                     break;
                 case IFNE:
-                    if(tracer.isDoubleBindingConditionalBranch(insn)) {
+                    if(typeAnalyzer.isDoubleBindingBranch(insn)) {
                         addBindingBranchEdge(source, target, false);
                         break;
                     }
@@ -519,7 +528,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                     addBindingBranchEdge(source, target, false);
                     break;
                 case IFEQ:
-                    if(tracer.isDoubleBindingConditionalBranch(insn)) {
+                    if(typeAnalyzer.isDoubleBindingBranch(insn)) {
                         addBindingBranchEdge(source, target, false);
                         break;
                     }
