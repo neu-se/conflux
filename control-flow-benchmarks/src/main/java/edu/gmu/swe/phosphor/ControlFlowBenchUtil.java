@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
@@ -13,7 +15,7 @@ import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 public class ControlFlowBenchUtil {
 
     public static void checkBaseNEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy, int n,
-                                        Function<byte[], byte[]> encoder) {
+                                        UnaryOperator<byte[]> encoder) {
         int bitsPerChar = 8;
         int bitsPerPack = 31 - Integer.numberOfLeadingZeros(n); // floor(log_2(x)), if x > 0
         int gcd = gcd(bitsPerChar, bitsPerPack);
@@ -44,7 +46,7 @@ public class ControlFlowBenchUtil {
     }
 
     public static void checkBaseNDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy, int n,
-                                        Function<byte[], byte[]> encoder, Function<byte[], byte[]> decoder) {
+                                        UnaryOperator<byte[]> encoder, Function<byte[], byte[]> decoder) {
         int bitsPerChar = 8;
         int bitsPerPack = 31 - Integer.numberOfLeadingZeros(n); // floor(log_2(x)), if x > 0
         int gcd = gcd(bitsPerChar, bitsPerPack);
