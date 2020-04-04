@@ -233,4 +233,28 @@ public class ControlFlowBenchUtil {
             benchResult.check(expected, output.charAt(outputIndex++));
         }
     }
+
+    /**
+     * Checks taint propagation when escaping HTML reserved characters by replacing them with named character entities.
+     */
+    public static void checkEscapeHtml(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+                                       UnaryOperator<String> escaper) {
+        String input = "\"&<>";
+        input = taintWithIndices(input + input, policy);
+        String output = escaper.apply(input);
+        List<Integer> outputCharsPerInput = Arrays.asList(6, 5, 4, 4, 6, 5, 4, 4);
+        checkOneInputToManyOutputs(benchResult, policy, output, outputCharsPerInput);
+    }
+
+    /**
+     * Checks taint propagation when unescaping named character entities to HTML reserved characters;
+     */
+    public static void checkUnescapeHtml(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+                                         UnaryOperator<String> unescaper) {
+        String input = "&quot;&amp;&lt;&gt;";
+        input = taintWithIndices(input + input, policy);
+        String output = unescaper.apply(input);
+        List<Integer> inputCharsPerOutput = Arrays.asList(6, 5, 4, 4, 6, 5, 4, 4);
+        checkManyInputsToOneOutput(benchResult, policy, output, inputCharsPerOutput);
+    }
 }
