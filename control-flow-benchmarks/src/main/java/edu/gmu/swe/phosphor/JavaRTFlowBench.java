@@ -50,7 +50,6 @@ public class JavaRTFlowBench {
     @FlowBench
     public void urlEncodeReserved(FlowBenchResultImpl benchResult) {
         checkPercentEncodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
-
     }
 
     @FlowBench

@@ -1,14 +1,20 @@
 package edu.gmu.swe.phosphor;
 
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
-import org.jsoup.parser.Parser;
+import org.jsoup.nodes.Entities;
 
+import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkEscapeHtml;
 import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkUnescapeHtml;
 
 public class JsoupFlowBench {
 
     @FlowBench
-    public void unescapeHtml(FlowBenchResultImpl benchResult) {
-        checkUnescapeHtml(benchResult, TaintedPortionPolicy.ALL, s -> Parser.unescapeEntities(s, true));
+    public void htmlEscape(FlowBenchResultImpl benchResult) {
+        checkEscapeHtml(benchResult, TaintedPortionPolicy.ALL, Entities::escape);
+    }
+
+    @FlowBench
+    public void htmlUnescape(FlowBenchResultImpl benchResult) {
+        checkUnescapeHtml(benchResult, TaintedPortionPolicy.ALL, Entities::unescape);
     }
 }

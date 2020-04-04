@@ -13,6 +13,43 @@ public class ControlFlowBenchUtil {
 
     public static final String RESERVED_CHARS_FOR_PERCENT_ENCODING = ":@&?%";
 
+
+    public static void checkOneInputToManyOutputs(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+                                                  String output, List<Integer> outputCharsPerInput) {
+        int inputIndex = 0;
+        int outputIndex = 0;
+        for(int outputChars : outputCharsPerInput) {
+            List<Integer> expected = Collections.emptyList();
+            if(policy.inTaintedRange(inputIndex, outputCharsPerInput.size())) {
+                expected = Collections.singletonList(inputIndex);
+            }
+            for(int i = 0; i < outputChars; i++) {
+                benchResult.check(expected, output.charAt(outputIndex++));
+            }
+            inputIndex++;
+        }
+    }
+
+    public static void checkManyInputsToOneOutput(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+                                                  String output, List<Integer> inputCharsPerOutput) {
+        int numInputs = 0;
+        for(int inputChars : inputCharsPerOutput) {
+            numInputs += inputChars;
+        }
+        int inputIndex = 0;
+        int outputIndex = 0;
+        for(int inputChars : inputCharsPerOutput) {
+            Set<Integer> expected = new HashSet<>();
+            for(int i = 0; i < inputChars; i++) {
+                if(policy.inTaintedRange(inputIndex, numInputs)) {
+                    expected.add(inputIndex);
+                }
+                inputIndex++;
+            }
+            benchResult.check(expected, output.charAt(outputIndex++));
+        }
+    }
+
     public static void checkBaseNEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy, int n,
                                         UnaryOperator<byte[]> encoder) {
         int bitsPerChar = 8;
@@ -198,51 +235,15 @@ public class ControlFlowBenchUtil {
         checkManyInputsToOneOutput(benchResult, policy, output, inputCharsPerOutput);
     }
 
-    public static void checkOneInputToManyOutputs(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
-                                                  String output, List<Integer> outputCharsPerInput) {
-        int inputIndex = 0;
-        int outputIndex = 0;
-        for(int outputChars : outputCharsPerInput) {
-            List<Integer> expected = Collections.emptyList();
-            if(policy.inTaintedRange(inputIndex, outputCharsPerInput.size())) {
-                expected = Collections.singletonList(inputIndex);
-            }
-            for(int i = 0; i < outputChars; i++) {
-                benchResult.check(expected, output.charAt(outputIndex++));
-            }
-            inputIndex++;
-        }
-    }
-
-    public static void checkManyInputsToOneOutput(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
-                                                  String output, List<Integer> inputCharsPerOutput) {
-        int numInputs = 0;
-        for(int inputChars : inputCharsPerOutput) {
-            numInputs += inputChars;
-        }
-        int inputIndex = 0;
-        int outputIndex = 0;
-        for(int inputChars : inputCharsPerOutput) {
-            Set<Integer> expected = new HashSet<>();
-            for(int i = 0; i < inputChars; i++) {
-                if(policy.inTaintedRange(inputIndex, numInputs)) {
-                    expected.add(inputIndex);
-                }
-                inputIndex++;
-            }
-            benchResult.check(expected, output.charAt(outputIndex++));
-        }
-    }
-
     /**
      * Checks taint propagation when escaping HTML reserved characters by replacing them with named character entities.
      */
     public static void checkEscapeHtml(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                        UnaryOperator<String> escaper) {
-        String input = "\"&<>";
+        String input = "&<>";
         input = taintWithIndices(input + input, policy);
         String output = escaper.apply(input);
-        List<Integer> outputCharsPerInput = Arrays.asList(6, 5, 4, 4, 6, 5, 4, 4);
+        List<Integer> outputCharsPerInput = Arrays.asList(5, 4, 4, 5, 4, 4);
         checkOneInputToManyOutputs(benchResult, policy, output, outputCharsPerInput);
     }
 
@@ -251,10 +252,34 @@ public class ControlFlowBenchUtil {
      */
     public static void checkUnescapeHtml(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                          UnaryOperator<String> unescaper) {
-        String input = "&quot;&amp;&lt;&gt;";
+        String input = "&amp;&lt;&gt;";
         input = taintWithIndices(input + input, policy);
         String output = unescaper.apply(input);
-        List<Integer> inputCharsPerOutput = Arrays.asList(6, 5, 4, 4, 6, 5, 4, 4);
+        List<Integer> inputCharsPerOutput = Arrays.asList(5, 4, 4, 5, 4, 4);
+        checkManyInputsToOneOutput(benchResult, policy, output, inputCharsPerOutput);
+    }
+
+    /**
+     * Checks taint propagation when escaping EcmaScript/JavaScript special characters.
+     */
+    public static void checkEscapeJavaScript(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+                                             UnaryOperator<String> escaper) {
+        String input = "\"'\\/\t\n\f\b\u2028\u2029";
+        input = taintWithIndices(input + input, policy);
+        String output = escaper.apply(input);
+        List<Integer> outputCharsPerInput = Arrays.asList(2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6);
+        checkOneInputToManyOutputs(benchResult, policy, output, outputCharsPerInput);
+    }
+
+    /**
+     * Checks taint propagation when unescaping EcmaScript/JavaScript special characters.
+     */
+    public static void checkUnescapeJavaScript(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+                                               UnaryOperator<String> unescaper) {
+        String input = "\\\"\\'\\\\\\/\\t\\n\\f\\b\\u2028\\u2029\\\"\\'\\\\\\/\\t\\n\\f\\b\\u000B\\u2029";
+        input = taintWithIndices(input + input, policy);
+        String output = unescaper.apply(input);
+        List<Integer> inputCharsPerOutput = Arrays.asList(2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6);
         checkManyInputsToOneOutput(benchResult, policy, output, inputCharsPerOutput);
     }
 }
