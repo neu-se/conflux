@@ -1,85 +1,61 @@
 package edu.gmu.swe.phosphor;
 
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
-import org.apache.tomcat.util.buf.CharChunk;
+import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.apache.tomcat.util.buf.UDecoder;
 import org.apache.tomcat.util.buf.UEncoder;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.function.UnaryOperator;
 
-import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkHexDecode;
-import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkHexEncode;
-import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
+import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.*;
 
 public class TomcatFlowBench {
 
-    /**
-     * Converts an array of bytes into a string of hexadecimal digits
-     */
-    @FlowBench
-    public void hexEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
-        checkHexEncode(benchResult, policy, HexUtils::toHexString);
-    }
-
-    /**
-     * Converts a string of hexadecimal digits to an array of bytes
-     */
-    @FlowBench
-    public void hexDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
-        checkHexDecode(benchResult, policy, HexUtils::fromHexString);
-    }
-
-    /**
-     * Decodes percent encoded bytes and spaces encoded as plus signs.
-     */
-    @FlowBench
-    public void uDecoderDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws IOException {
-        String value = "purus+faucibus+ornare+suspendisse+%3b%3a%40%26%3d%2b%2f%3f%23%5b%5d";
-        value += value;
-        char[] input = taintWithIndices(value.toCharArray(), policy);
-        CharChunk chunk = new CharChunk();
-        chunk.setChars(input.clone(), 0, input.length);
+    private static final UnaryOperator<String> wrappedURLEncoder = s -> {
+        try {
+            UEncoder encoder = new UEncoder(UEncoder.SafeCharsSet.DEFAULT);
+            return encoder.encodeURL(s, 0, s.length()).toStringInternal();
+        } catch(IOException e) {
+            throw new IllegalArgumentException();
+        }
+    };
+    private static final UnaryOperator<String> wrappedURLDecoder = s -> {
+        ByteChunk chunk = new ByteChunk();
+        chunk.setBytes(s.getBytes(), 0, s.getBytes().length);
         UDecoder decoder = new UDecoder();
-        decoder.convert(chunk, true);
-        String output = chunk.toStringInternal();
-        for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length; inputIndex++, outputIndex++) {
-            List<Object> expected;
-            if(input[inputIndex] == '%') {
-                expected = Arrays.asList(inputIndex, ++inputIndex, ++inputIndex);
-            } else {
-                expected = Collections.singletonList(inputIndex);
-            }
-            if(policy.inTaintedRange(inputIndex, input.length)) {
-                benchResult.check(expected, output.charAt(outputIndex));
-            } else {
-                benchResult.checkEmpty(output.charAt(outputIndex));
-            }
+        try {
+            decoder.convert(chunk, true);
+        } catch(IOException e) {
+            e.printStackTrace();
         }
+        return chunk.toStringInternal();
+    };
+
+    @FlowBench
+    public void hexEncode(FlowBenchResultImpl benchResult) {
+        checkHexEncode(benchResult, TaintedPortionPolicy.ALL, HexUtils::toHexString);
     }
 
-    /**
-     * Percent encodes URL reserved characters.
-     */
     @FlowBench
-    public void uEncoderEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws IOException {
-        String input = "purus faucibus ornare suspendisse ;:@&=+/?#[]";
-        input = taintWithIndices(input + input, policy);
-        UEncoder encoder = new UEncoder(UEncoder.SafeCharsSet.DEFAULT);
-        String output = encoder.encodeURL(input, 0, input.length()).toStringInternal();
-        for(int inputIndex = 0, outputIndex = 0; inputIndex < input.length(); inputIndex++, outputIndex++) {
-            List<Object> expected = Collections.emptyList();
-            if(policy.inTaintedRange(inputIndex, input.length())) {
-                expected = Collections.singletonList(inputIndex);
-            }
-            benchResult.check(expected, output.charAt(outputIndex));
-            if(output.charAt(outputIndex) == '%') {
-                benchResult.check(expected, output.charAt(++outputIndex));
-                benchResult.check(expected, output.charAt(++outputIndex));
-            }
-        }
+    public void hexDecode(FlowBenchResultImpl benchResult) {
+        checkHexDecode(benchResult, TaintedPortionPolicy.ALL, HexUtils::fromHexString);
+    }
+
+    @FlowBench
+    public void urlDecodeSpaces(FlowBenchResultImpl benchResult) {
+        checkURLDecodeSpaces(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    }
+
+    @FlowBench
+    public void urlEncodeReserved(FlowBenchResultImpl benchResult) {
+        checkPercentEncodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
+
+    }
+
+    @FlowBench
+    public void urlDecodeReserved(FlowBenchResultImpl benchResult) {
+        checkPercentDecodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 }

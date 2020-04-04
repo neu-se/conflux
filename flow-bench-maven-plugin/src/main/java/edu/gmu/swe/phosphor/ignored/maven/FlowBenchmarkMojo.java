@@ -212,7 +212,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     }
 
     /**
-     * Gathers method annotated with the TableStat annotation from the specified class.
+     * Gathers methods annotated with the TableStat annotation from the specified class.
      *
      * @return mapping from TableStat annotation names to the methods they annotate
      */

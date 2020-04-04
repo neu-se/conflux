@@ -1,156 +1,105 @@
 package edu.gmu.swe.phosphor.ignored.runtime;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class FlowBenchResultImpl extends FlowBenchResult {
 
     private final List<SetComparison> comparisons = new LinkedList<>();
+    ConfusionMatrix globalMatrix = new ConfusionMatrix();
+    private Map<Object, ConfusionMatrix> confusionMatrices = null;
 
     @Override
     public String getBenchmarkTypeDesc() {
         return "Flow Benchmark";
     }
 
-    public List<SetComparison> getComparisons() {
-        return comparisons;
-    }
-
-    double jaccardSimilarity() {
-        if(comparisons.size() == 0) {
-            throw new IllegalStateException("No samples were evaluated");
-        }
-        double sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.jaccardSimilarity();
-        }
-        return sum / comparisons.size();
-    }
-
-    double subsetAccuracy() {
-        if(comparisons.size() == 0) {
-            throw new IllegalStateException("No samples were evaluated");
-        }
-        int sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.subsetAccuracy();
-        }
-        return (1.0 * sum) / comparisons.size();
-    }
-
     @TableStat(name = "Precision")
     double precision() {
-        if(comparisons.size() == 0) {
-            throw new IllegalStateException("No samples were evaluated");
+        initializeConfusionMatrices();
+        if(globalMatrix.truePositives + globalMatrix.falsePositives == 0) {
+            return 0; // undefined, no labels were predicted
+        } else {
+            return (1.0 * globalMatrix.truePositives) / (globalMatrix.truePositives + globalMatrix.falsePositives);
         }
-        double sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.precision();
-        }
-        return sum / comparisons.size();
     }
 
     @TableStat(name = "Recall")
     double recall() {
-        if(comparisons.size() == 0) {
-            throw new IllegalStateException("No samples were evaluated");
+        initializeConfusionMatrices();
+        if(globalMatrix.truePositives + globalMatrix.falseNegatives == 0) {
+            return 0; // undefined, no labels were expected
+        } else {
+            return (1.0 * globalMatrix.truePositives) / (globalMatrix.truePositives + globalMatrix.falseNegatives);
         }
-        double sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.recall();
-        }
-        return sum / comparisons.size();
     }
 
     @TableStat(name = "F1")
     double f1Score() {
-        if(comparisons.size() == 0) {
-            throw new IllegalStateException("No samples were evaluated");
+        initializeConfusionMatrices();
+        if(globalMatrix.truePositives + globalMatrix.falsePositives == 0
+                || globalMatrix.truePositives + globalMatrix.falseNegatives == 0) {
+            return 0; // undefined
+        } else {
+            return 2.0 * (precision() * recall()) / (precision() + recall());
         }
-        double sum = 0;
-        for(SetComparison comparison : comparisons) {
-            sum += comparison.f1Score();
-        }
-        return sum / comparisons.size();
     }
 
     @Override
     public void check(Set<?> expected, Set<?> predicted) {
-        boolean exactMatch = expected.equals(predicted);
-        Set<Object> union = new HashSet<>(expected);
-        union.addAll(predicted);
-        Set<Object> intersection = new HashSet<>(expected);
-        intersection.retainAll(predicted);
-        comparisons.add(new SetComparison(exactMatch, expected.size(), predicted.size(), union.size(), intersection.size()));
+        comparisons.add(new SetComparison(expected, predicted));
     }
 
-    @Override
-    public String toString() {
-        return "FlowBenchResult{comparisons=" + comparisons + '}';
+    private void initializeConfusionMatrices() {
+        if(confusionMatrices == null) {
+            confusionMatrices = new HashMap<>();
+            for(SetComparison comparison : comparisons) {
+                for(Object label : comparison.expected) {
+                    confusionMatrices.putIfAbsent(label, new ConfusionMatrix());
+                }
+                for(Object label : comparison.predicted) {
+                    confusionMatrices.putIfAbsent(label, new ConfusionMatrix());
+                }
+            }
+            for(SetComparison comparison : comparisons) {
+                for(Object label : confusionMatrices.keySet()) {
+                    ConfusionMatrix confusionMatrix = confusionMatrices.get(label);
+                    if(comparison.expected.contains(label)) {
+                        if(comparison.predicted.contains(label)) {
+                            confusionMatrix.truePositives++;
+                            globalMatrix.truePositives++;
+                        } else {
+                            confusionMatrix.falseNegatives++;
+                            globalMatrix.falseNegatives++;
+                        }
+                    } else {
+                        if(comparison.predicted.contains(label)) {
+                            confusionMatrix.falsePositives++;
+                            globalMatrix.falsePositives++;
+                        } else {
+                            confusionMatrix.trueNegatives++;
+                            globalMatrix.trueNegatives++;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private static class SetComparison {
-        private final boolean exactMatch;
-        private final int predictedSetMagnitude;
-        private final int expectedSetMagnitude;
-        private final int unionMagnitude;
-        private final int intersectionMagnitude;
 
-        SetComparison(boolean exactMatch, int expectedSetMagnitude, int predictedSetMagnitude, int unionMagnitude,
-                      int intersectionMagnitude) {
-            if(predictedSetMagnitude < 0 || expectedSetMagnitude < 0 || unionMagnitude < 0 || intersectionMagnitude < 0) {
-                throw new IllegalArgumentException("Set magnitudes must be non-negative");
-            }
-            this.exactMatch = exactMatch;
-            this.predictedSetMagnitude = predictedSetMagnitude;
-            this.expectedSetMagnitude = expectedSetMagnitude;
-            this.unionMagnitude = unionMagnitude;
-            this.intersectionMagnitude = intersectionMagnitude;
-        }
+        private final Set<Object> expected;
+        private final Set<Object> predicted;
 
-        private double jaccardSimilarity() {
-            return unionMagnitude == 0 ? 1 : (1.0 * intersectionMagnitude) / unionMagnitude;
+        private SetComparison(Set<?> expected, Set<?> predicted) {
+            this.expected = new HashSet<>(expected);
+            this.predicted = new HashSet<>(predicted);
         }
+    }
 
-        private int subsetAccuracy() {
-            return exactMatch ? 1 : 0;
-        }
-
-        private double precision() {
-            if(predictedSetMagnitude == 0) {
-                return 1;
-            } else {
-                return (1.0 * intersectionMagnitude) / predictedSetMagnitude;
-            }
-        }
-
-        private double recall() {
-            if(expectedSetMagnitude == 0) {
-                return 1;
-            } else {
-                return (1.0 * intersectionMagnitude) / expectedSetMagnitude;
-            }
-        }
-
-        private double f1Score() {
-            if(predictedSetMagnitude + expectedSetMagnitude == 0) {
-                return 1;
-            } else {
-                return (2.0 * intersectionMagnitude)/(predictedSetMagnitude + expectedSetMagnitude);
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "SetComparison{" +
-                    "exactMatch=" + exactMatch +
-                    ", predictionSetMagnitude=" + predictedSetMagnitude +
-                    ", expectedSetMagnitude=" + expectedSetMagnitude +
-                    ", unionMagnitude=" + unionMagnitude +
-                    ", intersectionMagnitude=" + intersectionMagnitude +
-                    '}';
-        }
+    private static class ConfusionMatrix {
+        private int truePositives = 0;
+        private int falsePositives = 0;
+        private int trueNegatives = 0;
+        private int falseNegatives = 0;
     }
 }

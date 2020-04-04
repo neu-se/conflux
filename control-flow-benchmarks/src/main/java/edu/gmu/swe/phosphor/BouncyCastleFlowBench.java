@@ -8,19 +8,13 @@ import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkHexEncode;
 
 public class BouncyCastleFlowBench {
 
-    /**
-     * Converts an array of bytes into a string of hexadecimal digits
-     */
     @FlowBench
-    public void hexEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
-        checkHexEncode(benchResult, policy, b -> new String(org.bouncycastle.util.encoders.Hex.encode(b)));
+    public void hexEncode(FlowBenchResultImpl benchResult) {
+        checkHexEncode(benchResult, TaintedPortionPolicy.ALL, b -> new String(org.bouncycastle.util.encoders.Hex.encode(b)));
     }
 
-    /**
-     * Converts a string of hexadecimal digits to an array of bytes
-     */
     @FlowBench
-    public void hexDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) {
-        checkHexDecode(benchResult, policy, Hex::decode);
+    public void hexDecode(FlowBenchResultImpl benchResult) {
+        checkHexDecode(benchResult, TaintedPortionPolicy.ALL, Hex::decode);
     }
 }
