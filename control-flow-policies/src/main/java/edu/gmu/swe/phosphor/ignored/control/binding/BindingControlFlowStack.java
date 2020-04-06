@@ -60,6 +60,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         return this;
     }
 
+    @Override
     public void pushFrame() {
         stackTop = frameBuilder.build(stackTop);
     }
@@ -72,6 +73,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         return stackTop.getLevel(dependencies);
     }
 
+    @Override
     public void popFrame() {
         stackTop = stackTop.next;
     }
@@ -110,6 +112,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         stackTop.pop(branchID);
     }
 
+    @Override
     public void reset() {
         stackTop.reset();
         nextBranchTag = Taint.emptyTaint();

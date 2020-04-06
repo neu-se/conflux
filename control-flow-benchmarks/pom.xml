@@ -12,10 +12,18 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <properties>
-        <tomcat.version>9.0.19</tomcat.version>
+        <!--  Data + Array Index   -->
+        <data.array.index.jvm>jvm-inst-data</data.array.index.jvm>
         <data.array.index.cache>${project.build.directory}/data-array-index-cache</data.array.index.cache>
-        <control.cache>${project.build.directory}/control-cache</control.cache>
+        <!-- Basic Control -->
+        <basic.control.jvm>jvm-inst-basic-control</basic.control.jvm>
+        <basic.control.cache>${project.build.directory}/basic-control-cache</basic.control.cache>
+        <basic.control.manager>
+            edu.gmu.swe.phosphor.ignored.control.basic.BasicControlFlowManager
+        </basic.control.manager>
+        <!-- Binding Control -->
         <binding.control.cache>${project.build.directory}/binding-control-cache</binding.control.cache>
+        <binding.control.jvm>jvm-inst-binding</binding.control.jvm>
         <binding.control.manager>
             edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager
         </binding.control.manager>
@@ -49,7 +57,7 @@
                                 </goals>
                                 <configuration>
                                     <targetBaseDir>${project.build.directory}</targetBaseDir>
-                                    <targetName>jvm-inst-data</targetName>
+                                    <targetName>${data.array.index.jvm}</targetName>
                                     <options>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
@@ -63,24 +71,23 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>control</id>
+                                <id>basic-control</id>
                                 <goals>
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
                                     <targetBaseDir>${project.build.directory}</targetBaseDir>
-                                    <targetName>jvm-inst-control</targetName>
+                                    <targetName>${basic.control.jvm}</targetName>
                                     <options>
-                                        <controlTrack/>
+                                        <quiet/>
+                                        <controlFlowManager>${basic.control.manager}</controlFlowManager>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
                                         <reenableCaches/>
-                                        <withoutBranchNotTaken/>
-                                        <quiet/>
                                     </options>
                                     <associatedCaches>
-                                        <associatedCache>${control.cache}</associatedCache>
+                                        <associatedCache>${basic.control.cache}</associatedCache>
                                     </associatedCaches>
                                 </configuration>
                             </execution>
@@ -91,7 +98,7 @@
                                 </goals>
                                 <configuration>
                                     <targetBaseDir>${project.build.directory}</targetBaseDir>
-                                    <targetName>jvm-inst-binding</targetName>
+                                    <targetName>${binding.control.jvm}</targetName>
                                     <options>
                                         <controlFlowManager>${binding.control.manager}</controlFlowManager>
                                         <forceUnboxAcmpEq/>
@@ -133,22 +140,22 @@
                                                 <reenableCaches/>
                                             </options>
                                             <instrumentedJVM>
-                                                ${project.build.directory}/jvm-inst-data
+                                                ${project.build.directory}/${data.array.index.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
-                                            <name>control</name>
+                                            <name>basic-control</name>
                                             <options>
-                                                <cacheDir>${control.cache}</cacheDir>
+                                                <cacheDir>${basic.control.cache}</cacheDir>
                                                 <quiet/>
+                                                <controlFlowManager>${basic.control.manager}</controlFlowManager>
                                                 <forceUnboxAcmpEq/>
                                                 <withEnumsByValue/>
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
-                                                <withoutBranchNotTaken/>
                                             </options>
                                             <instrumentedJVM>
-                                                ${project.build.directory}/jvm-inst-control
+                                                ${project.build.directory}/${basic.control.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
@@ -163,7 +170,7 @@
                                                 <reenableCaches/>
                                             </options>
                                             <instrumentedJVM>
-                                                ${project.build.directory}/jvm-inst-binding
+                                                ${project.build.directory}/${binding.control.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                     </phosphorConfigurations>
@@ -213,7 +220,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>${tomcat.version}</version>
+            <version>9.0.19</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

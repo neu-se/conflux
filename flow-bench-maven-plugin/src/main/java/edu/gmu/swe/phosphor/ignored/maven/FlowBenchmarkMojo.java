@@ -95,6 +95,12 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     private List<String> bootClasspathJars;
 
     /**
+     * True if execution times should be reported
+     */
+    @Parameter(property = "reportExecutionTime", readonly = true, defaultValue = "false")
+    private boolean reportExecutionTime;
+
+    /**
      * Runs flow benchmarks with different Phosphor configurations and reports the results to standard out.
      *
      * @throws MojoFailureException if benchmarks fail to run
@@ -166,7 +172,9 @@ public class FlowBenchmarkMojo extends AbstractMojo {
         if(!tests.isEmpty()) {
             Map<String, Method> tableStatMethods = getTableStatMethods();
             List<String> statsPerConfig = new LinkedList<>();
-            statsPerConfig.add("Time (ms)");
+            if(reportExecutionTime) {
+                statsPerConfig.add("Time (ms)");
+            }
             statsPerConfig.addAll(tableStatMethods.keySet());
             GroupedTable table = new GroupedTable(benchmarkTypeDesc + " Results")
                     .addGroup("", "Benchmark", "Test");
@@ -175,7 +183,14 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             }
             for(Pair<String, String> test : tests.keySet()) {
                 Object[][] row = new Object[configurationNames.size() + 1][];
-                row[0] = new String[]{test.getLeft(), test.getRight()};
+                String testName = test.getLeft();
+                if(testName.startsWith("FlowBench")) {
+                    testName = testName.substring("FlowBench".length());
+                }
+                if(testName.endsWith("FlowBench")) {
+                    testName = testName.substring(0, testName.length() - "FlowBench".length());
+                }
+                row[0] = new String[]{testName, test.getRight()};
                 Map<String, FlowBenchReport> reports = tests.get(test);
                 int i = 1;
                 for(String name : configurationNames) {
@@ -183,7 +198,9 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                     if(reports.containsKey(name)) {
                         FlowBenchReport report = reports.get(name);
                         FlowBenchResult result = report.getResult();
-                        rowData.add(String.format("%d", report.getTimeElapsed()));
+                        if(reportExecutionTime) {
+                            rowData.add(String.format("%d", report.getTimeElapsed()));
+                        }
                         tableStatMethods.forEach((k, v) -> {
                             v.setAccessible(true);
                             try {
@@ -198,7 +215,9 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                             }
                         });
                     } else {
-                        rowData.add("Error"); // Time column
+                        if(reportExecutionTime) {
+                            rowData.add("Error"); // Time column
+                        }
                         tableStatMethods.forEach((k, v) -> rowData.add("Error"));
                     }
                     row[i++] = rowData.toArray();
@@ -208,7 +227,6 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             table.printToStream(System.out);
             System.out.println("\n");
         }
-
     }
 
     /**
