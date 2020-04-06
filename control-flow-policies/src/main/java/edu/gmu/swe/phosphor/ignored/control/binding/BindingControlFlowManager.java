@@ -1,7 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.binding;
 
 import edu.columbia.cs.psl.phosphor.control.ControlFlowManager;
-import edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy;
 import edu.columbia.cs.psl.phosphor.control.ControlFlowStack;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.MethodVisitor;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
@@ -27,7 +26,12 @@ public class BindingControlFlowManager implements ControlFlowManager {
     }
 
     @Override
-    public ControlFlowPropagationPolicy createPropagationPolicy(int access, String owner, String name, String descriptor) {
+    public BindingControlFlowPropagationPolicy createPropagationPolicy(int access, String owner, String name, String descriptor) {
         return new BindingControlFlowPropagationPolicy(new BindingControlFlowAnalyzer());
+    }
+
+    @Override
+    public boolean isIgnoredFromControlTrack(String className, String methodName) {
+        return false;
     }
 }

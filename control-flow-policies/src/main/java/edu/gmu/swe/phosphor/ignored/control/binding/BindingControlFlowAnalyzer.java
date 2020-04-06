@@ -4,18 +4,21 @@ import edu.columbia.cs.psl.phosphor.control.ControlFlowAnalyzer;
 import edu.columbia.cs.psl.phosphor.control.OpcodesUtil;
 import edu.columbia.cs.psl.phosphor.control.graph.*;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
-import edu.columbia.cs.psl.phosphor.control.standard.BranchEnd;
-import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
+import edu.gmu.swe.phosphor.ignored.control.BranchEdge;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
 import edu.gmu.swe.phosphor.ignored.control.ssa.TypeAnalyzer;
 
 import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
+import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.findNextPrecedableInstruction;
 import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
 
 /**
@@ -70,17 +73,12 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     /**
      * A control flow graph representing the method
      */
-    private FlowGraph<BasicBlock> controlFlowGraph;
+    private FlowGraph<BasicBlock> cfg;
 
     /**
      * Used to determine the constancy level of instructions in the method
      */
     private LoopLevelTracer tracer;
-
-    /**
-     * Used to infer basic type information about expressions
-     */
-    private TypeAnalyzer typeAnalyzer;
 
     /**
      * A mapping between each instruction in the method and the natural loops that contain it
@@ -104,24 +102,25 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     public void annotate(String owner, MethodNode methodNode) {
         numberOfUniqueBranchIDs = 0;
         instructions = methodNode.instructions;
-        try {
-            if(instructions.size() > 0) {
+        if(instructions.size() > 0) {
+            try {
                 SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
                 tracer = new LoopLevelTracer(methodNode, ssaMethod);
-                typeAnalyzer = new TypeAnalyzer(ssaMethod);
                 Set<BindingBranchEdge> bindingEdges = new HashSet<>();
-                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, typeAnalyzer);
-                controlFlowGraph = creator.createControlFlowGraph(methodNode);
+                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, new TypeAnalyzer(ssaMethod));
+                cfg = creator.createControlFlowGraph(methodNode);
                 containingLoopMap = calculateContainingLoops();
-                bindingEdges = processBindingEdges(bindingEdges);
-                markBranchEnds(bindingEdges);
-                markBranchStarts(bindingEdges);
+                numberOfUniqueBranchIDs = processEdges(bindingEdges);
+                for(BranchEdge edge : bindingEdges) {
+                    edge.markBranchStart(instructions);
+                    edge.markBranchEnds(instructions);
+                }
                 addCopyTagInfo();
                 addConstancyInfoNodes();
                 markLoopExits();
+            } catch(AnalyzerException e) {
+                //
             }
-        } catch(AnalyzerException e) {
-            numberOfUniqueBranchIDs = 0;
         }
     }
 
@@ -129,7 +128,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
      * @return a mapping between each instruction and the natural loops that contain it
      */
     private Map<AbstractInsnNode, Set<NaturalLoop<BasicBlock>>> calculateContainingLoops() {
-        Set<NaturalLoop<BasicBlock>> loops = controlFlowGraph.getNaturalLoops();
+        Set<NaturalLoop<BasicBlock>> loops = cfg.getNaturalLoops();
         Map<AbstractInsnNode, Set<NaturalLoop<BasicBlock>>> loopMap = new HashMap<>();
         Iterator<AbstractInsnNode> itr = instructions.iterator();
         while(itr.hasNext()) {
@@ -199,14 +198,14 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
      * control flow graph such that u is contained in some loop l and v is not contained in l.
      */
     private void markLoopExits() {
-        Set<NaturalLoop<BasicBlock>> loops = controlFlowGraph.getNaturalLoops();
+        Set<NaturalLoop<BasicBlock>> loops = cfg.getNaturalLoops();
         for(NaturalLoop<BasicBlock> loop : loops) {
             BasicBlock header = loop.getHeader();
             Set<SimpleBasicBlock> exits = new HashSet<>();
             for(BasicBlock vertex : loop.getVertices()) {
-                for(BasicBlock target : controlFlowGraph.getSuccessors(vertex)) {
+                for(BasicBlock target : cfg.getSuccessors(vertex)) {
                     if(target instanceof BindingBranchEdge) {
-                        target = ((BindingBranchEdge) target).target;
+                        target = ((BindingBranchEdge) target).getTarget();
                     }
                     if(target instanceof SimpleBasicBlock && !loop.contains(target)) {
                         exits.add((SimpleBasicBlock) target);
@@ -222,149 +221,39 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         }
     }
 
-    /**
-     * Marks the ends of the scopes of the specified binding edges by inserting BranchEnd nodes.
-     */
-    private void markBranchEnds(Set<BindingBranchEdge> bindingEdges) {
-        for(BindingBranchEdge bindingEdge : bindingEdges) {
-            Set<BasicBlock> scopeEnds = bindingEdge.getScopeEnds(controlFlowGraph);
-            for(BasicBlock scopeEnd : scopeEnds) {
-                AbstractInsnNode insn = findNextPrecedableInstruction(scopeEnd.getFirstInsn());
-                instructions.insertBefore(insn, new LdcInsnNode(new BranchEnd(bindingEdge.id)));
-            }
-        }
-    }
-
-    /**
-     * Marks the starts of the scopes of the specified binding edges by inserting BindingBranchStart nodes.
-     */
-    private void markBranchStarts(Set<BindingBranchEdge> bindingEdges) {
-        for(BindingBranchEdge bindingEdge : bindingEdges) {
-            BindingBranchStart scopeStart = new BindingBranchStart(bindingEdge.level, bindingEdge.id);
-            AbstractInsnNode scopeStartNode = new LdcInsnNode(scopeStart);
-            AbstractInsnNode targetInsn = bindingEdge.target.getFirstInsn();
-            if(bindingEdge.branchTaken) {
-                // Adjust the control flow
-                FrameNode targetFrame = findNextFrame(targetInsn);
-                LabelNode newTarget = new LabelNode(new Label());
-                instructions.add(newTarget);
-                FrameNode targetFrameCopy = new FrameNode(targetFrame.type, targetFrame.local.size(), targetFrame.local.toArray(),
-                        targetFrame.stack.size(), targetFrame.stack.toArray());
-                instructions.add(targetFrameCopy);
-                instructions.add(scopeStartNode);
-                instructions.add(new JumpInsnNode(GOTO, ((LabelNode) targetInsn)));
-                // Swap the target label of the jump/switch instruction at the source
-                swapLabel(bindingEdge.source.getLastInsn(), ((LabelNode) targetInsn), newTarget);
-            } else {
-                instructions.insertBefore(findNextPrecedableInstruction(targetInsn), scopeStartNode);
-            }
-        }
-    }
-
-    private void swapLabel(AbstractInsnNode insn, LabelNode originalTarget, LabelNode newTarget) {
-        if(insn instanceof JumpInsnNode) {
-            JumpInsnNode jump = (JumpInsnNode) insn;
-            if(jump.label == originalTarget) {
-                jump.label = newTarget;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } else if(insn instanceof LookupSwitchInsnNode) {
-            LookupSwitchInsnNode switchInsn = (LookupSwitchInsnNode) insn;
-            boolean found = false;
-            if(switchInsn.dflt == originalTarget) {
-                switchInsn.dflt = newTarget;
-                found = true;
-            }
-            java.util.List<LabelNode> newLabels = new java.util.LinkedList<>();
-            for(LabelNode label : switchInsn.labels) {
-                if(label == originalTarget) {
-                    found = true;
-                    newLabels.add(newTarget);
-                } else {
-                    newLabels.add(label);
-                }
-            }
-            switchInsn.labels = newLabels;
-            if(!found) {
-                throw new IllegalArgumentException();
-            }
-        } else if(insn instanceof TableSwitchInsnNode) {
-            TableSwitchInsnNode switchInsn = (TableSwitchInsnNode) insn;
-            boolean found = false;
-            if(switchInsn.dflt == originalTarget) {
-                switchInsn.dflt = newTarget;
-                found = true;
-            }
-            java.util.List<LabelNode> newLabels = new java.util.LinkedList<>();
-            for(LabelNode label : switchInsn.labels) {
-                if(label == originalTarget) {
-                    found = true;
-                    newLabels.add(newTarget);
-                } else {
-                    newLabels.add(label);
-                }
-            }
-            switchInsn.labels = newLabels;
-            if(!found) {
-                throw new IllegalArgumentException();
-            }
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-
-    private FrameNode findNextFrame(AbstractInsnNode insn) {
-        while(insn != null && !(insn instanceof FrameNode)) {
-            insn = insn.getNext();
-        }
-        return (FrameNode) insn;
-    }
-
-    private Set<BindingBranchEdge> processBindingEdges(Set<BindingBranchEdge> bindingEdges) {
-        bindingEdges = filterBindingEdges(bindingEdges);
-        numberOfUniqueBranchIDs = assignBranchIDs(bindingEdges);
-        calculateLoopLevels(bindingEdges);
-        return bindingEdges;
-    }
-
-    private Set<BindingBranchEdge> filterBindingEdges(Collection<BindingBranchEdge> bindingEdges) {
-        Set<BindingBranchEdge> filtered = new HashSet<>();
-        for(BindingBranchEdge edge : bindingEdges) {
-            if(edge.hasNonEmptyScope(controlFlowGraph)) {
-                filtered.add(edge);
-            }
-        }
-        return filtered;
-    }
-
-    private int assignBranchIDs(Set<BindingBranchEdge> edges) {
+    private int processEdges(Set<BindingBranchEdge> bindingEdges) {
         int nextBranchIDAssigned = 0;
-        for(BindingBranchEdge edge : edges) {
-            edge.id = nextBranchIDAssigned++;
+        Iterator<BindingBranchEdge> itr = bindingEdges.iterator();
+        while(itr.hasNext()) {
+            BindingBranchEdge edge = itr.next();
+            if(!edge.hasNonEmptyScope(cfg)) {
+                itr.remove();
+            } else {
+                edge.setBranchID(nextBranchIDAssigned++);
+                edge.setScopeEnds(cfg);
+                setLoopLevel(edge);
+            }
         }
         return nextBranchIDAssigned;
     }
 
-    private void calculateLoopLevels(Set<BindingBranchEdge> bindingEdges) {
-        for(BindingBranchEdge bindingEdge : bindingEdges) {
-            LoopLevel level = tracer.getLoopLevelMap().get(bindingEdge.source.getLastInsn());
-            if(level instanceof LoopLevel.VariantLoopLevel && ((LoopLevel.VariantLoopLevel) level).getLevelOffset() != 0) {
-                int revisableLoops = calculateRevisableContainingLoops(bindingEdge);
-                if(((LoopLevel.VariantLoopLevel) level).getLevelOffset() > revisableLoops) {
-                    level = new LoopLevel.VariantLoopLevel(revisableLoops);
-                }
+    private void setLoopLevel(BindingBranchEdge edge) {
+        LoopLevel level = tracer.getLoopLevelMap().get(edge.getSource().getLastInsn());
+        if(level instanceof LoopLevel.VariantLoopLevel && ((LoopLevel.VariantLoopLevel) level).getLevelOffset() != 0) {
+            int revisableLoops = calculateRevisableContainingLoops(edge);
+            if(((LoopLevel.VariantLoopLevel) level).getLevelOffset() > revisableLoops) {
+                level = new LoopLevel.VariantLoopLevel(revisableLoops);
             }
-            bindingEdge.level = level;
         }
+        edge.setLevel(level);
     }
 
-    private int calculateRevisableContainingLoops(BindingBranchEdge bindingEdge) {
-        Set<NaturalLoop<BasicBlock>> containingLoops = containingLoopMap.get(bindingEdge.source.getLastInsn());
+    private int calculateRevisableContainingLoops(BindingBranchEdge edge) {
+        Set<NaturalLoop<BasicBlock>> containingLoops = containingLoopMap.get(edge.getSource().getLastInsn());
         int revisableLoops = 0;
         for(NaturalLoop<BasicBlock> containingLoop : containingLoops) {
-            for(BasicBlock successor : controlFlowGraph.getSuccessors(bindingEdge.source)) {
-                if(!successor.equals(bindingEdge) && controlFlowGraph.containsPath(successor, containingLoop.getHeader())) {
+            for(BasicBlock successor : cfg.getSuccessors(edge.getSource())) {
+                if(!successor.equals(edge) && cfg.containsPath(successor, containingLoop.getHeader())) {
                     revisableLoops++;
                     break;
                 }
@@ -373,108 +262,40 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         return revisableLoops;
     }
 
-    private static AbstractInsnNode findNextPrecedableInstruction(AbstractInsnNode insn) {
-        while(insn.getType() == AbstractInsnNode.FRAME || insn.getType() == AbstractInsnNode.LINE
-                || insn.getType() == AbstractInsnNode.LABEL || insn.getOpcode() > 200) {
-            insn = insn.getNext();
-        }
-        return insn;
-    }
-
     /**
      * A BindingBranchEdge w is used in conjunction with the edges (u, w) and (w, v) to represent some edge
      * (u, v).
      */
-    private static class BindingBranchEdge extends DummyBasicBlock {
-
-        /**
-         * The source vertex of this edge.
-         */
-        private final BasicBlock source;
-
-        /**
-         * The target vertex of this edge.
-         */
-        private final BasicBlock target;
-
-        /**
-         * True if this edge represents a jump occurring
-         */
-        private final boolean branchTaken;
+    private static class BindingBranchEdge extends BranchEdge {
 
         private LoopLevel level = null;
 
-        private int id = -1;
-
-        BindingBranchEdge(BasicBlock sourceBlock, BasicBlock target, boolean branchTaken) {
-            this.source = sourceBlock;
-            this.target = target;
-            this.branchTaken = branchTaken;
+        BindingBranchEdge(BasicBlock source, BasicBlock target, boolean branchTaken) {
+            super(source, target, branchTaken);
         }
 
-        /**
-         * @param controlFlowGraph the control flow graph containing this edge
-         * @return true if there is at least one basic block in the scope of this edge
-         * @throws IllegalArgumentException if the specified control flow graph does not contain this edge
-         */
-        boolean hasNonEmptyScope(FlowGraph<BasicBlock> controlFlowGraph) {
-            if(!controlFlowGraph.getVertices().contains(this)) {
-                throw new IllegalArgumentException("Supplied control flow graph does contain this edge");
-            }
-            if(!controlFlowGraph.getDominanceFrontiers().containsKey(this)) {
-                // This edge is unreachable in the specified graph
-                return false;
-            }
-            return !controlFlowGraph.getDominanceFrontiers().get(this).contains(this.target);
+        public void setLevel(LoopLevel level) {
+            this.level = level;
         }
 
-        /**
-         * @param controlFlowGraph a control flow graph
-         * @return the set of non-dummy basic blocks before which the scope of this edge ends or the empty set
-         * if this edge is unreachable in the specified graph
-         * @throws IllegalArgumentException if the specified control flow graph does not contain this edge or this edge
-         *                                  is unreachable in the specified control flow graph
-         */
-        Set<BasicBlock> getScopeEnds(FlowGraph<BasicBlock> controlFlowGraph) {
-            if(!controlFlowGraph.getVertices().contains(this)) {
-                throw new IllegalArgumentException("Supplied control flow graph does contain this edge");
-            }
-            if(!controlFlowGraph.getDominanceFrontiers().containsKey(this)) {
-                throw new IllegalArgumentException("Edge is unreachable in supplied control flow graph");
-            }
-            Set<BasicBlock> scopeEnds = new HashSet<>();
-            for(BasicBlock block : controlFlowGraph.getDominanceFrontiers().get(this)) {
-                if(!(block instanceof DummyBasicBlock)) {
-                    scopeEnds.add(block);
+        @Override
+        public AbstractInsnNode createScopeStartNode() {
+            return new LdcInsnNode(new BindingBranchStart(level, getBranchID()));
+        }
+
+        boolean hasNonEmptyScope(FlowGraph<BasicBlock> cfg) {
+            return cfg.getDominanceFrontiers().containsKey(this)
+                    && !cfg.getDominanceFrontiers().get(this).contains(getTarget());
+        }
+
+        void setScopeEnds(FlowGraph<BasicBlock> controlFlowGraph) {
+            if(controlFlowGraph.getDominanceFrontiers().containsKey(this)) {
+                for(BasicBlock block : controlFlowGraph.getDominanceFrontiers().get(this)) {
+                    if(!(block instanceof DummyBasicBlock)) {
+                        addScopeEnd(block);
+                    }
                 }
             }
-            return scopeEnds;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if(this == o) {
-                return true;
-            } else if(!(o instanceof BindingBranchEdge)) {
-                return false;
-            }
-            BindingBranchEdge that = (BindingBranchEdge) o;
-            if(!source.equals(that.source)) {
-                return false;
-            }
-            return target.equals(that.target);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = source.hashCode();
-            result = 31 * result + target.hashCode();
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("<DirectedEdge: %s -> %s>", source, target);
         }
     }
 
@@ -510,7 +331,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                     break;
                 case IFNE:
                     if(typeAnalyzer.isDoubleBindingBranch(insn)) {
-                        addBindingBranchEdge(source, target, false);
+                        addBindingBranchEdge(source, target, true);
                         break;
                     }
                 default:

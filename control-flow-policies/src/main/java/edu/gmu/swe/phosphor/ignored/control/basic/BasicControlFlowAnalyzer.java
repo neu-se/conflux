@@ -39,7 +39,7 @@ public class BasicControlFlowAnalyzer implements ControlFlowAnalyzer {
             BasicBlock scopeEnd = branch.immediatePostDominator;
             if(!(scopeEnd instanceof DummyBasicBlock)) {
                 AbstractInsnNode insn = findNextPrecedableInstruction(scopeEnd.getFirstInsn());
-                instructions.insertBefore(insn, new LdcInsnNode(new BranchEnd(branch.id)));
+                instructions.insertBefore(insn, new LdcInsnNode(new BranchEnd(branch.branchID)));
             }
         }
     }
@@ -47,7 +47,7 @@ public class BasicControlFlowAnalyzer implements ControlFlowAnalyzer {
     private void markBranchStarts(Set<Branch> branches, InsnList instructions) {
         for(Branch branch : branches) {
             AbstractInsnNode insn = branch.source.getLastInsn();
-            instructions.insertBefore(insn, new LdcInsnNode(new BranchStart(branch.id)));
+            instructions.insertBefore(insn, new LdcInsnNode(new BranchStart(branch.branchID)));
         }
     }
 
@@ -74,14 +74,14 @@ public class BasicControlFlowAnalyzer implements ControlFlowAnalyzer {
     }
 
     private static final class Branch {
-        private final int id;
+        private final int branchID;
         private final BasicBlock source;
         private final BasicBlock immediatePostDominator;
 
-        private Branch(int id, BasicBlock source, BasicBlock immediatePostDominator) {
+        private Branch(int branchID, BasicBlock source, BasicBlock immediatePostDominator) {
             this.source = source;
             this.immediatePostDominator = immediatePostDominator;
-            this.id = id;
+            this.branchID = branchID;
         }
     }
 

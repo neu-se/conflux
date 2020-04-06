@@ -32,9 +32,11 @@ public class StrictControlFlowStack<E> extends BasicControlFlowStack<E> {
         this.nextBranchTag = nextBranchTag;
     }
 
-    public void push(boolean[] pushedBranches, int branchID, int maxSize) {
+    public boolean[] push(boolean[] pushedBranches, int branchID, int maxSize) {
         if(!isDisabled()) {
-            super.push(nextBranchTag, pushedBranches, branchID, maxSize);
+            return super.push(nextBranchTag, pushedBranches, branchID, maxSize);
+        } else {
+            return pushedBranches;
         }
     }
 

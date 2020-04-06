@@ -123,4 +123,12 @@ public class FlowGraphUtil {
         }
         return builder.build();
     }
+
+    public static AbstractInsnNode findNextPrecedableInstruction(AbstractInsnNode insn) {
+        while(insn != null && (insn.getType() == AbstractInsnNode.FRAME || insn.getType() == AbstractInsnNode.LINE
+                || insn.getType() == AbstractInsnNode.LABEL || insn.getOpcode() > 200)) {
+            insn = insn.getNext();
+        }
+        return insn;
+    }
 }

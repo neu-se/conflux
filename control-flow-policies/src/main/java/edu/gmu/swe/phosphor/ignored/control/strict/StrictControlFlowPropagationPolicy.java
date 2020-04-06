@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.basic;
+package edu.gmu.swe.phosphor.ignored.control.strict;
 
 import edu.columbia.cs.psl.phosphor.PhosphorInstructionInfo;
 import edu.columbia.cs.psl.phosphor.control.AbstractControlFlowPropagationPolicy;
@@ -14,8 +14,10 @@ import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.COMBINE_TAGS;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.basic.BasicMethodRecord.*;
+import static edu.gmu.swe.phosphor.ignored.control.strict.StrictMethodRecord.STRICT_CONTROL_STACK_PUSH;
+import static edu.gmu.swe.phosphor.ignored.control.strict.StrictMethodRecord.STRICT_CONTROL_STACK_SET_NEXT_BRANCH_TAG;
 
-public class BasicControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<BasicControlFlowAnalyzer> {
+public class StrictControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<StrictControlFlowAnalyzer> {
 
     /**
      * The number of unique IDs assigned to branches in the method
@@ -23,18 +25,16 @@ public class BasicControlFlowPropagationPolicy extends AbstractControlFlowPropag
     private int numberOfUniqueBranchIDs = 0;
 
     /**
-     * The identifier of the next branch instruction encountered or -1
-     */
-    private int nextBranchID = -1;
-
-    /**
      * The local variable index of the boolean[] instance for storing pushed branches or -1 if not created
      */
     private int pushedBranchesIndex = -1;
 
+    /**
+     * Array containing the the local variables created by this policy
+     */
     private LocalVariable[] createdLocalVariables = new LocalVariable[0];
 
-    public BasicControlFlowPropagationPolicy(BasicControlFlowAnalyzer flowAnalyzer) {
+    public StrictControlFlowPropagationPolicy(StrictControlFlowAnalyzer flowAnalyzer) {
         super(flowAnalyzer);
     }
 
@@ -148,52 +148,47 @@ public class BasicControlFlowPropagationPolicy extends AbstractControlFlowPropag
             case Opcodes.IFNULL:
             case Opcodes.IFNONNULL:
                 // t
-                pushBranchStart();
+                setNextBranchTag();
         }
     }
 
     @Override
     public void visitTableSwitch(int min, int max, Label defaultLabel, Label[] labels) {
-        pushBranchStart();
+        setNextBranchTag();
     }
 
     @Override
     public void visitLookupSwitch(Label defaultLabel, int[] keys, Label[] labels) {
-        pushBranchStart();
+        setNextBranchTag();
     }
 
     @Override
     public void visitingPhosphorInstructionInfo(PhosphorInstructionInfo info) {
         if(info instanceof BranchStart) {
-            nextBranchID = ((BranchStart) info).getBranchID();
+            delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
+            delegate.visitVarInsn(ALOAD, pushedBranchesIndex);
+            push(delegate, ((BranchStart) info).getBranchID());
+            push(delegate, numberOfUniqueBranchIDs);
+            // control-stack [Z I I
+            STRICT_CONTROL_STACK_PUSH.delegateVisit(delegate);
+            delegate.visitVarInsn(ASTORE, pushedBranchesIndex);
         } else if(info instanceof BranchEnd) {
             if(pushedBranchesIndex != -1) {
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(ALOAD, pushedBranchesIndex);
                 push(delegate, ((BranchEnd) info).getBranchID());
+                // control-stack [Z I
                 BASIC_CONTROL_STACK_POP.delegateVisit(delegate);
             }
         }
     }
 
-    /**
-     * stack_pre = [taint]
-     * stack_post = []
-     */
-    private void pushBranchStart() {
-        if(nextBranchID != -1) {
-            delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
-            delegate.visitInsn(SWAP);
-            delegate.visitVarInsn(ALOAD, pushedBranchesIndex);
-            push(delegate, nextBranchID);
-            push(delegate, numberOfUniqueBranchIDs);
-            // control-stack taint [Z I I
-            BASIC_CONTROL_STACK_PUSH.delegateVisit(delegate);
-            delegate.visitVarInsn(ASTORE, pushedBranchesIndex);
-            nextBranchID = -1;
-        } else {
-            delegate.visitInsn(POP);
-        }
+    private void setNextBranchTag() {
+        // taint
+        delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
+        delegate.visitInsn(SWAP);
+        // control-stack taint
+        STRICT_CONTROL_STACK_SET_NEXT_BRANCH_TAG.delegateVisit(delegate);
     }
 
     private void copyTag() {

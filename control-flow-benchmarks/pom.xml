@@ -23,10 +23,16 @@
         </basic.control.manager>
         <!-- Binding Control -->
         <binding.control.cache>${project.build.directory}/binding-control-cache</binding.control.cache>
-        <binding.control.jvm>jvm-inst-binding</binding.control.jvm>
+        <binding.control.jvm>jvm-inst-binding-control</binding.control.jvm>
         <binding.control.manager>
             edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager
         </binding.control.manager>
+        <!-- Strict Control -->
+        <strict.control.cache>${project.build.directory}/strict-control-cache</strict.control.cache>
+        <strict.control.jvm>jvm-inst-strict-control</strict.control.jvm>
+        <strict.control.manager>
+            edu.gmu.swe.phosphor.ignored.control.strict.StrictControlFlowManager
+        </strict.control.manager>
     </properties>
     <profiles>
         <profile>
@@ -88,6 +94,27 @@
                                     </options>
                                     <associatedCaches>
                                         <associatedCache>${basic.control.cache}</associatedCache>
+                                    </associatedCaches>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>strict-control</id>
+                                <goals>
+                                    <goal>instrument</goal>
+                                </goals>
+                                <configuration>
+                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
+                                    <targetName>${strict.control.jvm}</targetName>
+                                    <options>
+                                        <quiet/>
+                                        <controlFlowManager>${strict.control.manager}</controlFlowManager>
+                                        <forceUnboxAcmpEq/>
+                                        <withEnumsByValue/>
+                                        <withArrayIndexTags/>
+                                        <reenableCaches/>
+                                    </options>
+                                    <associatedCaches>
+                                        <associatedCache>${strict.control.cache}</associatedCache>
                                     </associatedCaches>
                                 </configuration>
                             </execution>
@@ -156,6 +183,21 @@
                                             </options>
                                             <instrumentedJVM>
                                                 ${project.build.directory}/${basic.control.jvm}
+                                            </instrumentedJVM>
+                                        </phosphorConfiguration>
+                                        <phosphorConfiguration>
+                                            <name>strict-control</name>
+                                            <options>
+                                                <cacheDir>${strict.control.cache}</cacheDir>
+                                                <quiet/>
+                                                <controlFlowManager>${strict.control.manager}</controlFlowManager>
+                                                <forceUnboxAcmpEq/>
+                                                <withEnumsByValue/>
+                                                <withArrayIndexTags/>
+                                                <reenableCaches/>
+                                            </options>
+                                            <instrumentedJVM>
+                                                ${project.build.directory}/${strict.control.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
