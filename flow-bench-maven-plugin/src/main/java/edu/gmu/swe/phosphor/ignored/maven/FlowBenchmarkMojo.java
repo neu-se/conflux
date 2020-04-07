@@ -307,9 +307,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
                 try {
                     Properties existingProperties = new Properties();
                     existingProperties.load(new FileReader(propFile));
-                    if(!desiredProperties.equals(existingProperties)) {
-                        return false;
-                    }
+                    return desiredProperties.equals(existingProperties);
                 } catch(IOException e) {
                     return false;
                 }

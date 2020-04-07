@@ -13,8 +13,7 @@ public class FlowBenchResultImpl extends FlowBenchResult {
         return "Flow Benchmark";
     }
 
-    @TableStat(name = "Precision")
-    double precision() {
+    public double precision() {
         initializeConfusionMatrices();
         if(globalMatrix.truePositives + globalMatrix.falsePositives == 0) {
             return 0; // undefined, no labels were predicted
@@ -23,8 +22,7 @@ public class FlowBenchResultImpl extends FlowBenchResult {
         }
     }
 
-    @TableStat(name = "Recall")
-    double recall() {
+    public double recall() {
         initializeConfusionMatrices();
         if(globalMatrix.truePositives + globalMatrix.falseNegatives == 0) {
             return 0; // undefined, no labels were expected
@@ -34,14 +32,31 @@ public class FlowBenchResultImpl extends FlowBenchResult {
     }
 
     @TableStat(name = "F1")
-    double f1Score() {
+    public double f1Score() {
         initializeConfusionMatrices();
-        if(globalMatrix.truePositives + globalMatrix.falsePositives == 0
-                || globalMatrix.truePositives + globalMatrix.falseNegatives == 0) {
-            return 0; // undefined
-        } else {
-            return 2.0 * (precision() * recall()) / (precision() + recall());
+        if(globalMatrix.truePositives == 0) {
+            return 0;
         }
+        double denominator = (2.0 * globalMatrix.truePositives + globalMatrix.falsePositives + globalMatrix.falseNegatives);
+        return (2.0 * globalMatrix.truePositives) / denominator;
+    }
+
+    @TableStat(name = "TP")
+    public int truePositives() {
+        initializeConfusionMatrices();
+        return globalMatrix.truePositives;
+    }
+
+    @TableStat(name = "FP")
+    public int falsePositives() {
+        initializeConfusionMatrices();
+        return globalMatrix.falsePositives;
+    }
+
+    @TableStat(name = "FN")
+    public int falseNegatives() {
+        initializeConfusionMatrices();
+        return globalMatrix.falseNegatives;
     }
 
     @Override

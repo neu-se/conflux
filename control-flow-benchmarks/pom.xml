@@ -13,8 +13,8 @@
     </parent>
     <properties>
         <!--  Data + Array Index   -->
-        <data.array.index.jvm>jvm-inst-data</data.array.index.jvm>
-        <data.array.index.cache>${project.build.directory}/data-array-index-cache</data.array.index.cache>
+        <data.array.index.jvm>jvm-inst-data-only</data.array.index.jvm>
+        <data.array.index.cache>${project.build.directory}/data-only-cache</data.array.index.cache>
         <!-- Basic Control -->
         <basic.control.jvm>jvm-inst-basic-control</basic.control.jvm>
         <basic.control.cache>${project.build.directory}/basic-control-cache</basic.control.cache>
@@ -69,6 +69,7 @@
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
                                         <reenableCaches/>
+                                        <withHeavyObjEqualsHashcode/>
                                         <quiet/>
                                     </options>
                                     <associatedCaches>
@@ -91,6 +92,7 @@
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
                                         <reenableCaches/>
+                                        <withHeavyObjEqualsHashcode/>
                                     </options>
                                     <associatedCaches>
                                         <associatedCache>${basic.control.cache}</associatedCache>
@@ -112,6 +114,7 @@
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
                                         <reenableCaches/>
+                                        <withHeavyObjEqualsHashcode/>
                                     </options>
                                     <associatedCaches>
                                         <associatedCache>${strict.control.cache}</associatedCache>
@@ -132,6 +135,7 @@
                                         <withEnumsByValue/>
                                         <withArrayIndexTags/>
                                         <reenableCaches/>
+                                        <withHeavyObjEqualsHashcode/>
                                         <quiet/>
                                     </options>
                                     <associatedCaches>
@@ -165,6 +169,7 @@
                                                 <withEnumsByValue/>
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
+                                                <withHeavyObjEqualsHashcode/>
                                             </options>
                                             <instrumentedJVM>
                                                 ${project.build.directory}/${data.array.index.jvm}
@@ -180,6 +185,7 @@
                                                 <withEnumsByValue/>
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
+                                                <withHeavyObjEqualsHashcode/>
                                             </options>
                                             <instrumentedJVM>
                                                 ${project.build.directory}/${basic.control.jvm}
@@ -195,6 +201,7 @@
                                                 <withEnumsByValue/>
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
+                                                <withHeavyObjEqualsHashcode/>
                                             </options>
                                             <instrumentedJVM>
                                                 ${project.build.directory}/${strict.control.jvm}
@@ -210,6 +217,7 @@
                                                 <withEnumsByValue/>
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
+                                                <withHeavyObjEqualsHashcode/>
                                             </options>
                                             <instrumentedJVM>
                                                 ${project.build.directory}/${binding.control.jvm}
