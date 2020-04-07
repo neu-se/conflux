@@ -12,8 +12,9 @@
     <packaging>pom</packaging>
     <properties>
         <binding.flow.cache>${project.build.directory}/cached-binding-flows</binding.flow.cache>
-        <binding.flow.jvm>jvm-inst-binding</binding.flow.jvm>
-        <binding.control.manager>edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager
+        <binding.flow.jvm>jvm-inst-binding-control</binding.flow.jvm>
+        <binding.control.manager>
+            edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager
         </binding.control.manager>
     </properties>
     <build>
@@ -89,6 +90,7 @@
                                         <controlFlowManager>${binding.control.manager}</controlFlowManager>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
+                                        <quiet/>
                                     </options>
                                     <associatedCaches>
                                         <associatedCache>${binding.flow.cache}</associatedCache>

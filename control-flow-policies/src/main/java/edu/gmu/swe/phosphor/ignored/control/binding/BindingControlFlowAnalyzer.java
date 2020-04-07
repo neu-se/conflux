@@ -163,6 +163,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                     || OpcodesUtil.isFieldStoreInsn(insn.getOpcode())
                     || OpcodesUtil.isLocalVariableStoreInsn(insn.getOpcode())
                     || OpcodesUtil.isPushConstantOpcode(insn.getOpcode())
+                    || (OpcodesUtil.isReturnOpcode(insn.getOpcode()) && insn.getOpcode() != RETURN)
                     || insn.getOpcode() == IINC) {
                 if(tracer.getLoopLevelMap().containsKey(insn)) {
                     instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(tracer.getLoopLevelMap().get(insn))));

@@ -38,6 +38,18 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
     }
 
     @Override
+    public void onMethodExit(int opcode) {
+        switch(opcode) {
+            case IRETURN:
+            case LRETURN:
+            case FRETURN:
+            case DRETURN:
+                copyTag();
+                COMBINE_TAGS.delegateVisit(delegate);
+        }
+    }
+
+    @Override
     public void initializeLocalVariables(MethodVisitor mv) {
         numberOfUniqueBranchIDs = flowAnalyzer.getNumberOfUniqueBranchIDs();
     }

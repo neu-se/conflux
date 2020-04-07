@@ -39,6 +39,18 @@ public class BasicControlFlowPropagationPolicy extends AbstractControlFlowPropag
     }
 
     @Override
+    public void onMethodExit(int opcode) {
+        switch(opcode) {
+            case IRETURN:
+            case LRETURN:
+            case FRETURN:
+            case DRETURN:
+                copyTag();
+                COMBINE_TAGS.delegateVisit(delegate);
+        }
+    }
+
+    @Override
     public void poppingFrame(MethodVisitor mv) {
         if(pushedBranchesIndex != -1) {
             mv.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
