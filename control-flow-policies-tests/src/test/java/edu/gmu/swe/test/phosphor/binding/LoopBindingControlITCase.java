@@ -25,7 +25,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
             }
         }
         for(char digit : digits) {
-            Taint tag = MultiTainter.getTaint(digit);
+            Taint<?> tag = MultiTainter.getTaint(digit);
             assertNonNullTaint(tag);
             assertTaintHasOnlyLabels(tag, Integer.parseInt("" + digit));
         }
@@ -44,24 +44,6 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
         }
         Taint<?> tag = MultiTainter.getTaint(z);
         assertNullOrEmpty(tag);
-    }
-
-    @Test
-    public void testCountLeadingZeros() {
-        int z = 0;
-        int[] a = new int[5];
-        a[4] = 1;
-        taintWithIndices(a);
-        for(int i : a) {
-            if(i == 0) {
-                z++;
-            } else {
-                break;
-            }
-        }
-        Taint<?> tag = MultiTainter.getTaint(z);
-        assertNonNullTaint(tag);
-        assertTaintHasOnlyLabels(tag, 0, 1, 2, 3);
     }
 
     @Test

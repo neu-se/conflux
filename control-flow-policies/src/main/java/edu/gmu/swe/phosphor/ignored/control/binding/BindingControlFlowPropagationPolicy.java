@@ -44,6 +44,7 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
             case LRETURN:
             case FRETURN:
             case DRETURN:
+            case ARETURN:
                 copyTag();
                 COMBINE_TAGS.delegateVisit(delegate);
         }

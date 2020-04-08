@@ -22,8 +22,7 @@ import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.findNextPreceda
 import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
 
 /**
- * Identifies and marks the scope of "binding" branch edges and indicates whether each marked edge is "revisable". Does
- * not consider edges due to exceptional control flow.
+ * Identifies and marks the scope of "binding" branch edges. Does not consider edges due to exceptional control flow.
  *
  * <p>For a control flow graph G = (V, E):
  *
@@ -51,17 +50,6 @@ import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoo
  *     <li>The predicate of the conditional jump instruction that ends basic block u is not constant</li>
  *     <li>There exits some edge (u, w) in E such that v != w and there exists a path from w to v</li>
  * </ul>
- *
- * <p> An instruction is said to be revision-excluded if and only if one of the following conditions is true:
- * <ul>
- *     <li>It is an ICONST_M1, ICONST_0, ICONST_1, ICONST_2, ICONST_3, ICONST_4, ICONST_5, LCONST_0, LCONST_1, FCONST_0,
- *     FCONST_1, FCONST_2, DCONST_0, DCONST_1, BIPUSH, SIPUSH, or LDC instruction</li>
- *     <li>It is an IINC instruction</li>
- *     <li>It is an ISTORE, LSTORE, FSTORE, DSTORE, or ASTORE instruction that stores a value v into the local variable
- *     x where v can be expressed as an arithmetic expression where each operand is either a constant value or a single
- *     definition of x.
- * </ul>
- * A revision-excluded instruction is considered to be outside of the scope of all revisable branch edges.
  */
 public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
@@ -152,8 +140,8 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     }
 
     /**
-     * Adds CopyTagInfo nodes before IINC, constant storing, array store, field store, and local variable store
-     * instructions.
+     * Adds CopyTagInfo nodes before IINC, constant pushing instructions, array store instructions,
+     * field store instructions, local variable store instructions, and non-void return instructions.
      */
     private void addCopyTagInfo() {
         Iterator<AbstractInsnNode> itr = instructions.iterator();
@@ -240,27 +228,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     private void setLoopLevel(BindingBranchEdge edge) {
         LoopLevel level = tracer.getLoopLevelMap().get(edge.getSource().getLastInsn());
-        if(level instanceof LoopLevel.VariantLoopLevel && ((LoopLevel.VariantLoopLevel) level).getLevelOffset() != 0) {
-            int revisableLoops = calculateRevisableContainingLoops(edge);
-            if(((LoopLevel.VariantLoopLevel) level).getLevelOffset() > revisableLoops) {
-                level = new LoopLevel.VariantLoopLevel(revisableLoops);
-            }
-        }
         edge.setLevel(level);
-    }
-
-    private int calculateRevisableContainingLoops(BindingBranchEdge edge) {
-        Set<NaturalLoop<BasicBlock>> containingLoops = containingLoopMap.get(edge.getSource().getLastInsn());
-        int revisableLoops = 0;
-        for(NaturalLoop<BasicBlock> containingLoop : containingLoops) {
-            for(BasicBlock successor : cfg.getSuccessors(edge.getSource())) {
-                if(!successor.equals(edge) && cfg.containsPath(successor, containingLoop.getHeader())) {
-                    revisableLoops++;
-                    break;
-                }
-            }
-        }
-        return revisableLoops;
     }
 
     /**

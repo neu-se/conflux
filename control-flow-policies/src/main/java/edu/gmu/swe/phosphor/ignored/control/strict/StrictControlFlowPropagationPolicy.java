@@ -45,6 +45,7 @@ public class StrictControlFlowPropagationPolicy extends AbstractControlFlowPropa
             case LRETURN:
             case FRETURN:
             case DRETURN:
+            case ARETURN:
                 copyTag();
                 COMBINE_TAGS.delegateVisit(delegate);
         }

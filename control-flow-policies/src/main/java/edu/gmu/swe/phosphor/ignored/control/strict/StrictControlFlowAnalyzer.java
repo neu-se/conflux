@@ -7,9 +7,7 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.BranchEdge;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
 import edu.gmu.swe.phosphor.ignored.control.ssa.TypeAnalyzer;
@@ -18,6 +16,15 @@ import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
+/**
+ * Choices:
+ * <ul>
+ *     <li>Does not propagate along the true edge of IFNULL branches - doing so increases FP without decreasing FN</li>
+ *     <li>Does not propagate along the false edge of IFNONNULL branches - doing so increases FP without decreasing FN</li>
+ *     <li>Does not propagate along the default case of switches - no impact of FP or FN</li>
+ *     <li>Does not propagate along switch cases where > 1 case (including the default) go to the same target block</li>
+ * </ul>
+ */
 public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     /**
@@ -35,9 +42,9 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         if(methodNode.instructions.size() > 0) {
             try {
                 SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
-                Set<BranchEdge> strictEdges = new HashSet<>();
-                StrictBranchGatheringGraphCreator creator = new StrictBranchGatheringGraphCreator(strictEdges, new TypeAnalyzer(ssaMethod));
+                StrictBranchGatheringGraphCreator creator = new StrictBranchGatheringGraphCreator(new TypeAnalyzer(ssaMethod));
                 FlowGraph<BasicBlock> cfg = creator.createControlFlowGraph(methodNode);
+                Set<BranchEdge> strictEdges = creator.getStrictEdges();
                 numberOfUniqueBranchIDs = processEdges(strictEdges, cfg);
                 for(BranchEdge edge : strictEdges) {
                     edge.markBranchStart(methodNode.instructions);
@@ -68,11 +75,13 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     private static final class StrictBranchGatheringGraphCreator extends BaseControlFlowGraphCreator {
 
-        private final Set<? super BranchEdge> branchEdges;
+        private final Set<BranchEdge> branchEdges = new HashSet<>();
         private final TypeAnalyzer typeAnalyzer;
 
-        StrictBranchGatheringGraphCreator(Set<? super BranchEdge> branchEdges, TypeAnalyzer typeAnalyzer) {
-            this.branchEdges = branchEdges;
+        private final Map<BasicBlock, List<BasicBlock>> switchCaseEdges = new HashMap<>();
+        private final Map<BasicBlock, BasicBlock> switchDefaultEdges = new HashMap<>();
+
+        StrictBranchGatheringGraphCreator(TypeAnalyzer typeAnalyzer) {
             this.typeAnalyzer = typeAnalyzer;
         }
 
@@ -116,12 +125,39 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         protected void addNonDefaultCaseSwitchEdge(BasicBlock source, BasicBlock target) {
             super.addNonDefaultCaseSwitchEdge(source, target);
             branchEdges.add(new BranchEdge(source, target, true));
+            if(!switchCaseEdges.containsKey(source)) {
+                switchCaseEdges.put(source, new LinkedList<>());
+            }
+            switchCaseEdges.get(source).add(target);
         }
 
         @Override
         protected void addDefaultCaseSwitchEdge(BasicBlock source, BasicBlock target) {
-            super.addDefaultCaseSwitchEdge(source, target);
-            branchEdges.add(new BranchEdge(source, target, true));
+            super.addNonDefaultCaseSwitchEdge(source, target);
+            switchDefaultEdges.put(source, target);
+        }
+
+        public Set<BranchEdge> getStrictEdges() {
+            // Find switch edges where multiple cases go to the same block
+            for(BasicBlock source : switchCaseEdges.keySet()) {
+                BasicBlock defaultBlock = switchDefaultEdges.get(source);
+                Set<BasicBlock> targets = new HashSet<>();
+                targets.add(defaultBlock);
+                Set<BasicBlock> duplicateTargets = new HashSet<>();
+                for(BasicBlock target : switchCaseEdges.get(source)) {
+                    if(!targets.add(target)) {
+                        duplicateTargets.add(target);
+                    }
+                }
+                Iterator<BranchEdge> itr = branchEdges.iterator();
+                while(itr.hasNext()) {
+                    BranchEdge edge = itr.next();
+                    if(edge.getSource().equals(source) && duplicateTargets.contains(edge.getTarget())) {
+                        itr.remove();
+                    }
+                }
+            }
+            return branchEdges;
         }
     }
 }
