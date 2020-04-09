@@ -12,4 +12,8 @@ public interface Expression {
     }
 
     List<VariableExpression> referencedVariables();
+
+    <V> V accept(ExpressionVisitor<V> visitor);
+
+    <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state);
 }

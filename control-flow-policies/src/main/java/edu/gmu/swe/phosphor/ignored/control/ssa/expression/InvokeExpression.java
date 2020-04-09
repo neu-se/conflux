@@ -182,4 +182,14 @@ public final class InvokeExpression implements Expression {
         }
         return new InvokeExpression(owner, name, desc, processedReceiver, processedArguments, type);
     }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
+    }
 }

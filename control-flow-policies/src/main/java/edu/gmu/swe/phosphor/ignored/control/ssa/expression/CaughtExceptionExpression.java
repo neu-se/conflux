@@ -46,4 +46,14 @@ public class CaughtExceptionExpression implements Expression {
     public int hashCode() {
         return id;
     }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
+    }
 }

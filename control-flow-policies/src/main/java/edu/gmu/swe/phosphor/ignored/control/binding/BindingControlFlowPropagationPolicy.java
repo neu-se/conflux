@@ -18,7 +18,7 @@ import static edu.gmu.swe.phosphor.ignored.control.binding.BindingMethodRecord.*
 
 public class BindingControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<BindingControlFlowAnalyzer> {
 
-    private static LoopLevel defaultLevel = new VariantLoopLevel(0);
+    private static final LoopLevel defaultLevel = new VariantLoopLevel(0);
 
     /**
      * The number of unique IDs assigned to branches in the method
@@ -39,14 +39,9 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
 
     @Override
     public void onMethodExit(int opcode) {
-        switch(opcode) {
-            case IRETURN:
-            case LRETURN:
-            case FRETURN:
-            case DRETURN:
-            case ARETURN:
-                copyTag();
-                COMBINE_TAGS.delegateVisit(delegate);
+        if(opcode != RETURN) {
+            copyTag();
+            COMBINE_TAGS.delegateVisit(delegate);
         }
     }
 
@@ -80,15 +75,8 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
 
     @Override
     public void visitingLocalVariableStore(int opcode, int var) {
-        switch(opcode) {
-            case ISTORE:
-            case FSTORE:
-            case DSTORE:
-            case LSTORE:
-            case ASTORE:
-                copyTag();
-                COMBINE_TAGS.delegateVisit(delegate);
-        }
+        copyTag();
+        COMBINE_TAGS.delegateVisit(delegate);
     }
 
     @Override

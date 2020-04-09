@@ -88,4 +88,14 @@ public final class FieldAccess implements Expression {
             return new FieldAccess(owner, name, desc, receiver.transform(transformer));
         }
     }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
+    }
 }

@@ -49,4 +49,14 @@ public final class NewExpression implements Expression {
     public Expression transform(VariableTransformer transformer) {
         return this;
     }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
+    }
 }

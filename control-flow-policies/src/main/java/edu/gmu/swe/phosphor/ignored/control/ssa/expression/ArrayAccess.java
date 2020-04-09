@@ -57,6 +57,16 @@ public final class ArrayAccess implements Expression {
     }
 
     @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
+    }
+
+    @Override
     public ArrayAccess transform(VariableTransformer transformer) {
         return new ArrayAccess(arrayRef.transform(transformer), index.transform(transformer));
     }
