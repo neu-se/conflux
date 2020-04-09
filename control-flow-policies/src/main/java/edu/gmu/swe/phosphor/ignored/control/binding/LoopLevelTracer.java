@@ -21,6 +21,9 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
+import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevelTracer.PossibleArrayDefinitionPredicate.ARRAY_DEFINITION_PREDICATE;
+import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevelTracer.PossibleFieldDefinitionPredicate.FIELD_DEFINITION_PREDICATE;
+
 public class LoopLevelTracer {
 
     private final MethodNode methodNode;
@@ -184,7 +187,8 @@ public class LoopLevelTracer {
             Expression index = ((ArrayAccess) lhs).getIndex();
             cl = ConstancyLevel.merge(cl, calculateConstancyLevel(index, candidateLoops));
         } else if(lhs instanceof VariableExpression) {
-            cl = calculateMaximumOfDirectUses((VariableExpression) lhs, candidateLoops, false);
+            cl = calculateConstancyOfUses((VariableExpression) lhs,
+                    candidateLoops, false, new HashSet<>());
         }
         if(lhs instanceof FieldAccess || lhs instanceof ArrayAccess || lhs instanceof LocalVariable) {
             for(Expression subExpression : gatherImpactingSubExpressions(ai, s)) {
@@ -244,9 +248,9 @@ public class LoopLevelTracer {
         Expression processedExcluded = excluded.transform(ssaMethod.getTransformer());
         if(processedValue.equals(processedExcluded)) {
             return (processedValue instanceof ArrayAccess && processedExcluded instanceof ArrayAccess
-                    && !checkAllPaths(source, target, LoopLevelTracer::possibleArrayRedefinition))
+                    && !checkAllPaths(source, target, ARRAY_DEFINITION_PREDICATE))
                     || (processedValue instanceof FieldAccess && processedExcluded instanceof FieldAccess
-                    && !checkAllPaths(source, target, LoopLevelTracer::possibleFieldRedefinition));
+                    && !checkAllPaths(source, target, FIELD_DEFINITION_PREDICATE));
         }
         return false;
     }
@@ -279,7 +283,8 @@ public class LoopLevelTracer {
             info.pushArgumentLevel(cl.toLoopLevel());
         }
         if(statement.definesVariable()) {
-            ConstancyLevel cl = calculateMaximumOfDirectUses(statement.getDefinedVariable(), candidateLoops, true);
+            ConstancyLevel cl = calculateConstancyOfUses(statement.getDefinedVariable(),
+                    candidateLoops, true, new HashSet<>());
             info.pushArgumentLevel(cl.toLoopLevel());
         }
         return info;
@@ -290,13 +295,23 @@ public class LoopLevelTracer {
     }
 
 
-    private ConstancyLevel calculateMaximumOfDirectUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops,
-                                                        boolean includeMethodUses) {
+    private ConstancyLevel calculateConstancyOfUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops,
+                                                    boolean includeMethodUses, Set<VariableExpression> visited) {
         ConstancyLevel cl = ConstantLevel.CONSTANT_LEVEL;
-        if(rawUsesMap.containsKey(expr)) {
+        if(visited.add(expr) && rawUsesMap.containsKey(expr)) {
             for(Statement s : rawUsesMap.get(expr)) {
                 if(s instanceof AssignmentStatement) {
-                    Expression lhs = ((AssignmentStatement) s).getLeftHandSide();
+                    AssignmentStatement assign = ((AssignmentStatement) s);
+                    Expression lhs = assign.getLeftHandSide();
+                    Expression rhs = assign.getRightHandSide();
+                    if(rhs instanceof InvokeExpression) {
+                        return new LoopVariant(candidateLoops);
+                    } else if(includeMethodUses && assign.definesVariable() && (rhs instanceof PhiFunction || rhs.equals(expr)
+                            || rhs instanceof UnaryExpression && ((UnaryExpression) rhs).getOperation() instanceof CastOperation)) {
+                        ConstancyLevel level = calculateConstancyOfUses(assign.getDefinedVariable(),
+                                candidateLoops, true, visited);
+                        cl = ConstancyLevel.merge(cl, level);
+                    }
                     if(lhs instanceof FieldAccess) {
                         Expression receiver = ((FieldAccess) lhs).getReceiver();
                         cl = ConstancyLevel.merge(cl, calculateConstancyLevel(receiver, candidateLoops));
@@ -305,9 +320,6 @@ public class LoopLevelTracer {
                         cl = ConstancyLevel.merge(cl, calculateConstancyLevel(arrayRef, candidateLoops));
                         Expression index = ((ArrayAccess) lhs).getIndex();
                         cl = ConstancyLevel.merge(cl, calculateConstancyLevel(index, candidateLoops));
-                    }
-                    if(((AssignmentStatement) s).getRightHandSide() instanceof InvokeExpression) {
-                        return new LoopVariant(candidateLoops);
                     }
                 } else if(s instanceof ReturnStatement) {
                     cl = ConstancyLevel.merge(cl, new ParameterDependent(ssaMethod.getParameterTypes().size()));
@@ -353,13 +365,23 @@ public class LoopLevelTracer {
         return false;
     }
 
-    private static boolean possibleArrayRedefinition(AbstractInsnNode insn) {
-        return insn instanceof InvokeDynamicInsnNode
-                || insn instanceof MethodInsnNode || OpcodesUtil.isArrayStore(insn.getOpcode());
+    public enum PossibleFieldDefinitionPredicate implements Predicate<AbstractInsnNode> {
+        FIELD_DEFINITION_PREDICATE;
+
+        @Override
+        public boolean test(AbstractInsnNode insn) {
+            return insn instanceof InvokeDynamicInsnNode
+                    || insn instanceof MethodInsnNode || OpcodesUtil.isFieldStoreInsn(insn.getOpcode());
+        }
     }
 
-    private static boolean possibleFieldRedefinition(AbstractInsnNode insn) {
-        return insn instanceof InvokeDynamicInsnNode
-                || insn instanceof MethodInsnNode || OpcodesUtil.isFieldStoreInsn(insn.getOpcode());
+    public enum PossibleArrayDefinitionPredicate implements Predicate<AbstractInsnNode> {
+        ARRAY_DEFINITION_PREDICATE;
+
+        @Override
+        public boolean test(AbstractInsnNode insn) {
+            return insn instanceof InvokeDynamicInsnNode
+                    || insn instanceof MethodInsnNode || OpcodesUtil.isArrayStore(insn.getOpcode());
+        }
     }
 }

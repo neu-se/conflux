@@ -13,7 +13,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
     private static final BindingControlFlowStack disabledInstance = new BindingControlFlowStack(true);
     private static final int NOT_PUSHED = -1;
     private ControlFrame<E> stackTop;
-    private ControlFrameBuilder<E> frameBuilder;
+    private final ControlFrameBuilder<E> frameBuilder;
     private Taint<E> nextBranchTag;
 
     public BindingControlFlowStack() {
@@ -38,6 +38,11 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
     @Override
     public BindingControlFlowStack<E> copyTop() {
         return new BindingControlFlowStack<>(this);
+    }
+
+    @Override
+    public void enteringUninstrumentedWrapper() {
+        frameBuilder.reset();
     }
 
     public BindingControlFlowStack<E> startFrame(int invocationLevel, int numArguments) {
@@ -249,6 +254,12 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
 
         void setNextArgLevel(int level) {
             argumentConstancyLevels[currentArg++] = level;
+        }
+
+        void reset() {
+            invocationLevel = 0;
+            argumentConstancyLevels = null;
+            currentArg = 0;
         }
 
         ControlFrame<E> build(ControlFrame<E> next) {

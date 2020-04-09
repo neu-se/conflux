@@ -57,7 +57,7 @@ public class SSAMethod {
         placePhiFunctions(tacGraph);
         renameVariables(tacGraph, threeAddressMethod.collectDefinedVariables());
         transformer = new PropagationTransformer(propagateVariables(tacGraph));
-        controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, vertex -> vertex.createSSABasicBlock(transformer));
+        controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, new TacConverter(transformer));
     }
 
     public Map<AbstractInsnNode, Frame<TypeValue>> getFrameMap() {

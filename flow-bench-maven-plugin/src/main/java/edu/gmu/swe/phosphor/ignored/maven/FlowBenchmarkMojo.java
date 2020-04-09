@@ -59,6 +59,11 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     private static final boolean debugForks = Boolean.getBoolean("phosphor.flow.bench.debug");
 
     /**
+     * The name of the Phosphor configuration to be run or null if all of the configurations should be run
+     */
+    private static final String selectedConfig = System.getProperty("flow.config", null);
+
+    /**
      * Maven build output directory
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
@@ -107,6 +112,10 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoFailureException {
+        if(selectedConfig != null) {
+            // Remove configurations that were not selected
+            phosphorConfigurations.removeIf(phosphorConfig -> !selectedConfig.equals(phosphorConfig.name));
+        }
         validatePhosphorConfigurations();
         try {
             File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
