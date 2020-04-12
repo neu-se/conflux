@@ -7,11 +7,11 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.gmu.swe.phosphor.ignored.control.BranchEdge;
+import edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil;
 import edu.gmu.swe.phosphor.ignored.control.binding.tracer.LoopLevelTracer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
 import edu.gmu.swe.phosphor.ignored.control.ssa.TypeAnalyzer;
@@ -64,11 +64,6 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     private LoopLevelTracer tracer;
 
     /**
-     * A mapping between each instruction in the method and the natural loops that contain it
-     */
-    private Map<AbstractInsnNode, Set<NaturalLoop<BasicBlock>>> containingLoopMap;
-
-    /**
      * The number of unique IDs assigned to branches in the method
      */
     private int numberOfUniqueBranchIDs = 0;
@@ -92,7 +87,6 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                 Set<BindingBranchEdge> bindingEdges = new HashSet<>();
                 BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, new TypeAnalyzer(ssaMethod));
                 cfg = creator.createControlFlowGraph(methodNode);
-                containingLoopMap = calculateContainingLoops();
                 numberOfUniqueBranchIDs = processEdges(bindingEdges);
                 for(BranchEdge edge : bindingEdges) {
                     edge.markBranchStart(instructions);
@@ -105,33 +99,6 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                 //
             }
         }
-    }
-
-    /**
-     * @return a mapping between each instruction and the natural loops that contain it
-     */
-    private Map<AbstractInsnNode, Set<NaturalLoop<BasicBlock>>> calculateContainingLoops() {
-        Set<NaturalLoop<BasicBlock>> loops = cfg.getNaturalLoops();
-        Map<AbstractInsnNode, Set<NaturalLoop<BasicBlock>>> loopMap = new HashMap<>();
-        Iterator<AbstractInsnNode> itr = instructions.iterator();
-        while(itr.hasNext()) {
-            loopMap.put(itr.next(), new HashSet<>());
-        }
-        for(NaturalLoop<BasicBlock> loop : loops) {
-            for(BasicBlock basicBlock : loop.getVertices()) {
-                if(basicBlock instanceof SimpleBasicBlock) {
-                    AbstractInsnNode start = basicBlock.getFirstInsn();
-                    while(start != null) {
-                        loopMap.get(start).add(loop);
-                        if(start == basicBlock.getLastInsn()) {
-                            break;
-                        }
-                        start = start.getNext();
-                    }
-                }
-            }
-        }
-        return loopMap;
     }
 
     /**
@@ -182,6 +149,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
      * control flow graph such that u is contained in some loop l and v is not contained in l.
      */
     private void markLoopExits() {
+        Map<BasicBlock, Set<NaturalLoop<BasicBlock>>> containingLoopsMap = FlowGraphUtil.calculateContainingLoops(cfg);
         Set<NaturalLoop<BasicBlock>> loops = cfg.getNaturalLoops();
         for(NaturalLoop<BasicBlock> loop : loops) {
             BasicBlock header = loop.getHeader();
@@ -196,7 +164,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                     }
                 }
             }
-            int numContainingLoops = containingLoopMap.get(header.getFirstInsn()).size();
+            int numContainingLoops = containingLoopsMap.get(header).size();
             ExitLoopLevelInfo exitLoopLevelInfo = new ExitLoopLevelInfo(numContainingLoops);
             for(BasicBlock exit : exits) {
                 AbstractInsnNode nextInsn = findNextPrecedableInstruction(exit.getFirstInsn());

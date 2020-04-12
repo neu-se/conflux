@@ -76,6 +76,7 @@ public class ValueConstancies implements StatefulExpressionVisitor<Constancy, Se
                 && !valueConstancyMap.containsKey(expression)) {
             throw new IllegalArgumentException();
         }
+        expression = expression.accept(propagatingVisitor, null);
         Set<NaturalLoop<AnnotatedBasicBlock>> candidates = containingLoops.get(location);
         if(candidates == null) {
             candidates = Collections.emptySet();

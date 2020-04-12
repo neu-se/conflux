@@ -8,19 +8,24 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 
+/**
+ * Perform basic constant propagation, constant folding, and copy-propagation.
+ */
 public class PropagatingVisitor implements StatefulExpressionVisitor<Expression, VariableExpression>, StatementVisitor<Statement> {
 
-    private final Map<VariableExpression, Expression> currentDefinitions = new HashMap<>();
+    private final Map<VariableExpression, Expression> propagatingDefinitions = new HashMap<>();
 
     public PropagatingVisitor(FlowGraph<? extends AnnotatedBasicBlock> graph) {
+        Map<VariableExpression, Expression> currentDefinitions = new HashMap<>();
         for(AnnotatedBasicBlock block : graph.getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
                 for(Statement statement : insn.getStatements()) {
-                    if(statement.definesVariable()) {
+                    if(statement.definesVariable() && statement instanceof AssignmentStatement) {
                         Expression rhs = ((AssignmentStatement) statement).getRightHandSide();
                         if(canPropagate(rhs)) {
-                            currentDefinitions.put(statement.getDefinedVariable(), rhs);
+                            propagatingDefinitions.put(statement.getDefinedVariable(), rhs);
                         }
+                        currentDefinitions.put(statement.getDefinedVariable(), rhs);
                     }
                 }
             }
@@ -28,15 +33,25 @@ public class PropagatingVisitor implements StatefulExpressionVisitor<Expression,
         boolean changed;
         do {
             changed = false;
-            for(VariableExpression lhs : currentDefinitions.keySet()) {
+            for(Map.Entry<VariableExpression, Expression> entry : currentDefinitions.entrySet()) {
+                VariableExpression lhs = entry.getKey();
                 Expression rhs = currentDefinitions.get(lhs);
                 Expression transformed = rhs.accept(this, lhs);
                 if(!rhs.equals(transformed)) {
                     changed = true;
-                    currentDefinitions.put(lhs, transformed);
+                    entry.setValue(transformed);
+                    if(canPropagate(transformed)) {
+                        propagatingDefinitions.put(lhs, transformed);
+                    }
                 }
             }
         } while(changed);
+    }
+
+    private boolean canPropagate(Expression valueExpr) {
+        return valueExpr instanceof ConstantExpression
+                || valueExpr instanceof ParameterExpression
+                || valueExpr instanceof VariableExpression;
     }
 
     @Override
@@ -145,8 +160,8 @@ public class PropagatingVisitor implements StatefulExpressionVisitor<Expression,
 
     @Override
     public Expression visit(LocalVariable expression, VariableExpression lhs) {
-        if(currentDefinitions.containsKey(expression)) {
-            return currentDefinitions.get(expression);
+        if(propagatingDefinitions.containsKey(expression)) {
+            return propagatingDefinitions.get(expression);
         } else {
             return expression;
         }
@@ -154,8 +169,8 @@ public class PropagatingVisitor implements StatefulExpressionVisitor<Expression,
 
     @Override
     public Expression visit(StackElement expression, VariableExpression lhs) {
-        if(currentDefinitions.containsKey(expression)) {
-            return currentDefinitions.get(expression);
+        if(propagatingDefinitions.containsKey(expression)) {
+            return propagatingDefinitions.get(expression);
         } else {
             return expression;
         }
@@ -172,31 +187,10 @@ public class PropagatingVisitor implements StatefulExpressionVisitor<Expression,
                 values.add(propagated);
             }
         }
-        values = mergeConstants(values);
         if(values.size() == 1) {
             return values.iterator().next();
         }
         return new PhiFunction(values);
-    }
-
-    private Set<Expression> mergeConstants(Set<Expression> values) {
-        Set<Expression> result = new HashSet<>();
-        for(Expression v1 : values) {
-            boolean keep = true;
-            if(v1 instanceof ConstantExpression) {
-                for(Expression v2 : values) {
-                    if(v2 instanceof ConstantExpression && v1 != v2
-                            && ((ConstantExpression) v2).canMerge((ConstantExpression) v1)) {
-                        keep = false;
-                        break;
-                    }
-                }
-            }
-            if(keep) {
-                result.add(v1);
-            }
-        }
-        return result;
     }
 
     @Override
@@ -269,21 +263,5 @@ public class PropagatingVisitor implements StatefulExpressionVisitor<Expression,
     @Override
     public Statement visit(ThrowStatement statement) {
         return new ThrowStatement(statement.getExpression().accept(this, null));
-    }
-
-    public static boolean canPropagate(Expression valueExpr) {
-        if(valueExpr instanceof ConstantExpression || valueExpr instanceof ParameterExpression
-                || valueExpr instanceof VariableExpression) {
-            return true;
-        } else if(valueExpr instanceof BinaryExpression) {
-            Expression operand1 = ((BinaryExpression) valueExpr).getOperand1();
-            Expression operand2 = ((BinaryExpression) valueExpr).getOperand2();
-            return canPropagate(operand1) && canPropagate(operand2);
-        } else if(valueExpr instanceof UnaryExpression) {
-            Expression operand = ((UnaryExpression) valueExpr).getOperand();
-            return canPropagate(operand);
-        } else {
-            return false;
-        }
     }
 }

@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public class ParameterExpression implements Expression {
+public final class ParameterExpression implements Expression {
 
     private final int parameterNumber;
 

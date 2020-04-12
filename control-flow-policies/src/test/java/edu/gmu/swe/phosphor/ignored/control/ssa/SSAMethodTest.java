@@ -117,7 +117,7 @@ public class SSAMethodTest {
                     if(statement instanceof AssignmentStatement) {
                         Expression rhs = ((AssignmentStatement) statement).getRightHandSide();
                         if(rhs instanceof PhiFunction) {
-                            assertTrue(((PhiFunction) rhs).getValues().length >= 2);
+                            assertTrue(((PhiFunction) rhs).getValues().size() >= 2);
                         }
                     }
                 }

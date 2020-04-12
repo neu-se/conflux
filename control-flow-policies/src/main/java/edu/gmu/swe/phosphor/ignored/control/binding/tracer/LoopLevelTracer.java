@@ -37,7 +37,6 @@ public class LoopLevelTracer {
     private final ValueConstancies valueConstancies;
     private final PropagatingVisitor propagatingVisitor;
 
-
     public LoopLevelTracer(MethodNode methodNode, SSAMethod method) {
         this.methodNode = methodNode;
         this.method = method;

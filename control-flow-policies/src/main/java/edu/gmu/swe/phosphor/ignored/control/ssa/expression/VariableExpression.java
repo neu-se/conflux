@@ -4,7 +4,7 @@ public abstract class VariableExpression implements Expression {
 
     private final int version;
 
-    public VariableExpression(int version) {
+    VariableExpression(int version) {
         this.version = version;
     }
 

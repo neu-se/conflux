@@ -1,20 +1,20 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 
-import java.util.Arrays;
+public final class PhiFunction implements Expression {
 
-public class PhiFunction implements Expression {
-
-    private final Expression[] values;
+    private final Set<Expression> values;
 
     public PhiFunction(Set<? extends Expression> values) {
-        this.values = values.toArray(new Expression[0]);
+        this.values = Collections.unmodifiableSet(new HashSet<>(values));
     }
 
-    public Expression[] getValues() {
-        return values.clone();
+    public Set<Expression> getValues() {
+        return values;
     }
 
     @Override
@@ -29,14 +29,10 @@ public class PhiFunction implements Expression {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("phi<");
-        for(int i = 0; i < values.length; i++) {
-            builder.append(values[i]);
-            if((i + 1) < values.length) {
-                builder.append(", ");
-            }
-        }
-        return builder.append(">").toString();
+        return new StringBuilder("phi<")
+                .append(values)
+                .append(">")
+                .toString();
     }
 
     @Override
@@ -47,11 +43,11 @@ public class PhiFunction implements Expression {
             return false;
         }
         PhiFunction that = (PhiFunction) o;
-        return Arrays.equals(values, that.values);
+        return values != null ? values.equals(that.values) : that.values == null;
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(values);
+        return values != null ? values.hashCode() : 0;
     }
 }

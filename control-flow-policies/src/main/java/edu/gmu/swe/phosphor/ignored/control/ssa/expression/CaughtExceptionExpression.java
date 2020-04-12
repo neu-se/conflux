@@ -1,6 +1,6 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-public class CaughtExceptionExpression implements Expression {
+public final class CaughtExceptionExpression implements Expression {
 
     private final int id;
 

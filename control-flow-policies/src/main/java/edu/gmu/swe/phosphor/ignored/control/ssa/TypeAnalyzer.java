@@ -5,10 +5,8 @@ import edu.columbia.cs.psl.phosphor.control.type.TypeValue;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.IfStatement;
@@ -254,14 +252,15 @@ public class TypeAnalyzer {
                     return tv.getType();
             }
         }
-        Type[] types = new Type[pf.getValues().length];
+        Set<Type> types = new HashSet<>();
         boolean allTypesKnown = true;
         boolean allTypesIntLike = true;
         boolean allTypeReferenceTypes = true;
-        for(int i = 0; i < types.length; i++) {
-            if(typeMap.containsKey(pf.getValues()[i])) {
-                types[i] = typeMap.get(pf.getValues()[i]);
-                switch(types[i].getSort()) {
+        for(Expression value : pf.getValues()) {
+            if(typeMap.containsKey(value)) {
+                Type t = typeMap.get(value);
+                types.add(t);
+                switch(t.getSort()) {
                     case Type.DOUBLE:
                         return Type.DOUBLE_TYPE;
                     case Type.FLOAT:
@@ -286,17 +285,10 @@ public class TypeAnalyzer {
             }
         }
         if(allTypesKnown) {
-            boolean allTypesEqual = true;
-            Type first = types[0];
-            for(int i = 1; i < types.length; i++) {
-                if(!types[i].equals(first)) {
-                    allTypesEqual = false;
-                    break;
-                }
+            if(types.size() == 1) {
+                return types.iterator().next();
             }
-            if(allTypesEqual) {
-                return first;
-            } else if(allTypeReferenceTypes) {
+            if(allTypeReferenceTypes) {
                 return OBJECT_TYPE; // close enough
             } else if(allTypesIntLike) {
                 boolean containsByte = false;
@@ -370,7 +362,7 @@ public class TypeAnalyzer {
         for(AnnotatedBasicBlock block : graph.getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
                 for(Statement s : insn.getStatements()) {
-                    if(s instanceof AssignmentStatement && ((AssignmentStatement) s).definesVariable()) {
+                    if(s instanceof AssignmentStatement && s.definesVariable()) {
                         definitions.put((AssignmentStatement) s, insn.getInstruction());
                     }
                 }
