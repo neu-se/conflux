@@ -1,9 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
-
 public abstract class VariableExpression implements Expression {
 
     private final int version;
@@ -32,15 +28,5 @@ public abstract class VariableExpression implements Expression {
     @Override
     public int hashCode() {
         return version;
-    }
-
-    @Override
-    public List<VariableExpression> referencedVariables() {
-        return Collections.singletonList(this);
-    }
-
-    @Override
-    public Expression transform(VariableTransformer transformer) {
-        return transformer.transformUse(this);
     }
 }

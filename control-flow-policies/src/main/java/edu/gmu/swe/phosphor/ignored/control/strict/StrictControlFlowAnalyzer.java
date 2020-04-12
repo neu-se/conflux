@@ -63,7 +63,7 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         while(itr.hasNext()) {
             BranchEdge edge = itr.next();
             if(immediatePostDominators.containsKey(edge.getSource())) {
-                edge.setBranchID(nextBranchIDAssigned++);
+                edge.setBranchId(nextBranchIDAssigned++);
                 edge.addScopeEnd(immediatePostDominators.get(edge.getSource()));
             } else {
                 // Unreachable source block

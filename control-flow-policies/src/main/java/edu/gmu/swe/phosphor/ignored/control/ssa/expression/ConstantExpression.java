@@ -3,9 +3,6 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.IntInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LdcInsnNode;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
@@ -35,16 +32,6 @@ public interface ConstantExpression extends Expression {
 
     default IntegerConstantExpression notEqual(ConstantExpression expression) {
         return flipBoolean(constantEqual(expression));
-    }
-
-    @Override
-    default List<VariableExpression> referencedVariables() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    default ConstantExpression transform(VariableTransformer transformer) {
-        return this;
     }
 
     static IntegerConstantExpression fromBoolean(boolean b) {

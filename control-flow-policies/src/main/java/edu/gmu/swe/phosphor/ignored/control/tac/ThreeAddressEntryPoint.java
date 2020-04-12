@@ -6,7 +6,9 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.*;
+import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedBasicBlock;
+import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedInstruction;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionAssigningVisitor;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 
@@ -25,11 +27,6 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
     }
 
     @Override
-    public List<Statement> getSSAStatements() {
-        return ssaStatements;
-    }
-
-    @Override
     public int getIndex() {
         return -1;
     }
@@ -40,27 +37,22 @@ public class ThreeAddressEntryPoint extends EntryPoint implements ThreeAddressBa
     }
 
     @Override
-    public void addPhiFunctionValues(Map<VariableExpression, VersionStack> versionStacks) {
+    public void addPhiFunctionValues(VersionAssigningVisitor visitor) {
 
     }
 
     @Override
-    public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
-        VersionAssigningTransformer transformer = new VersionAssigningTransformer(versionStacks);
+    public void processStatements(VersionAssigningVisitor visitor) {
         ssaStatements = new LinkedList<>();
         for(Statement statement : threeAddressStatements) {
-            ssaStatements.add(statement.transform(transformer));
+            ssaStatements.add(statement.accept(visitor));
         }
         ssaStatements = Collections.unmodifiableList(ssaStatements);
     }
 
     @Override
-    public AnnotatedBasicBlock createSSABasicBlock(PropagationTransformer transformer) {
-        List<Statement> processedStatements = new LinkedList<>();
-        for(Statement rawStatement : ssaStatements) {
-            processedStatements.add(rawStatement.transform(transformer));
-        }
-        AnnotatedInstruction insn = new AnnotatedInstruction(null, ssaStatements, processedStatements);
+    public AnnotatedBasicBlock createSSABasicBlock() {
+        AnnotatedInstruction insn = new AnnotatedInstruction(null, ssaStatements);
         return new AnnotatedBasicBlock(getIndex(), Collections.singletonList(insn));
     }
 

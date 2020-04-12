@@ -1,30 +1,40 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class ReturnStatement implements Statement {
 
-    private final Expression returnValue;
-    private final transient List<VariableExpression> usedVariables;
+    private final Expression expression;
 
 
-    public ReturnStatement(Expression returnValue) {
-        this.returnValue = returnValue;
-        usedVariables = Statement.gatherVersionedExpressions(returnValue);
+    public ReturnStatement(Expression expression) {
+        this.expression = expression;
     }
 
-    public Expression getReturnValue() {
-        return returnValue;
+    public boolean isVoid() {
+        return expression == null;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    @Override
+    public <V> V accept(StatementVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulStatementVisitor<V, S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
     public String toString() {
-        if(returnValue == null) {
+        if(expression == null) {
             return "return";
         }
-        return String.format("return %s", returnValue);
+        return String.format("return %s", expression);
     }
 
     @Override
@@ -35,30 +45,11 @@ public final class ReturnStatement implements Statement {
             return false;
         }
         ReturnStatement that = (ReturnStatement) o;
-        return returnValue != null ? returnValue.equals(that.returnValue) : that.returnValue == null;
+        return expression != null ? expression.equals(that.expression) : that.expression == null;
     }
 
     @Override
     public int hashCode() {
-        return returnValue != null ? returnValue.hashCode() : 0;
-    }
-
-    @Override
-    public ReturnStatement transform(VariableTransformer transformer) {
-        if(returnValue == null) {
-            return this;
-        } else {
-            return new ReturnStatement(returnValue.transform(transformer));
-        }
-    }
-
-    @Override
-    public VariableExpression getDefinedVariable() {
-        return null;
-    }
-
-    @Override
-    public List<VariableExpression> getUsedVariables() {
-        return usedVariables;
+        return expression != null ? expression.hashCode() : 0;
     }
 }

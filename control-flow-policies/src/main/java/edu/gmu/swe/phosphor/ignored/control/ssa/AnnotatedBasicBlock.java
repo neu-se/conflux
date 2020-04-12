@@ -16,6 +16,9 @@ public class AnnotatedBasicBlock {
     public AnnotatedBasicBlock(int index, List<AnnotatedInstruction> instructions) {
         this.index = index;
         this.instructions = Collections.unmodifiableList(new ArrayList<>(instructions));
+        for(AnnotatedInstruction insn : instructions) {
+            insn.setBasicBlock(this);
+        }
     }
 
     public int getIndex() {
@@ -26,47 +29,27 @@ public class AnnotatedBasicBlock {
         return instructions;
     }
 
-    public String getRawStatementsString() {
-        StringBuilder builder = new StringBuilder();
-        int x = 0;
-        for(AnnotatedInstruction i : instructions) {
-            String s = i.getRawStatementString();
-            if(s.length() > 0) {
-                builder.append(s);
-                if(x != instructions.size() - 1) {
-                    builder.append("\n");
-                }
-            }
-            x++;
-        }
-        return builder.toString();
-    }
-
-    public String getProcessedStatementsString() {
-        StringBuilder builder = new StringBuilder();
-        int x = 0;
-        for(AnnotatedInstruction i : instructions) {
-            String s = i.getProcessedStatementString();
-            if(s.length() > 0) {
-                builder.append(s);
-                if(x != instructions.size() - 1) {
-                    builder.append("\n");
-                }
-            }
-            x++;
-        }
-        return builder.toString();
-    }
-
     @Override
     public String toString() {
-        return getRawStatementsString();
+        StringBuilder builder = new StringBuilder();
+        int x = 0;
+        for(AnnotatedInstruction i : instructions) {
+            String s = i.toString();
+            if(s.length() > 0) {
+                builder.append(s);
+                if(x != instructions.size() - 1) {
+                    builder.append("\n");
+                }
+            }
+            x++;
+        }
+        return builder.toString();
     }
 
     public AbstractInsnNode getFirstInsn() {
         for(AnnotatedInstruction insn : instructions) {
-            if(insn.getOriginalInstruction() != null) {
-                return insn.getOriginalInstruction();
+            if(insn.getInstruction() != null) {
+                return insn.getInstruction();
             }
         }
         return NOP_INSN;
@@ -75,8 +58,8 @@ public class AnnotatedBasicBlock {
     public AbstractInsnNode getLastInsn() {
         for(int i = instructions.size() - 1; i >= 0; i--) {
             AnnotatedInstruction insn = instructions.get(i);
-            if(insn.getOriginalInstruction() != null) {
-                return insn.getOriginalInstruction();
+            if(insn.getInstruction() != null) {
+                return insn.getInstruction();
             }
         }
         return NOP_INSN;

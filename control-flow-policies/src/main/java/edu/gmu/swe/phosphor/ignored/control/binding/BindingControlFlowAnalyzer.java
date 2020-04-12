@@ -12,6 +12,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.gmu.swe.phosphor.ignored.control.BranchEdge;
+import edu.gmu.swe.phosphor.ignored.control.binding.tracer.LoopLevelTracer;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
 import edu.gmu.swe.phosphor.ignored.control.ssa.TypeAnalyzer;
 
@@ -44,12 +45,6 @@ import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoo
  * before the start of the basic block v. The scope of a binding branch edge (u, v) ends before each basic block w
  * in V such that the exists a path from the distinguished start vertex of the control flow graph to w that does not
  * contain the edge (u, v).
- *
- * <p> A branch edge (u, v) is said to be revisable if and only if all of the following conditions are true:
- * <ul>
- *     <li>The predicate of the conditional jump instruction that ends basic block u is not constant</li>
- *     <li>There exits some edge (u, w) in E such that v != w and there exists a path from w to v</li>
- * </ul>
  */
 public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
@@ -218,7 +213,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
             if(!edge.hasNonEmptyScope(cfg)) {
                 itr.remove();
             } else {
-                edge.setBranchID(nextBranchIDAssigned++);
+                edge.setBranchId(nextBranchIDAssigned++);
                 edge.setScopeEnds(cfg);
                 setLoopLevel(edge);
             }
@@ -249,7 +244,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
         @Override
         public AbstractInsnNode createScopeStartNode() {
-            return new LdcInsnNode(new BindingBranchStart(level, getBranchID()));
+            return new LdcInsnNode(new BindingBranchStart(level, getBranchId()));
         }
 
         boolean hasNonEmptyScope(FlowGraph<BasicBlock> cfg) {

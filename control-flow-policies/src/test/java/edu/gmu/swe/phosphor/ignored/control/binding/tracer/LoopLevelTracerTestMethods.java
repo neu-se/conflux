@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.binding;
+package edu.gmu.swe.phosphor.ignored.control.binding.tracer;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;

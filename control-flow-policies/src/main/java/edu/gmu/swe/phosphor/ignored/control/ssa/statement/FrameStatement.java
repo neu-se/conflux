@@ -4,9 +4,6 @@ import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.FrameNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
@@ -125,20 +122,30 @@ public final class FrameStatement implements Statement {
         return typeDesc;
     }
 
-    public int getNLocal() {
-        return nLocal;
-    }
-
     public Object[] getLocal() {
         return local.clone();
+    }
+
+    public Object[] getStack() {
+        return stack.clone();
+    }
+
+    public int getNLocal() {
+        return nLocal;
     }
 
     public int getNStack() {
         return nStack;
     }
 
-    public Object[] getStack() {
-        return stack.clone();
+    @Override
+    public <V> V accept(StatementVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulStatementVisitor<V, S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -183,21 +190,6 @@ public final class FrameStatement implements Statement {
         return result;
     }
 
-    @Override
-    public FrameStatement transform(VariableTransformer transformer) {
-        return this;
-    }
-
-    @Override
-    public VariableExpression getDefinedVariable() {
-        return null;
-    }
-
-    @Override
-    public List<VariableExpression> getUsedVariables() {
-        return Collections.emptyList();
-    }
-
     private static Object[] asArray(final java.util.List<Object> list) {
         Object[] objects = new Object[list.size()];
         for(int i = 0; i < objects.length; ++i) {
@@ -209,4 +201,5 @@ public final class FrameStatement implements Statement {
         }
         return objects;
     }
+
 }

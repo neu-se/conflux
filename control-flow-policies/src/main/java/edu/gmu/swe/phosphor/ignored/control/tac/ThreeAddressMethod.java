@@ -124,20 +124,6 @@ public class ThreeAddressMethod {
         return definedVariables;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        for(Statement s : parameterDefinitions) {
-            builder.append(s.toString()).append("\n");
-        }
-        for(Statement[] statements : statementMap.values()) {
-            for(Statement s : statements) {
-                builder.append(s.toString()).append("\n");
-            }
-        }
-        return builder.toString();
-    }
-
     private static List<LocalVariable> computeParameterDefinitions(MethodNode method) {
         List<LocalVariable> params = new LinkedList<>();
         int currentLocal = 0;
@@ -152,5 +138,19 @@ public class ThreeAddressMethod {
             currentLocal += argumentType.getSize();
         }
         return params;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for(Statement s : parameterDefinitions) {
+            builder.append(s.toString()).append("\n");
+        }
+        for(Statement[] statements : statementMap.values()) {
+            for(Statement s : statements) {
+                builder.append(s.toString()).append("\n");
+            }
+        }
+        return builder.toString();
     }
 }

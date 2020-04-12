@@ -24,18 +24,18 @@ public class TypeAnalyzer {
     private static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
 
     private final List<Type> parameterTypes;
-    private final PropagationTransformer transformer;
+    private final PropagatingVisitor propagatingVisitor;
     private final Map<AbstractInsnNode, AnnotatedInstruction> insnMap = new HashMap<>();
     private final Map<AssignmentStatement, Frame<TypeValue>> phiFrameMap;
     private final Map<VariableExpression, Type> typeMap = new HashMap<>();
 
     public TypeAnalyzer(SSAMethod ssaMethod) {
         parameterTypes = ssaMethod.getParameterTypes();
-        transformer = ssaMethod.getTransformer();
+        propagatingVisitor = new PropagatingVisitor(ssaMethod.getControlFlowGraph());
         phiFrameMap = calculatePhiFrameMap(ssaMethod);
         for(AnnotatedBasicBlock block : ssaMethod.getControlFlowGraph().getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
-                insnMap.put(insn.getOriginalInstruction(), insn);
+                insnMap.put(insn.getInstruction(), insn);
             }
         }
         calculateTypes(calculateDefinitions(ssaMethod.getControlFlowGraph()));
@@ -56,14 +56,14 @@ public class TypeAnalyzer {
                 }
                 if(type != null) {
                     changed = true;
-                    typeMap.put(statement.getDefinedVariable(), type);
+                    typeMap.put((VariableExpression) statement.getLeftHandSide(), type);
                     itr.remove();
                 }
             }
         } while(changed);
         for(AssignmentStatement statement : definitions.keySet()) {
             // Unknown variables
-            typeMap.put(statement.getDefinedVariable(), null);
+            typeMap.put((VariableExpression) statement.getLeftHandSide(), null);
         }
     }
 
@@ -107,7 +107,7 @@ public class TypeAnalyzer {
                 case ISHR:
                 case IUSHR:
                 case IINC:
-                    Expression processed = expr.transform(transformer);
+                    Expression processed = expr.accept(propagatingVisitor, null);
                     if(processed instanceof IntegerConstantExpression) {
                         return narrowestIntType((IntegerConstantExpression) processed);
                     }
@@ -115,7 +115,7 @@ public class TypeAnalyzer {
                 case IAND:
                 case IOR:
                 case IXOR:
-                    processed = expr.transform(transformer);
+                    processed = expr.accept(propagatingVisitor, null);
                     if(processed instanceof IntegerConstantExpression) {
                         return narrowestIntType((IntegerConstantExpression) processed);
                     }
@@ -190,7 +190,7 @@ public class TypeAnalyzer {
         } else if(expr instanceof UnaryExpression) {
             switch(insn.getOpcode()) {
                 case INEG:
-                    Expression processed = expr.transform(transformer);
+                    Expression processed = expr.accept(propagatingVisitor, null);
                     if(processed instanceof IntegerConstantExpression) {
                         return narrowestIntType((IntegerConstantExpression) processed);
                     }
@@ -238,7 +238,7 @@ public class TypeAnalyzer {
     private Type calculateType(PhiFunction pf, AssignmentStatement statement) {
         if(phiFrameMap.containsKey(statement)) {
             Frame<TypeValue> frame = phiFrameMap.get(statement);
-            VariableExpression var = statement.getDefinedVariable();
+            VariableExpression var = (VariableExpression) statement.getLeftHandSide();
             TypeValue tv;
             if(var instanceof StackElement) {
                 tv = frame.getStack(((StackElement) var).getIndex());
@@ -347,11 +347,11 @@ public class TypeAnalyzer {
             return false;
         }
         AnnotatedInstruction ai = insnMap.get(insn);
-        List<Statement> rawStatements = ai.getRawStatements();
+        List<Statement> rawStatements = ai.getStatements();
         if(rawStatements.size() != 1 || !(rawStatements.get(0) instanceof IfStatement)) {
             return false;
         }
-        Expression condition = ((IfStatement) rawStatements.get(0)).getCondition();
+        Expression condition = ((IfStatement) rawStatements.get(0)).getExpression();
         if(condition instanceof BinaryExpression) {
             BinaryExpression be = (BinaryExpression) condition;
             switch(be.getOperation()) {
@@ -369,9 +369,9 @@ public class TypeAnalyzer {
         Map<AssignmentStatement, AbstractInsnNode> definitions = new HashMap<>();
         for(AnnotatedBasicBlock block : graph.getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
-                for(Statement s : insn.getRawStatements()) {
-                    if(s.definesVariable() && s instanceof AssignmentStatement) {
-                        definitions.put((AssignmentStatement) s, insn.getOriginalInstruction());
+                for(Statement s : insn.getStatements()) {
+                    if(s instanceof AssignmentStatement && ((AssignmentStatement) s).definesVariable()) {
+                        definitions.put((AssignmentStatement) s, insn.getInstruction());
                     }
                 }
             }
@@ -383,10 +383,12 @@ public class TypeAnalyzer {
         Map<AssignmentStatement, Frame<TypeValue>> phiFrameMap = new HashMap<>();
         for(AnnotatedBasicBlock block : method.getControlFlowGraph().getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
-                for(Statement s : insn.getRawStatements()) {
-                    if(s.definesVariable() && s instanceof AssignmentStatement) {
+                for(Statement s : insn.getStatements()) {
+                    if(s instanceof AssignmentStatement) {
                         AssignmentStatement as = (AssignmentStatement) s;
-                        if(as.getRightHandSide() instanceof PhiFunction && block.getFirstInsn().getOpcode() != NOP) {
+                        if(as.getLeftHandSide() instanceof VariableExpression
+                                && as.getRightHandSide() instanceof PhiFunction
+                                && block.getFirstInsn().getOpcode() != NOP) {
                             phiFrameMap.put(as, method.getFrameMap().get(block.getFirstInsn()));
                         }
                     }

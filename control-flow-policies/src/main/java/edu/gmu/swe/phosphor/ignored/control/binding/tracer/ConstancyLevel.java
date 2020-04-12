@@ -1,9 +1,10 @@
-package edu.gmu.swe.phosphor.ignored.control.binding;
+package edu.gmu.swe.phosphor.ignored.control.binding.tracer;
 
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.struct.BitSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
+import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ParameterExpression;
 

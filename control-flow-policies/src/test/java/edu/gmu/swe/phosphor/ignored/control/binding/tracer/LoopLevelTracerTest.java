@@ -1,4 +1,4 @@
-package edu.gmu.swe.phosphor.ignored.control.binding;
+package edu.gmu.swe.phosphor.ignored.control.binding.tracer;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
@@ -7,6 +7,7 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
+import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.DependentLoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.VariantLoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.ssa.SSAMethod;
@@ -17,7 +18,7 @@ import java.util.function.Predicate;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
-import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevelTracerTestMethods.OWNER;
+import static edu.gmu.swe.phosphor.ignored.control.binding.tracer.LoopLevelTracerTestMethods.OWNER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

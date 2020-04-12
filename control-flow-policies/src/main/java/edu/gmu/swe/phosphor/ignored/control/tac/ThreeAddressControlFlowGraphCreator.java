@@ -7,7 +7,8 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TryCatchBlockNode;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Comparator;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 
 import java.io.IOException;
 import java.io.StringWriter;

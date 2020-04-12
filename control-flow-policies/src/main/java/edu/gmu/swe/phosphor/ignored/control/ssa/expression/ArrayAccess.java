@@ -1,9 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
-
 public final class ArrayAccess implements Expression {
 
     private final Expression arrayRef;
@@ -15,6 +11,24 @@ public final class ArrayAccess implements Expression {
         }
         this.arrayRef = arrayRef;
         this.index = index;
+    }
+
+    public Expression getArrayRef() {
+        return arrayRef;
+    }
+
+    public Expression getIndex() {
+        return index;
+    }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -41,33 +55,5 @@ public final class ArrayAccess implements Expression {
         int result = arrayRef.hashCode();
         result = 31 * result + index.hashCode();
         return result;
-    }
-
-    public Expression getArrayRef() {
-        return arrayRef;
-    }
-
-    public Expression getIndex() {
-        return index;
-    }
-
-    @Override
-    public List<VariableExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(arrayRef, index);
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
-    }
-
-    @Override
-    public ArrayAccess transform(VariableTransformer transformer) {
-        return new ArrayAccess(arrayRef.transform(transformer), index.transform(transformer));
     }
 }

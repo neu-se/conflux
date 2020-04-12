@@ -1,9 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
-
 public final class FieldAccess implements Expression {
 
     private final String owner;
@@ -35,6 +31,16 @@ public final class FieldAccess implements Expression {
 
     public Expression getReceiver() {
         return receiver;
+    }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -73,29 +79,5 @@ public final class FieldAccess implements Expression {
         result = 31 * result + desc.hashCode();
         result = 31 * result + (receiver != null ? receiver.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public List<VariableExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(receiver);
-    }
-
-    @Override
-    public FieldAccess transform(VariableTransformer transformer) {
-        if(receiver == null) {
-            return this;
-        } else {
-            return new FieldAccess(owner, name, desc, receiver.transform(transformer));
-        }
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
     }
 }

@@ -1,9 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
-
 public final class UnaryExpression implements Expression {
 
     private final UnaryOperation operation;
@@ -23,6 +19,16 @@ public final class UnaryExpression implements Expression {
 
     public Expression getOperand() {
         return operand;
+    }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -49,29 +55,5 @@ public final class UnaryExpression implements Expression {
         int result = operation.hashCode();
         result = 31 * result + operand.hashCode();
         return result;
-    }
-
-    @Override
-    public List<VariableExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(operand);
-    }
-
-    @Override
-    public Expression transform(VariableTransformer transformer) {
-        UnaryExpression expr = new UnaryExpression(operation, operand.transform(transformer));
-        if(transformer.foldingAllowed() && operation.canPerform(expr.operand)) {
-            return operation.perform(expr.operand);
-        }
-        return expr;
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
     }
 }

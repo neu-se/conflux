@@ -5,36 +5,32 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LookupSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.TableSwitchInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.Expression;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class SwitchStatement implements Statement {
 
     private final Label defaultLabel;
     private final Label[] labels;
     private final int[] keys;
-    private final Expression value;
-    private final transient List<VariableExpression> usedVariables;
+    private final Expression expression;
 
-    public SwitchStatement(Expression value, Label defaultLabel, Label[] labels, int[] keys) {
-        if(value == null) {
+    public SwitchStatement(Expression expression, Label defaultLabel, Label[] labels, int[] keys) {
+        if(expression == null) {
             throw new NullPointerException();
         }
-        this.value = value;
+        this.expression = expression;
         this.defaultLabel = defaultLabel;
         this.labels = labels.clone();
         this.keys = keys.clone();
-        usedVariables = Statement.gatherVersionedExpressions(value);
     }
 
-    SwitchStatement(Expression value, LabelNode defaultLabel, java.util.Collection<LabelNode> labels) {
-        if(value == null) {
+    SwitchStatement(Expression expression, LabelNode defaultLabel, java.util.Collection<LabelNode> labels) {
+        if(expression == null) {
             throw new NullPointerException();
         }
-        this.value = value;
+        this.expression = expression;
         this.defaultLabel = defaultLabel == null ? null : defaultLabel.getLabel();
         this.labels = new Label[labels.size()];
         int i = 0;
@@ -42,18 +38,17 @@ public final class SwitchStatement implements Statement {
             this.labels[i++] = label.getLabel();
         }
         this.keys = new int[labels.size()];
-        usedVariables = Statement.gatherVersionedExpressions(value);
     }
 
-    public SwitchStatement(Expression value, TableSwitchInsnNode insn) {
-        this(value, insn.dflt, insn.labels);
+    public SwitchStatement(Expression expression, TableSwitchInsnNode insn) {
+        this(expression, insn.dflt, insn.labels);
         for(int i = 0; i < keys.length; i++) {
             keys[i] = i + insn.min;
         }
     }
 
-    public SwitchStatement(Expression value, LookupSwitchInsnNode insn) {
-        this(value, insn.dflt, insn.labels);
+    public SwitchStatement(Expression expression, LookupSwitchInsnNode insn) {
+        this(expression, insn.dflt, insn.labels);
         int i = 0;
         for(int key : insn.keys) {
             keys[i++] = key;
@@ -72,13 +67,23 @@ public final class SwitchStatement implements Statement {
         return keys.clone();
     }
 
-    public Expression getValue() {
-        return value;
+    public Expression getExpression() {
+        return expression;
+    }
+
+    @Override
+    public <V> V accept(StatementVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulStatementVisitor<V, S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("switch(").append(value).append(") {");
+        StringBuilder builder = new StringBuilder("switch(").append(expression).append(") {");
         for(int i = 0; i < labels.length; i++) {
             builder.append("\n\tcase ").append(keys[i]).append(": goto ").append(labels[i]).append(";");
         }
@@ -90,7 +95,7 @@ public final class SwitchStatement implements Statement {
 
     @Override
     public String toString(Map<Label, String> labelNames) {
-        StringBuilder builder = new StringBuilder("switch(").append(value).append(") {");
+        StringBuilder builder = new StringBuilder("switch(").append(expression).append(") {");
         for(int i = 0; i < labels.length; i++) {
             String labelName = labels[i].toString();
             if(labelNames.containsKey(labels[i])) {
@@ -125,7 +130,7 @@ public final class SwitchStatement implements Statement {
         if(!Arrays.equals(keys, that.keys)) {
             return false;
         }
-        return value.equals(that.value);
+        return expression.equals(that.expression);
     }
 
     @Override
@@ -133,22 +138,7 @@ public final class SwitchStatement implements Statement {
         int result = defaultLabel != null ? defaultLabel.hashCode() : 0;
         result = 31 * result + Arrays.hashCode(labels);
         result = 31 * result + Arrays.hashCode(keys);
-        result = 31 * result + value.hashCode();
+        result = 31 * result + expression.hashCode();
         return result;
-    }
-
-    @Override
-    public SwitchStatement transform(VariableTransformer transformer) {
-        return new SwitchStatement(value.transform(transformer), defaultLabel, labels, keys);
-    }
-
-    @Override
-    public VariableExpression getDefinedVariable() {
-        return null;
-    }
-
-    @Override
-    public List<VariableExpression> getUsedVariables() {
-        return usedVariables;
     }
 }

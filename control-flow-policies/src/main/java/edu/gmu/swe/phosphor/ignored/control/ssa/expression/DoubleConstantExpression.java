@@ -83,6 +83,16 @@ public final class DoubleConstantExpression implements ConstantExpression {
     }
 
     @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if(this == o) {
             return true;
@@ -102,15 +112,5 @@ public final class DoubleConstantExpression implements ConstantExpression {
     @Override
     public String toString() {
         return String.valueOf(constant);
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
     }
 }

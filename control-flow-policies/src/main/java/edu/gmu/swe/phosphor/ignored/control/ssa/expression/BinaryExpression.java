@@ -1,9 +1,5 @@
 package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
-
 public final class BinaryExpression implements Expression {
 
     private final BinaryOperation operation;
@@ -29,6 +25,16 @@ public final class BinaryExpression implements Expression {
 
     public Expression getOperand2() {
         return operand2;
+    }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -59,30 +65,5 @@ public final class BinaryExpression implements Expression {
         result = 31 * result + operand1.hashCode();
         result = 31 * result + operand2.hashCode();
         return result;
-    }
-
-    @Override
-    public List<VariableExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(operand1, operand2);
-    }
-
-    @Override
-    public Expression transform(VariableTransformer transformer) {
-        BinaryExpression expr = new BinaryExpression(operation, operand1.transform(transformer),
-                operand2.transform(transformer));
-        if(transformer.foldingAllowed() && operation.canPerform(expr.operand1, expr.operand2)) {
-            return operation.perform(expr.operand1, expr.operand2);
-        }
-        return expr;
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
     }
 }

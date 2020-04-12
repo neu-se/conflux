@@ -6,6 +6,7 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.gmu.swe.phosphor.ignored.control.binding.tracer.UseGatheringVisitor;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
@@ -33,7 +34,7 @@ public class SSAMethodTest {
         List<VariableExpression> allDefinitions = new LinkedList<>();
         for(AnnotatedBasicBlock block : ssaMethod.getControlFlowGraph().getVertices()) {
             for(AnnotatedInstruction i : block.getInstructions()) {
-                for(Statement s : i.getRawStatements()) {
+                for(Statement s : i.getStatements()) {
                     if(s.definesVariable()) {
                         allDefinitions.add(s.getDefinedVariable());
                     }
@@ -75,15 +76,16 @@ public class SSAMethodTest {
         FlowGraph<AnnotatedBasicBlock> cfg = ssaMethod.getControlFlowGraph();
         Map<VariableExpression, AnnotatedBasicBlock> definitions = new HashMap<>();
         Map<VariableExpression, Set<AnnotatedBasicBlock>> uses = new HashMap<>();
+        UseGatheringVisitor useGatherer = new UseGatheringVisitor();
         for(AnnotatedBasicBlock block : cfg.getVertices()) {
             for(AnnotatedInstruction i : block.getInstructions()) {
-                for(Statement statement : i.getRawStatements()) {
+                for(Statement statement : i.getStatements()) {
                     if(statement.definesVariable()) {
                         definitions.put(statement.getDefinedVariable(), block);
                     }
                     if(!(statement instanceof AssignmentStatement
                             && ((AssignmentStatement) statement).getRightHandSide() instanceof PhiFunction)) {
-                        for(VariableExpression use : statement.getUsedVariables()) {
+                        for(VariableExpression use : statement.accept(useGatherer)) {
                             if(!uses.containsKey(use)) {
                                 uses.put(use, new HashSet<>());
                             }
@@ -111,7 +113,7 @@ public class SSAMethodTest {
         FlowGraph<AnnotatedBasicBlock> cfg = ssaMethod.getControlFlowGraph();
         for(AnnotatedBasicBlock block : cfg.getVertices()) {
             for(AnnotatedInstruction i : block.getInstructions()) {
-                for(Statement statement : i.getRawStatements()) {
+                for(Statement statement : i.getStatements()) {
                     if(statement instanceof AssignmentStatement) {
                         Expression rhs = ((AssignmentStatement) statement).getRightHandSide();
                         if(rhs instanceof PhiFunction) {

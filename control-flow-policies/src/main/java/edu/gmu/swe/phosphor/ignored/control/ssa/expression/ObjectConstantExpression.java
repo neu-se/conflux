@@ -14,18 +14,28 @@ public final class ObjectConstantExpression implements ConstantExpression {
         return constant;
     }
 
-    @Override
-    public boolean canMerge(ConstantExpression other) {
-        return other instanceof ObjectConstantExpression
-                && ((ObjectConstantExpression) other).constant == constant;
-    }
-
     public boolean instanceOf(String desc) {
         if(constant == null) {
             return false;
         } else {
             return Type.getInternalName(constant.getClass()).equals(desc);
         }
+    }
+
+    @Override
+    public boolean canMerge(ConstantExpression other) {
+        return other instanceof ObjectConstantExpression
+                && ((ObjectConstantExpression) other).constant == constant;
+    }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -53,15 +63,5 @@ public final class ObjectConstantExpression implements ConstantExpression {
         } else {
             return constant.toString();
         }
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
     }
 }

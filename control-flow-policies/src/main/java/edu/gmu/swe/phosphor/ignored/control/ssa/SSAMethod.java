@@ -9,8 +9,9 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerExce
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.Frame;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.AssignmentStatement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.LocalVariable;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
+import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.tac.ThreeAddressControlFlowGraphCreator;
@@ -39,9 +40,7 @@ public class SSAMethod {
      */
     private final Map<AbstractInsnNode, Frame<TypeValue>> frameMap;
 
-    private final PropagationTransformer transformer;
-
-    private final Map<VariableExpression, VersionStack> versionStacks = new HashMap<>();
+    private final VersionAssigningVisitor versionAssigner;
 
     private final List<Type> parameterTypes;
 
@@ -55,9 +54,9 @@ public class SSAMethod {
                 .createControlFlowGraph(method, threeAddressMethod.calculateExplicitExceptions());
         frameMap = Collections.unmodifiableMap(new HashMap<>(threeAddressMethod.getFrameMap()));
         placePhiFunctions(tacGraph);
-        renameVariables(tacGraph, threeAddressMethod.collectDefinedVariables());
-        transformer = new PropagationTransformer(propagateVariables(tacGraph));
-        controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, new TacConverter(transformer));
+        versionAssigner = new VersionAssigningVisitor(threeAddressMethod.collectDefinedVariables());
+        renameVariables(tacGraph, tacGraph.getEntryPoint());
+        controlFlowGraph = FlowGraphUtil.convertVertices(tacGraph, ThreeAddressBasicBlock::createSSABasicBlock);
     }
 
     public Map<AbstractInsnNode, Frame<TypeValue>> getFrameMap() {
@@ -77,11 +76,7 @@ public class SSAMethod {
     }
 
     public Map<VariableExpression, VersionStack> getVersionStacks() {
-        return Collections.unmodifiableMap(versionStacks);
-    }
-
-    public PropagationTransformer getTransformer() {
-        return transformer;
+        return versionAssigner.getVersionStacks();
     }
 
     private List<Type> createParameterTypes(String owner, MethodNode method) {
@@ -142,27 +137,16 @@ public class SSAMethod {
         return false;
     }
 
-    private void renameVariables(FlowGraph<ThreeAddressBasicBlock> tacGraph, Set<VariableExpression> definedExpressions) {
-        for(VariableExpression expression : definedExpressions) {
-            versionStacks.put(expression, new VersionStack(expression));
-        }
-        search(tacGraph, tacGraph.getEntryPoint());
-    }
-
-    private void search(FlowGraph<ThreeAddressBasicBlock> tacGraph, ThreeAddressBasicBlock block) {
-        for(VersionStack stack : versionStacks.values()) {
-            stack.processingBlock();
-        }
-        block.processStatements(versionStacks);
+    private void renameVariables(FlowGraph<ThreeAddressBasicBlock> tacGraph, ThreeAddressBasicBlock block) {
+        versionAssigner.processingBlock();
+        block.processStatements(versionAssigner);
         for(ThreeAddressBasicBlock successor : tacGraph.getSuccessors(block)) {
-            successor.addPhiFunctionValues(versionStacks);
+            successor.addPhiFunctionValues(versionAssigner);
         }
         for(ThreeAddressBasicBlock child : tacGraph.getDominatorTree().get(block)) {
-            search(tacGraph, child);
+            renameVariables(tacGraph, child);
         }
-        for(VersionStack stack : versionStacks.values()) {
-            stack.finishedProcessingBlock();
-        }
+        versionAssigner.finishedProcessingBlock();
     }
 
     private static boolean isDefinedAtFrame(Frame<TypeValue> frame, VariableExpression expr) {
@@ -176,49 +160,5 @@ public class SSAMethod {
             }
         }
         return false;
-    }
-
-    public static Map<VariableExpression, Expression> propagateVariables(FlowGraph<ThreeAddressBasicBlock> tacGraph) {
-        Map<VariableExpression, Expression> definitions = new HashMap<>();
-        for(ThreeAddressBasicBlock block : tacGraph.getVertices()) {
-            for(Statement statement : block.getSSAStatements()) {
-                if(statement.definesVariable() && statement instanceof AssignmentStatement) {
-                    Expression valueExpr = ((AssignmentStatement) statement).getRightHandSide();
-                    if(canPropagate(valueExpr)) {
-                        definitions.put(statement.getDefinedVariable(), valueExpr);
-                    }
-                }
-            }
-        }
-        PropagationTransformer transformer = new PropagationTransformer(definitions);
-        boolean changed;
-        do {
-            changed = false;
-            for(VariableExpression assignee : definitions.keySet()) {
-                Expression assigned = definitions.get(assignee);
-                Expression transformed = assigned.transform(transformer, assignee);
-                if(!assigned.equals(transformed)) {
-                    changed = true;
-                    definitions.put(assignee, transformed);
-                }
-            }
-        } while(changed);
-        return definitions;
-    }
-
-    public static boolean canPropagate(Expression valueExpr) {
-        if(valueExpr instanceof ConstantExpression || valueExpr instanceof ParameterExpression
-                || valueExpr instanceof VariableExpression) {
-            return true;
-        } else if(valueExpr instanceof BinaryExpression) {
-            Expression operand1 = ((BinaryExpression) valueExpr).getOperand1();
-            Expression operand2 = ((BinaryExpression) valueExpr).getOperand2();
-            return canPropagate(operand1) && canPropagate(operand2);
-        } else if(valueExpr instanceof UnaryExpression) {
-            Expression operand = ((UnaryExpression) valueExpr).getOperand();
-            return canPropagate(operand);
-        } else {
-            return false;
-        }
     }
 }

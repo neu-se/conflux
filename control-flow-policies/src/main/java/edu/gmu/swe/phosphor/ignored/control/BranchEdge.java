@@ -36,7 +36,7 @@ public class BranchEdge extends DummyBasicBlock {
     /**
      * Identifier assigned to this branch
      */
-    private int branchID = -1;
+    private int branchId = -1;
 
     public BranchEdge(BasicBlock source, BasicBlock target, boolean branchTaken) {
         if(source == null || target == null) {
@@ -55,12 +55,12 @@ public class BranchEdge extends DummyBasicBlock {
         return target;
     }
 
-    public int getBranchID() {
-        return branchID;
+    public int getBranchId() {
+        return branchId;
     }
 
-    public void setBranchID(int branchID) {
-        this.branchID = branchID;
+    public void setBranchId(int branchId) {
+        this.branchId = branchId;
     }
 
     public void addScopeEnd(BasicBlock scopeEnd) {
@@ -68,7 +68,7 @@ public class BranchEdge extends DummyBasicBlock {
     }
 
     public AbstractInsnNode createScopeStartNode() {
-        return new LdcInsnNode(new BranchStart(branchID));
+        return new LdcInsnNode(new BranchStart(branchId));
     }
 
     /**
@@ -79,7 +79,7 @@ public class BranchEdge extends DummyBasicBlock {
         for(BasicBlock scopeEnd : scopeEnds) {
             if(!(scopeEnd instanceof DummyBasicBlock)) {
                 AbstractInsnNode insn = FlowGraphUtil.findNextPrecedableInstruction(scopeEnd.getFirstInsn());
-                instructions.insertBefore(insn, new LdcInsnNode(new BranchEnd(branchID)));
+                instructions.insertBefore(insn, new LdcInsnNode(new BranchEnd(branchId)));
             }
         }
     }

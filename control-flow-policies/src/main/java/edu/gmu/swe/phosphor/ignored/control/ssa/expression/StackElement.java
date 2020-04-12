@@ -14,13 +14,23 @@ public final class StackElement extends VariableExpression {
         this.index = index;
     }
 
+    public int getIndex() {
+        return index;
+    }
+
     @Override
     public StackElement setVersion(int version) {
         return new StackElement(this.index, version);
     }
 
-    public int getIndex() {
-        return index;
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -47,15 +57,5 @@ public final class StackElement extends VariableExpression {
         int result = super.hashCode();
         result = 31 * result + index;
         return result;
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
     }
 }

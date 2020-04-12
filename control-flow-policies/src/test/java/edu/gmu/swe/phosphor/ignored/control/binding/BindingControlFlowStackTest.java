@@ -4,7 +4,6 @@ import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
-import edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowStack;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

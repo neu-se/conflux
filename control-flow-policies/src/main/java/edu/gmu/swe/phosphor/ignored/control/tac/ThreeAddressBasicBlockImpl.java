@@ -6,7 +6,9 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.gmu.swe.phosphor.ignored.control.ssa.*;
+import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedBasicBlock;
+import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedInstruction;
+import edu.gmu.swe.phosphor.ignored.control.ssa.VersionAssigningVisitor;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.PhiFunction;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.StackElement;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
@@ -39,12 +41,6 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
     @Override
     public List<Statement> getThreeAddressStatements() {
         return threeAddressStatementList;
-    }
-
-    @Override
-    public List<Statement> getSSAStatements() {
-        initializeSSAStatements();
-        return ssaStatementsList;
     }
 
     @Override
@@ -91,57 +87,46 @@ public class ThreeAddressBasicBlockImpl extends SimpleBasicBlock implements Thre
     }
 
     @Override
-    public void addPhiFunctionValues(Map<VariableExpression, VersionStack> versionStacks) {
+    public void addPhiFunctionValues(VersionAssigningVisitor visitor) {
         for(VariableExpression key : phiValues.keySet()) {
-            if(versionStacks.get(key).hasCurrentExpression()) {
-                phiValues.get(key).add(versionStacks.get(key).getCurrentExpression());
+            if(visitor.hasCurrentExpression(key)) {
+                phiValues.get(key).add(visitor.getCurrentExpression(key));
             }
         }
     }
 
     @Override
-    public void processStatements(Map<VariableExpression, VersionStack> versionStacks) {
-        VersionAssigningTransformer transformer = new VersionAssigningTransformer(versionStacks);
+    public void processStatements(VersionAssigningVisitor visitor) {
         for(VariableExpression expression : phiValues.keySet()) {
-            phiAssignees.put(expression, versionStacks.get(expression).createNewVersion());
+            phiAssignees.put(expression, visitor.createNewVersion(expression));
         }
         for(AbstractInsnNode insn : threeAddressStatements.keySet()) {
             Statement[] originalStatements = threeAddressStatements.get(insn);
             Statement[] processedStatements = new Statement[originalStatements.length];
             for(int i = 0; i < originalStatements.length; i++) {
-                processedStatements[i] = originalStatements[i].transform(transformer);
+                processedStatements[i] = originalStatements[i].accept(visitor);
             }
             ssaStatements.put(insn, processedStatements);
         }
     }
 
     @Override
-    public AnnotatedBasicBlock createSSABasicBlock(PropagationTransformer transformer) {
+    public AnnotatedBasicBlock createSSABasicBlock() {
         initializeSSAStatements();
         List<AnnotatedInstruction> instructions = new LinkedList<>();
-        List<Statement> processedPhiFunctions = new LinkedList<>();
-        for(Statement phiFunction : phiFunctions) {
-            processedPhiFunctions.add(phiFunction.transform(transformer));
-        }
         boolean foundLabel = false;
         for(AbstractInsnNode insn : ssaStatements.keySet()) {
-            List<Statement> rawStatements = new LinkedList<>();
-            List<Statement> processedStatements = new LinkedList<>();
-            for(Statement rawStatement : ssaStatements.get(insn)) {
-                rawStatements.add(rawStatement);
-                processedStatements.add(rawStatement.transform(transformer));
-            }
-            instructions.add(new AnnotatedInstruction(insn, rawStatements, processedStatements));
+            instructions.add(new AnnotatedInstruction(insn, Arrays.asList(ssaStatements.get(insn))));
             if(insn instanceof LabelNode && !foundLabel) {
                 foundLabel = true;
                 if(!phiFunctions.isEmpty()) {
-                    instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
+                    instructions.add(new AnnotatedInstruction(null, phiFunctions));
                 }
             }
         }
         if(!foundLabel && !phiFunctions.isEmpty()) {
             if(!phiFunctions.isEmpty()) {
-                instructions.add(new AnnotatedInstruction(null, phiFunctions, processedPhiFunctions));
+                instructions.add(new AnnotatedInstruction(null, phiFunctions));
             }
         }
         return new AnnotatedBasicBlock(getIndex(), instructions);

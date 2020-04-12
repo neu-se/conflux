@@ -2,9 +2,6 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.expression;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
-import edu.gmu.swe.phosphor.ignored.control.ssa.statement.VariableTransformer;
 
 public final class NewArrayExpression implements Expression {
 
@@ -25,12 +22,26 @@ public final class NewArrayExpression implements Expression {
         this.dims = dims.clone();
     }
 
+    public String getDesc() {
+        return desc;
+    }
+
     public Type getType() {
         return type;
     }
 
     public Expression[] getDims() {
         return dims.clone();
+    }
+
+    @Override
+    public <V> V accept(ExpressionVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -66,31 +77,5 @@ public final class NewArrayExpression implements Expression {
         int result = desc.hashCode();
         result = 31 * result + Arrays.hashCode(dims);
         return result;
-    }
-
-    @Override
-    public List<VariableExpression> referencedVariables() {
-        return Statement.gatherVersionedExpressions(dims);
-    }
-
-    @Override
-    public Expression transform(VariableTransformer transformer) {
-        Expression[] processedDims = new Expression[dims.length];
-        for(int i = 0; i < dims.length; i++) {
-            if(dims[i] != null) {
-                processedDims[i] = dims[i].transform(transformer);
-            }
-        }
-        return new NewArrayExpression(desc, processedDims);
-    }
-
-    @Override
-    public <V> V accept(ExpressionVisitor<V> visitor) {
-        return visitor.visit(this);
-    }
-
-    @Override
-    public <V, S> V accept(StatefulExpressionVisitor<V, ? super S> visitor, S state) {
-        return visitor.visit(this, state);
     }
 }

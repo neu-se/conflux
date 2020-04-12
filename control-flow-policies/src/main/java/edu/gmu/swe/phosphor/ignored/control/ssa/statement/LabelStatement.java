@@ -2,10 +2,7 @@ package edu.gmu.swe.phosphor.ignored.control.ssa.statement;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.gmu.swe.phosphor.ignored.control.ssa.expression.VariableExpression;
 
 public final class LabelStatement implements Statement {
 
@@ -27,6 +24,16 @@ public final class LabelStatement implements Statement {
 
     public Label getLabel() {
         return label;
+    }
+
+    @Override
+    public <V> V accept(StatementVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <V, S> V accept(StatefulStatementVisitor<V, S> visitor, S state) {
+        return visitor.visit(this, state);
     }
 
     @Override
@@ -57,20 +64,5 @@ public final class LabelStatement implements Statement {
     @Override
     public int hashCode() {
         return label.hashCode();
-    }
-
-    @Override
-    public LabelStatement transform(VariableTransformer transformer) {
-        return this;
-    }
-
-    @Override
-    public VariableExpression getDefinedVariable() {
-        return null;
-    }
-
-    @Override
-    public List<VariableExpression> getUsedVariables() {
-        return Collections.emptyList();
     }
 }

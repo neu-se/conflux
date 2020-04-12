@@ -1033,4 +1033,30 @@ public class ThreeAddressMethodTestMethods {
         methodNode.visitEnd();
         return methodNode;
     }
+
+    public static MethodNode parameters() {
+        //i = 0;
+        //j = 0;
+        //d = 0;
+        //f = 0;
+        //o = null;
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC + ACC_STATIC, "parameters",
+                "(IJFDLjava/lang/Object;)V", null, null);
+        methodNode.visitCode();
+        methodNode.visitInsn(ICONST_0);
+        methodNode.visitVarInsn(ISTORE, 0);
+        methodNode.visitInsn(LCONST_0);
+        methodNode.visitVarInsn(LSTORE, 1);
+        methodNode.visitInsn(FCONST_0);
+        methodNode.visitVarInsn(FSTORE, 3);
+        methodNode.visitInsn(DCONST_0);
+        methodNode.visitVarInsn(DSTORE, 4);
+        methodNode.visitInsn(ACONST_NULL);
+        methodNode.visitVarInsn(ASTORE, 6);
+        methodNode.visitInsn(RETURN);
+        methodNode.visitMaxs(2, 7);
+        methodNode.visitEnd();
+        return methodNode;
+    }
+
 }

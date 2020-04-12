@@ -4,6 +4,8 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.LabelNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.*;
 import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 import org.junit.Test;
@@ -13,7 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
+import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.F_NEW;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.ArrayLengthOperation.ARRAY_LENGTH;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.InvocationType.*;
 import static edu.gmu.swe.phosphor.ignored.control.ssa.expression.NegateOperation.NEGATE;
@@ -1105,6 +1107,40 @@ public class ThreeAddressMethodTest {
                 new ReturnStatement(null)
         ));
         assertEquals(expectedStatements, actualStatements);
+    }
+
+    @Test
+    public void testParameters() throws Exception {
+        MethodNode methodNode = ThreeAddressMethodTestMethods.parameters();
+        ThreeAddressMethod method = new ThreeAddressMethod(OWNER, methodNode);
+        List<Statement> actualStatements = createStatementList(method);
+        List<Statement> expectedStatements = new LinkedList<>(Arrays.asList(
+                new AssignmentStatement(new StackElement(0), ConstantExpression.I0),
+                new AssignmentStatement(new LocalVariable(0), new StackElement(0)),
+                //
+                new AssignmentStatement(new StackElement(0), ConstantExpression.L0),
+                new AssignmentStatement(new LocalVariable(1), new StackElement(0)),
+                //
+                new AssignmentStatement(new StackElement(0), ConstantExpression.F0),
+                new AssignmentStatement(new LocalVariable(3), new StackElement(0)),
+                //
+                new AssignmentStatement(new StackElement(0), ConstantExpression.D0),
+                new AssignmentStatement(new LocalVariable(4), new StackElement(0)),
+                //
+                new AssignmentStatement(new StackElement(0), ConstantExpression.NULL),
+                new AssignmentStatement(new LocalVariable(6), new StackElement(0)),
+                new ReturnStatement(null)
+        ));
+        assertEquals(expectedStatements, actualStatements);
+        Set<Statement> actualParameterDefinitions = new HashSet<>(method.getParameterDefinitions());
+        Set<Statement> expectedParameterDefinitions = new HashSet<>();
+        expectedParameterDefinitions.add(new AssignmentStatement(new LocalVariable(0), new ParameterExpression(0)));
+        expectedParameterDefinitions.add(new AssignmentStatement(new LocalVariable(1), new ParameterExpression(1)));
+        expectedParameterDefinitions.add(new AssignmentStatement(new LocalVariable(3), new ParameterExpression(2)));
+        expectedParameterDefinitions.add(new AssignmentStatement(new LocalVariable(4), new ParameterExpression(3)));
+        expectedParameterDefinitions.add(new AssignmentStatement(new LocalVariable(6), new ParameterExpression(4)));
+        assertEquals(expectedParameterDefinitions, actualParameterDefinitions);
+
     }
 
     private static void testBinaryLogicalOperation(BinaryOperation operation, MethodNode methodNode) throws Exception {
