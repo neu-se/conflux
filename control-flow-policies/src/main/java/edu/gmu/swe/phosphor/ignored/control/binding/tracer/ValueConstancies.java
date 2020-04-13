@@ -19,7 +19,7 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.Statement;
  * Calculates the loop-relative constancy of a variable's (local variable or stack element) value.
  * <p>
  * Let m be a method in static single assignment form, s be an assignment statement in m which stores the value
- * of an expression e into the variable x_v (i.e., x_v := e), L1 be the set of natural loops in M, and L2 be a theoretical
+ * of an expression e into the variable x_v (i.e., x_v := e), L1 be the set of natural loops in M, and L2 be the theoretical
  * set of loops which contain a particular call to m at runtime.
  * <p>
  * The value of x_v is considered to be constant relative to a some natural loop, l in L1 or l in L2, s is not contained in

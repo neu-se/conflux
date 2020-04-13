@@ -20,7 +20,6 @@ import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.findNextPrecedableInstruction;
-import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
 
 /**
  * Identifies and marks the scope of "binding" branch edges. Does not consider edges due to exceptional control flow.
@@ -83,7 +82,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         if(instructions.size() > 0) {
             try {
                 SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
-                tracer = new LoopLevelTracer(methodNode, ssaMethod);
+                tracer = new LoopLevelTracer(ssaMethod);
                 Set<BindingBranchEdge> bindingEdges = new HashSet<>();
                 BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, new TypeAnalyzer(ssaMethod));
                 cfg = creator.createControlFlowGraph(methodNode);
@@ -115,11 +114,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                     || OpcodesUtil.isPushConstantOpcode(insn.getOpcode())
                     || (OpcodesUtil.isReturnOpcode(insn.getOpcode()) && insn.getOpcode() != RETURN)
                     || insn.getOpcode() == IINC) {
-                if(tracer.getLoopLevelMap().containsKey(insn)) {
-                    instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(tracer.getLoopLevelMap().get(insn))));
-                } else {
-                    instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(CONSTANT_LOOP_LEVEL)));
-                }
+                instructions.insertBefore(insn, new LdcInsnNode(new CopyTagInfo(tracer.getLoopLevel(insn))));
             }
         }
     }
@@ -190,7 +185,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     }
 
     private void setLoopLevel(BindingBranchEdge edge) {
-        LoopLevel level = tracer.getLoopLevelMap().get(edge.getSource().getLastInsn());
+        LoopLevel level = tracer.getLoopLevel(edge.getSource().getLastInsn());
         edge.setLevel(level);
     }
 
