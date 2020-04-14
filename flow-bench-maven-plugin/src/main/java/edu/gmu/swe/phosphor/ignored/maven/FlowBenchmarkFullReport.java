@@ -153,10 +153,14 @@ class FlowBenchmarkFullReport {
                 Object stat = result.stats.get(i);
                 boolean emphasize = result.emphasize.get(i);
                 String value;
-                if(stat instanceof Float) {
-                    value = String.format("%.4f", stat);
+                if(stat instanceof Integer) {
+                    value = String.format("%,d", stat);
+                } else if(stat instanceof Long) {
+                    value = String.format("%,d", stat);
+                } else if(stat instanceof Float) {
+                    value = String.format("%,.2f", stat);
                 } else if(stat instanceof Double) {
-                    value = String.format("%.4f", stat);
+                    value = String.format("%,.2f", stat);
                 } else {
                     value = stat.toString();
                 }
