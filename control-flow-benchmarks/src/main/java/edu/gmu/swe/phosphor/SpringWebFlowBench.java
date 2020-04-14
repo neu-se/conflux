@@ -14,43 +14,43 @@ public class SpringWebFlowBench {
     private static final UnaryOperator<String> urlEncoder = s -> UriUtils.encode(s, "UTF-8");
     private static final UnaryOperator<String> urlDecoder = s -> UriUtils.decode(s, "UTF-8");
 
-    @FlowBench
-    public void urlEncodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeReserved(benchResult, TaintedPortionPolicy.ALL, urlEncoder);
+    @FlowBench(group = "reserved-percent-encode", project = "spring-web", implementation = "UriUtils")
+    public void reservedPercentEncode(FlowBenchResultImpl benchResult) {
+        checkReservedPercentEncode(benchResult, TaintedPortionPolicy.ALL, urlEncoder);
     }
 
-    @FlowBench
-    public void urlDecodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeReserved(benchResult, TaintedPortionPolicy.ALL, urlDecoder);
+    @FlowBench(group = "reserved-percent-decode", project = "spring-web", implementation = "UriUtils")
+    public void reservedPercentDecode(FlowBenchResultImpl benchResult) {
+        checkReservedPercentDecode(benchResult, TaintedPortionPolicy.ALL, urlDecoder);
     }
 
-    @FlowBench
-    public void urlEncodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeUnicode(benchResult, TaintedPortionPolicy.ALL, urlEncoder);
+    @FlowBench(group = "unicode-percent-encode", project = "spring-web", implementation = "UriUtils")
+    public void unicodePercentEncode(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentEncode(benchResult, TaintedPortionPolicy.ALL, urlEncoder);
     }
 
-    @FlowBench
-    public void urlDecodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeUnicode(benchResult, TaintedPortionPolicy.ALL, urlDecoder);
+    @FlowBench(group = "unicode-percent-decode", project = "spring-web", implementation = "UriUtils")
+    public void unicodePercentDecode(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentDecode(benchResult, TaintedPortionPolicy.ALL, urlDecoder);
     }
 
-    @FlowBench
+    @FlowBench(group = "html-escape", project = "spring-web", implementation = "HtmlUtils-UTF-8")
     public void htmlEscapeUTF8(FlowBenchResultImpl benchResult) {
-        checkEscapeHtml(benchResult, TaintedPortionPolicy.ALL, s -> HtmlUtils.htmlEscape(s, "UTF-8"));
+        checkHtmlEscape(benchResult, TaintedPortionPolicy.ALL, s -> HtmlUtils.htmlEscape(s, "UTF-8"));
     }
 
-    @FlowBench
+    @FlowBench(group = "html-escape", project = "spring-web", implementation = "HtmlUtils-ISO-8859-1")
     public void htmlEscapeISO(FlowBenchResultImpl benchResult) {
-        checkEscapeHtml(benchResult, TaintedPortionPolicy.ALL, s -> HtmlUtils.htmlEscape(s, "ISO-8859-1"));
+        checkHtmlEscape(benchResult, TaintedPortionPolicy.ALL, s -> HtmlUtils.htmlEscape(s, "ISO-8859-1"));
     }
 
-    @FlowBench
+    @FlowBench(group = "html-unescape", project = "spring-web", implementation = "HtmlUtils")
     public void htmlUnescape(FlowBenchResultImpl benchResult) {
-        checkUnescapeHtml(benchResult, TaintedPortionPolicy.ALL, HtmlUtils::htmlUnescape);
+        checkHtmlUnescape(benchResult, TaintedPortionPolicy.ALL, HtmlUtils::htmlUnescape);
     }
 
-    @FlowBench
+    @FlowBench(group = "javascript-escape", project = "spring-web", implementation = "JavaScriptUtils")
     public void javaScriptEscape(FlowBenchResultImpl benchResult) {
-        checkEscapeJavaScript(benchResult, TaintedPortionPolicy.ALL, JavaScriptUtils::javaScriptEscape);
+        checkJavaScriptEscape(benchResult, TaintedPortionPolicy.ALL, JavaScriptUtils::javaScriptEscape);
     }
 }

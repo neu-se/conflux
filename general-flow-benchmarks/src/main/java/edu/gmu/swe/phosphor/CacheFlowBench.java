@@ -25,8 +25,8 @@ public class CacheFlowBench {
     /**
      * Compiles OGNL expressions using com.opensymphony.xwork2.ognl.OgnlUtil instances which cache OGNL expressions.
      */
-    @FlowBench
-    public void testOgnlExpressionCache(FlowBenchResultImpl benchResult) throws OgnlException {
+    @FlowBench(group = "cache", project = "ognl", implementation = "OgnlUtil")
+    public void ognlExpressionCache(FlowBenchResultImpl benchResult) throws OgnlException {
         String expression = "toString";
         String taintedExpression = taintWithIndices(expression);
         // Tainted value put into cache first
@@ -49,8 +49,8 @@ public class CacheFlowBench {
      * Gets sun.util.locale.BaseLocale instances. The BaseLocale class caches BaseLocale instances. BaseLocale also
      * interns BaseLocales' string fields when constructing them.
      */
-    @FlowBench
-    public void testBaseLocaleCache(FlowBenchResultImpl benchResult) {
+    @FlowBench(group = "cache", project = "jre", implementation = "BaseLocale")
+    public void baseLocaleCache(FlowBenchResultImpl benchResult) {
         // Tainted value put into cache first
         String lang1 = "zzzzzzzz";
         BaseLocale taintedZLocale = BaseLocale.getInstance(taintWithIndices(lang1), "ZZ", "", "");
@@ -68,8 +68,8 @@ public class CacheFlowBench {
     /**
      * Formats longs as dates using org.apache.juli.DateFormatCache which caches formatted dates.
      */
-    @FlowBench
-    public void testDateFormatCache(FlowBenchResultImpl benchResult) {
+    @FlowBench(group = "cache", project = "tomcat-embed-core", implementation = "DateFormatCache")
+    public void dateFormatCache(FlowBenchResultImpl benchResult) {
         // Tainted value put into cache first
         DateFormatCache cache1 = new DateFormatCache(30, "dd-MMM-yyyy HH:mm:ss", null);
         String taintedDate1 = cache1.getFormat(MultiTainter.taintedLong(1000, 0));
@@ -87,8 +87,8 @@ public class CacheFlowBench {
     /**
      * Gets Buffers from org.mortbay.io.BufferCache instances which cache Buffer instances.
      */
-    @FlowBench
-    public void testBufferCache(FlowBenchResultImpl benchResult) {
+    @FlowBench(group = "cache", project = "jetty", implementation = "BufferCache")
+    public void bufferCache(FlowBenchResultImpl benchResult) {
         // Tainted value cached
         BufferCache cache1 = new BufferCache();
         String value1 = "leo a diam sollicitudin";

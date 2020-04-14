@@ -10,4 +10,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(METHOD)
 public @interface TableStat {
     String name();
+
+    boolean emphasizeMax() default false;
 }

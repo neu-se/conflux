@@ -25,10 +25,6 @@ import java.util.List;
 
 public class ForkedFlowBenchmarkRunner {
 
-    private ForkedFlowBenchmarkRunner() {
-
-    }
-
     public static void main(String[] args) {
         File benchmarkOutputDir = new File(args[0]);
         File reportFile = new File(args[1]);
@@ -69,10 +65,10 @@ public class ForkedFlowBenchmarkRunner {
             } catch(InstantiationException | IllegalAccessException e) {
                 Throwable t = new Exception("Benchmark class should have exactly one public zero-argument constructor");
                 long timeElapsed = Duration.between(start, Instant.now()).toMillis();
-                errorMessages.add(getErrorMessages("initializationError", benchClass.getName(),
+                errorMessages.add(getErrorMessages(benchClass.getName(), "initializationError",
                         benchClass.getSimpleName(), timeElapsed, t));
                 errors.add(t);
-                reports.add(new FlowBenchReport("initializationError", benchClass.getName(), timeElapsed,
+                reports.add(new FlowBenchReport(benchClass.getName(), "initializationError", timeElapsed,
                         new ErrorFlowBenchResult()));
             }
             long timeElapsed = Duration.between(start, Instant.now()).toMillis();

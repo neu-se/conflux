@@ -2,16 +2,11 @@ package edu.gmu.swe.phosphor.ignored.runtime;
 
 import java.util.*;
 
-public class FlowBenchResultImpl extends FlowBenchResult {
+public final class FlowBenchResultImpl extends FlowBenchResult {
 
     private final List<SetComparison> comparisons = new LinkedList<>();
     ConfusionMatrix globalMatrix = new ConfusionMatrix();
     private Map<Object, ConfusionMatrix> confusionMatrices = null;
-
-    @Override
-    public String getBenchmarkTypeDesc() {
-        return "Flow Benchmark";
-    }
 
     public double precision() {
         initializeConfusionMatrices();
@@ -31,7 +26,7 @@ public class FlowBenchResultImpl extends FlowBenchResult {
         }
     }
 
-    @TableStat(name = "F1")
+    @TableStat(name = "F1", emphasizeMax = true)
     public double f1Score() {
         initializeConfusionMatrices();
         if(globalMatrix.truePositives == 0) {

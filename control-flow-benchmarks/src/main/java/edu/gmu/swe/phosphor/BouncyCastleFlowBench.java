@@ -8,12 +8,12 @@ import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkHexEncode;
 
 public class BouncyCastleFlowBench {
 
-    @FlowBench
+    @FlowBench(group = "hex-encode", project = "bcprov-jdk15", implementation = "Hex")
     public void hexEncode(FlowBenchResultImpl benchResult) {
         checkHexEncode(benchResult, TaintedPortionPolicy.ALL, b -> new String(org.bouncycastle.util.encoders.Hex.encode(b)));
     }
 
-    @FlowBench
+    @FlowBench(group = "hex-decode", project = "bcprov-jdk15", implementation = "Hex")
     public void hexDecode(FlowBenchResultImpl benchResult) {
         checkHexDecode(benchResult, TaintedPortionPolicy.ALL, Hex::decode);
     }

@@ -165,7 +165,7 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when encoding a string of spaces characters as '+'s as is done in the
      * 'www-form-urlencoded' encoding scheme.
      */
-    public static void checkURLEncodeSpaces(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkSpacesUrlEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                             UnaryOperator<String> encoder) {
         String input = "     ";
         input = taintWithIndices(input + input, policy);
@@ -178,7 +178,7 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when decoding a string of '+' characters as spaces as is done when decoding the
      * 'www-form-urlencoded' encoding scheme.
      */
-    public static void checkURLDecodeSpaces(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkSpacesUrlDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                             UnaryOperator<String> decoder) {
         String input = "+++++";
         input = taintWithIndices(input + input, policy);
@@ -190,7 +190,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when encoding reserved ascii characters to percent-encoded octets.
      */
-    public static void checkPercentEncodeReserved(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkReservedPercentEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                                   UnaryOperator<String> encoder) {
         String input = RESERVED_CHARS_FOR_PERCENT_ENCODING + RESERVED_CHARS_FOR_PERCENT_ENCODING;
         input = taintWithIndices(input + input, policy);
@@ -202,7 +202,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when decoding reserved ascii characters from percent-encoded octets.
      */
-    public static void checkPercentDecodeReserved(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkReservedPercentDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                                   UnaryOperator<String> decoder) {
         String input = "%3a%40%26%3f%25"; // 5 characters each 1 percent-encoded octet long
         input = taintWithIndices(input + input, policy);
@@ -214,7 +214,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when encoding unicode characters to percent-encoded octets.
      */
-    public static void checkPercentEncodeUnicode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkUnicodePercentEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                                  UnaryOperator<String> encoder) {
         String input = "\u03A9\u3399"; // encoded as 2/3 percent-encoded octets
         input = taintWithIndices(input + input, policy);
@@ -226,7 +226,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when decoding unicode characters from percent-encoded octets.
      */
-    public static void checkPercentDecodeUnicode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkUnicodePercentDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                                  UnaryOperator<String> decoder) {
         String input = "%CE%A9%E3%8E%99"; // 2 encoded characters consisting of 2/3 percent-encoded octets
         input = taintWithIndices(input + input, policy);
@@ -238,7 +238,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when escaping HTML reserved characters by replacing them with named character entities.
      */
-    public static void checkEscapeHtml(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkHtmlEscape(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                        UnaryOperator<String> escaper) {
         String input = "&<>";
         input = taintWithIndices(input + input, policy);
@@ -250,7 +250,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when unescaping named character entities to HTML reserved characters;
      */
-    public static void checkUnescapeHtml(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkHtmlUnescape(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                          UnaryOperator<String> unescaper) {
         String input = "&amp;&lt;&gt;";
         input = taintWithIndices(input + input, policy);
@@ -262,7 +262,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when escaping EcmaScript/JavaScript special characters.
      */
-    public static void checkEscapeJavaScript(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkJavaScriptEscape(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                              UnaryOperator<String> escaper) {
         String input = "\"'\\/\t\n\f\b\u2028\u2029";
         input = taintWithIndices(input + input, policy);
@@ -274,7 +274,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when unescaping EcmaScript/JavaScript special characters.
      */
-    public static void checkUnescapeJavaScript(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
+    public static void checkJavaScriptUnescape(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy,
                                                UnaryOperator<String> unescaper) {
         String input = "\\\"\\'\\\\\\/\\t\\n\\f\\b\\u2028\\u2029\\\"\\'\\\\\\/\\t\\n\\f\\b\\u000B\\u2029";
         input = taintWithIndices(input + input, policy);

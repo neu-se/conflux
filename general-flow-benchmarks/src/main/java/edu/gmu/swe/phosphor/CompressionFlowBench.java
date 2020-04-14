@@ -101,48 +101,48 @@ public class CompressionFlowBench {
     /**
      * Checks round-trip compression using Apache Commons' bzip2 compressor and decompressor.
      */
-    @FlowBench(requiresBitLevelPrecision = true)
-    public void testBZip2RoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws Exception {
+    @FlowBench(requiresBitLevelPrecision = true, group = "compress-round-trip", project = "commons-compress", implementation = "BZip2Compressor")
+    public void BZip2RoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws Exception {
         checkCompressionRoundTrip(benchResult, policy, BZip2CompressorOutputStream.class, BZip2CompressorInputStream.class);
     }
 
     /**
      * Checks one-way compression using Apache Commons' bzip2 compressor.
      */
-    @FlowBench
-    public void testBZip2Compress(FlowBenchResultImpl benchResult) throws Exception {
+    @FlowBench(requiresBitLevelPrecision = true, group = "compress", project = "commons-compress", implementation = "BZip2Compressor")
+    public void BZip2Compress(FlowBenchResultImpl benchResult) throws Exception {
         checkCompression(benchResult, BZip2CompressorOutputStream.class);
     }
 
     /**
      * Checks round-trip compression using Tukaani's LZMA compressor and decompressor.
      */
-    @FlowBench(requiresBitLevelPrecision = true)
-    public void testLZMARoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws Exception {
+    @FlowBench(requiresBitLevelPrecision = true, group = "compress-round-trip", project = "tukaani-xz", implementation = "LZMACompressor")
+    public void LZMARoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws Exception {
         checkCompressionRoundTrip(benchResult, policy, LZMACompressorOutputStream.class, LZMACompressorInputStream.class);
     }
 
     /**
      * Checks one-way compression using Tukaani's LZMA compressor.
      */
-    @FlowBench
-    public void testLZMACompress(FlowBenchResultImpl benchResult) throws Exception {
+    @FlowBench(group = "compress", project = "tukaani-xz", implementation = "LZMACompressor")
+    public void LZMACompress(FlowBenchResultImpl benchResult) throws Exception {
         checkCompression(benchResult, LZMACompressorOutputStream.class);
     }
 
     /**
      * Checks round-trip compression using Apache Commons' block LZ4 compressor and decompressor.
      */
-    @FlowBench(requiresBitLevelPrecision = true)
-    public void testBlockLZ4RoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws Exception {
+    @FlowBench(requiresBitLevelPrecision = true, group = "compress-round-trip", project = "tukaani-xz", implementation = "LZMACompressor")
+    public void blockLZ4RoundTrip(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy) throws Exception {
         checkCompressionRoundTrip(benchResult, policy, BlockLZ4CompressorOutputStream.class, BlockLZ4CompressorInputStream.class);
     }
 
     /**
      * Checks one-way compression using Apache Commons' block LZ4 compressor.
      */
-    @FlowBench
-    public void testBlockLZ4Compress(FlowBenchResultImpl benchResult) throws Exception {
+    @FlowBench(group = "compress", project = "tukaani-xz", implementation = "BlockLZ4Compressor")
+    public void blockLZ4Compress(FlowBenchResultImpl benchResult) throws Exception {
         checkCompression(benchResult, BlockLZ4CompressorOutputStream.class);
     }
 }

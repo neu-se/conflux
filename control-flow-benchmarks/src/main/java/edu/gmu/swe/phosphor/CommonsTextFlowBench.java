@@ -7,23 +7,23 @@ import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.*;
 
 public class CommonsTextFlowBench {
 
-    @FlowBench
+    @FlowBench(group = "html-escape", project = "common-text", implementation = "StringEscapeUtils")
     public void htmlEscape(FlowBenchResultImpl benchResult) {
-        checkEscapeHtml(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::escapeHtml4);
+        checkHtmlEscape(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::escapeHtml4);
     }
 
-    @FlowBench
+    @FlowBench(group = "html-unescape", project = "common-text", implementation = "StringEscapeUtils")
     public void htmlUnescape(FlowBenchResultImpl benchResult) {
-        checkUnescapeHtml(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::unescapeHtml4);
+        checkHtmlUnescape(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::unescapeHtml4);
     }
 
-    @FlowBench
+    @FlowBench(group = "javascript-escape", project = "common-text", implementation = "StringEscapeUtils")
     public void javaScriptEscape(FlowBenchResultImpl benchResult) {
-        checkEscapeJavaScript(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::escapeEcmaScript);
+        checkJavaScriptEscape(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::escapeEcmaScript);
     }
 
-    @FlowBench
+    @FlowBench(group = "javascript-unescape", project = "common-text", implementation = "StringEscapeUtils")
     public void javaScriptUnescape(FlowBenchResultImpl benchResult) {
-        checkUnescapeJavaScript(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::unescapeEcmaScript);
+        checkJavaScriptUnescape(benchResult, TaintedPortionPolicy.ALL, StringEscapeUtils::unescapeEcmaScript);
     }
 }

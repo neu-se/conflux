@@ -27,43 +27,43 @@ public class JavaRTFlowBench {
         }
     };
 
-    @FlowBench
+    @FlowBench(group = "hex-encode", project = "jre", implementation = "DatatypeConverter")
     public void hexEncode(FlowBenchResultImpl benchResult) {
         checkHexEncode(benchResult, TaintedPortionPolicy.ALL, DatatypeConverter::printHexBinary);
     }
 
-    @FlowBench
+    @FlowBench(group = "hex-decode", project = "jre", implementation = "DatatypeConverter")
     public void hexDecode(FlowBenchResultImpl benchResult) {
         checkHexDecode(benchResult, TaintedPortionPolicy.ALL, DatatypeConverter::parseHexBinary);
     }
 
-    @FlowBench
-    public void urlEncodeSpaces(FlowBenchResultImpl benchResult) {
-        checkURLEncodeSpaces(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
+    @FlowBench(group = "spaces-url-encode", project = "jre", implementation = "URLEncoder")
+    public void spacesUrlEncode(FlowBenchResultImpl benchResult) {
+        checkSpacesUrlEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
     }
 
-    @FlowBench
-    public void urlDecodeSpaces(FlowBenchResultImpl benchResult) {
-        checkURLDecodeSpaces(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    @FlowBench(group = "spaces-url-decode", project = "jre", implementation = "URLDecoder")
+    public void spacesUrlDecode(FlowBenchResultImpl benchResult) {
+        checkSpacesUrlDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 
-    @FlowBench
-    public void urlEncodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
+    @FlowBench(group = "reserved-percent-encode", project = "jre", implementation = "URLEncoder")
+    public void reservedPercentEncode(FlowBenchResultImpl benchResult) {
+        checkReservedPercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
     }
 
-    @FlowBench
-    public void urlDecodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    @FlowBench(group = "reserved-percent-decode", project = "jre", implementation = "URLDecoder")
+    public void reservedPercentDecode(FlowBenchResultImpl benchResult) {
+        checkReservedPercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 
-    @FlowBench
-    public void urlEncodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeUnicode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
+    @FlowBench(group = "unicode-percent-encode", project = "jre", implementation = "URLEncoder")
+    public void unicodePercentEncode(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
     }
 
-    @FlowBench
-    public void urlDecodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeUnicode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    @FlowBench(group = "unicode-percent-decode", project = "jre", implementation = "URLDecoder")
+    public void unicodePercentDecode(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 }

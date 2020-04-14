@@ -12,5 +12,10 @@ public @interface FlowBench {
 
     boolean requiresBitLevelPrecision() default false;
 
+    String group();
+
+    String project();
+
+    String implementation();
 }
 

@@ -2,10 +2,6 @@ package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.columbia.cs.psl.phosphor.PhosphorOption;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
-import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
-import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
-import edu.gmu.swe.phosphor.ignored.runtime.TableStat;
-import edu.gmu.swe.util.GroupedTable;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -14,14 +10,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.surefire.shade.booter.org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.maven.surefire.shade.booter.org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createPhosphorAgentArgument;
@@ -100,7 +93,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     private List<String> bootClasspathJars;
 
     /**
-     * True if execution times should be reported
+     * True if execution times should be reported in tables
      */
     @Parameter(property = "reportExecutionTime", readonly = true, defaultValue = "false")
     private boolean reportExecutionTime;
@@ -121,7 +114,9 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
             PhosphorInstrumentUtil.createOrCleanDirectory(reportDirectory);
             List<File> reportFiles = runBenchmarks(reportDirectory);
-            printResultsTable(getConfigurationNames(), deserializeReports(reportFiles));
+            FlowBenchmarkFullReport fullReport = new FlowBenchmarkFullReport(getConfigurationNames(), reportFiles, reportExecutionTime);
+            fullReport.printResultsTable();
+            fullReport.writeLatexTable(new File(buildDir, "table.tex"));
         } catch(InterruptedException | IOException e) {
             throw new MojoFailureException("Failed to benchmark configurations", e);
         }
@@ -136,124 +131,6 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             names.add(config.name);
         }
         return names;
-    }
-
-    /**
-     * Reads flow benchmark reports from the files in the specified list.
-     *
-     * @param reportFiles list of files contains benchmark reports for the different configurations in the order the
-     *                    benchmarks were run
-     * @return a list contains the list of benchmark results read from the reportFiles in the order the benchmark lists
-     * were run
-     * @throws IOException if an I/O error occurs
-     */
-    private List<? extends List<FlowBenchReport>> deserializeReports(List<File> reportFiles) throws IOException {
-        List<List<FlowBenchReport>> reports = new LinkedList<>();
-        for(File reportFile : reportFiles) {
-            reports.add(FlowBenchReport.readJsonFromFile(reportFile));
-        }
-        return reports;
-    }
-
-    /**
-     * Prints a table of benchmark results of the specified type for the various Phosphor configurations.
-     *
-     * @param configurationNames the names of the configurations that were benchmarked
-     * @param reportLists        list of reports for each configuration that was benchmarked
-     */
-    private void printResultsTable(List<String> configurationNames, List<? extends List<FlowBenchReport>> reportLists) {
-        TreeMap<Pair<String, String>, Map<String, FlowBenchReport>> tests = new TreeMap<>();
-        Iterator<? extends List<FlowBenchReport>> reportsIt = reportLists.iterator();
-        String benchmarkTypeDesc = null;
-        for(String name : configurationNames) {
-            List<FlowBenchReport> reports = reportsIt.next();
-            for(FlowBenchReport report : reports) {
-                Pair<String, String> test = new ImmutablePair<>(report.getSimpleClassName(), report.getMethodName());
-                if(report.getResult() instanceof FlowBenchResultImpl) {
-                    tests.putIfAbsent(test, new HashMap<>());
-                    tests.get(test).put(name, report);
-                    if(benchmarkTypeDesc == null) {
-                        benchmarkTypeDesc = report.getResult().getBenchmarkTypeDesc();
-                    }
-                }
-            }
-        }
-        if(!tests.isEmpty()) {
-            Map<String, Method> tableStatMethods = getTableStatMethods();
-            List<String> statsPerConfig = new LinkedList<>();
-            if(reportExecutionTime) {
-                statsPerConfig.add("Time (ms)");
-            }
-            statsPerConfig.addAll(tableStatMethods.keySet());
-            GroupedTable table = new GroupedTable(benchmarkTypeDesc + " Results")
-                    .addGroup("", "Benchmark", "Test");
-            for(String name : configurationNames) {
-                table.addGroup(name, statsPerConfig.toArray(new String[0]));
-            }
-            for(Pair<String, String> test : tests.keySet()) {
-                Object[][] row = new Object[configurationNames.size() + 1][];
-                String testName = test.getLeft();
-                if(testName.startsWith("FlowBench")) {
-                    testName = testName.substring("FlowBench".length());
-                }
-                if(testName.endsWith("FlowBench")) {
-                    testName = testName.substring(0, testName.length() - "FlowBench".length());
-                }
-                row[0] = new String[]{testName, test.getRight()};
-                Map<String, FlowBenchReport> reports = tests.get(test);
-                int i = 1;
-                for(String name : configurationNames) {
-                    List<String> rowData = new LinkedList<>();
-                    if(reports.containsKey(name)) {
-                        FlowBenchReport report = reports.get(name);
-                        FlowBenchResult result = report.getResult();
-                        if(reportExecutionTime) {
-                            rowData.add(String.format("%d", report.getTimeElapsed()));
-                        }
-                        tableStatMethods.forEach((k, v) -> {
-                            v.setAccessible(true);
-                            try {
-                                Object value = v.invoke(result);
-                                if(value instanceof Float || value instanceof Double) {
-                                    rowData.add(String.format("%.4f", value));
-                                } else {
-                                    rowData.add(value.toString());
-                                }
-                            } catch(Exception e) {
-                                rowData.add("------");
-                            }
-                        });
-                    } else {
-                        if(reportExecutionTime) {
-                            rowData.add("Error"); // Time column
-                        }
-                        tableStatMethods.forEach((k, v) -> rowData.add("Error"));
-                    }
-                    row[i++] = rowData.toArray();
-                }
-                table.addRow(row);
-            }
-            table.printToStream(System.out);
-            System.out.println("\n");
-        }
-    }
-
-    /**
-     * Gathers methods annotated with the TableStat annotation from the specified class.
-     *
-     * @return mapping from TableStat annotation names to the methods they annotate
-     */
-    private Map<String, Method> getTableStatMethods() {
-        Map<String, Method> statMethods = new TreeMap<>();
-        for(Class<?> clazz = FlowBenchResultImpl.class; clazz != FlowBenchResult.class; clazz = clazz.getSuperclass()) {
-            for(Method method : FlowBenchResultImpl.class.getDeclaredMethods()) {
-                if(method.isAnnotationPresent(TableStat.class)) {
-                    String statName = method.getAnnotation(TableStat.class).name();
-                    statMethods.put(statName, method);
-                }
-            }
-        }
-        return statMethods;
     }
 
     /**

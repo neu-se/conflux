@@ -25,13 +25,13 @@ public class CommonsCodecFlowBench {
     private static final UnaryOperator<String> wrappedPercentEncoder = wrapEncoder(percentCodec);
     private static final UnaryOperator<String> wrappedPercentDecoder = wrapDecoder(percentCodec);
 
-    @FlowBench
+    @FlowBench(group = "hex-encode", project = "common-codec", implementation = "Hex")
     public void hexEncode(FlowBenchResultImpl benchResult) {
         Hex encoder = new Hex();
         checkHexEncode(benchResult, TaintedPortionPolicy.ALL, b -> new String(encoder.encode(b)));
     }
 
-    @FlowBench
+    @FlowBench(group = "hex-decode", project = "common-codec", implementation = "Hex")
     public void hexDecode(FlowBenchResultImpl benchResult) {
         Hex decoder = new Hex();
         checkHexDecode(benchResult, TaintedPortionPolicy.ALL, s -> {
@@ -43,73 +43,71 @@ public class CommonsCodecFlowBench {
         });
     }
 
-    @FlowBench
-    public void urlCodecEncodeSpaces(FlowBenchResultImpl benchResult) {
-        checkURLEncodeSpaces(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
+    @FlowBench(group = "spaces-url-encode", project = "common-codec", implementation = "URLCodec")
+    public void spacesUrlEncodeUrlCodec(FlowBenchResultImpl benchResult) {
+        checkSpacesUrlEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
     }
 
-    @FlowBench
-    public void urlCodecDecodeSpaces(FlowBenchResultImpl benchResult) {
-        checkURLDecodeSpaces(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    @FlowBench(group = "spaces-url-decode", project = "common-codec", implementation = "URLCodec")
+    public void spacesUrlDecodeUrlCodec(FlowBenchResultImpl benchResult) {
+        checkSpacesUrlDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 
-    @FlowBench
-    public void urlCodecEncodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
-
+    @FlowBench(group = "reserved-percent-encode", project = "common-codec", implementation = "URLCodec")
+    public void reservedPercentEncodeUrlCodec(FlowBenchResultImpl benchResult) {
+        checkReservedPercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
     }
 
-    @FlowBench
-    public void urlCodecDecodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    @FlowBench(group = "reserved-percent-decode", project = "common-codec", implementation = "URLCodec")
+    public void reservedPercentDecodeUrlCodec(FlowBenchResultImpl benchResult) {
+        checkReservedPercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 
-    @FlowBench
-    public void urlCodecEncodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeUnicode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
+    @FlowBench(group = "unicode-percent-encode", project = "common-codec", implementation = "URLCodec")
+    public void unicodePercentEncodeURLCodec(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
     }
 
-    @FlowBench
-    public void urlCodecDecodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeUnicode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    @FlowBench(group = "unicode-percent-decode", project = "common-codec", implementation = "URLCodec")
+    public void unicodePercentDecodeURLCodec(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 
-    @FlowBench
-    public void percentCodecEncodeSpaces(FlowBenchResultImpl benchResult) {
-        checkURLEncodeSpaces(benchResult, TaintedPortionPolicy.ALL, wrappedPercentEncoder);
+    @FlowBench(group = "spaces-url-encode", project = "common-codec", implementation = "PercentCodec")
+    public void spacesUrlEncodePercentCodec(FlowBenchResultImpl benchResult) {
+        checkSpacesUrlEncode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentEncoder);
     }
 
-    @FlowBench
-    public void percentCodecDecodeSpaces(FlowBenchResultImpl benchResult) {
-        checkURLDecodeSpaces(benchResult, TaintedPortionPolicy.ALL, wrappedPercentDecoder);
+    @FlowBench(group = "spaces-url-decode", project = "common-codec", implementation = "PercentCodec")
+    public void spacesUrlDecodePercentCodec(FlowBenchResultImpl benchResult) {
+        checkSpacesUrlDecode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentDecoder);
     }
 
-    @FlowBench
-    public void percentCodecEncodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedPercentEncoder);
-
+    @FlowBench(group = "reserved-percent-encode", project = "common-codec", implementation = "PercentCodec")
+    public void reservedPercentEncodePercentCodec(FlowBenchResultImpl benchResult) {
+        checkReservedPercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentEncoder);
     }
 
-    @FlowBench
-    public void percentCodecDecodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeReserved(benchResult, TaintedPortionPolicy.ALL, wrappedPercentDecoder);
+    @FlowBench(group = "reserved-percent-decode", project = "common-codec", implementation = "PercentCodec")
+    public void reservedPercentDecodePercentCodec(FlowBenchResultImpl benchResult) {
+        checkReservedPercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentDecoder);
     }
 
-    @FlowBench
-    public void percentCodecEncodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeUnicode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentEncoder);
+    @FlowBench(group = "unicode-percent-encode", project = "common-codec", implementation = "PercentCodec")
+    public void unicodePercentEncodePercentCodec(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentEncoder);
     }
 
-    @FlowBench
-    public void percentCodecDecodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentDecodeUnicode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentDecoder);
+    @FlowBench(group = "unicode-percent-decode", project = "common-codec", implementation = "PercentCodec")
+    public void unicodePercentDecodePercentCodec(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedPercentDecoder);
     }
 
     /**
      * Quoted-Printable content-transfer-encoding as defined by RFC 1521
      */
-    @FlowBench
-    public void quotedPrintableCodecEncode(FlowBenchResultImpl benchResult) throws EncoderException {
+    @FlowBench(group = "quoted-printable-encode", project = "common-codec", implementation = "QuotedPrintableCodec")
+    public void quotedPrintableEncode(FlowBenchResultImpl benchResult) throws EncoderException {
         QuotedPrintableCodec codec = new QuotedPrintableCodec(true);
         String input = "\r\n\b\u03A9\u3399 ";
         input = taintWithIndices(input);
@@ -121,8 +119,8 @@ public class CommonsCodecFlowBench {
     /**
      * Quoted-Printable content-transfer-encoding as defined by RFC 1521
      */
-    @FlowBench
-    public void quotedPrintableCodecDecode(FlowBenchResultImpl benchResult) throws DecoderException {
+    @FlowBench(group = "quoted-printable-decode", project = "common-codec", implementation = "QuotedPrintableCodec")
+    public void quotedPrintableDecode(FlowBenchResultImpl benchResult) throws DecoderException {
         QuotedPrintableCodec codec = new QuotedPrintableCodec(true);
         String input = "=0D=0A=08=CE=A9=E3=8E=99=20";
         input = taintWithIndices(input);

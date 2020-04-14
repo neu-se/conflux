@@ -8,23 +8,23 @@ import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.*;
 
 public class GuavaFlowBench {
 
-    @FlowBench
-    public void urlEncodeSpaces(FlowBenchResultImpl benchResult) {
-        checkURLEncodeSpaces(benchResult, TaintedPortionPolicy.ALL, s -> urlFormParameterEscaper().escape(s));
+    @FlowBench(group = "spaces-url-encode", project = "guava", implementation = "UrlEscapers")
+    public void spacesUrlEncode(FlowBenchResultImpl benchResult) {
+        checkSpacesUrlEncode(benchResult, TaintedPortionPolicy.ALL, s -> urlFormParameterEscaper().escape(s));
     }
 
-    @FlowBench
-    public void urlEncodeReserved(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeReserved(benchResult, TaintedPortionPolicy.ALL, s -> urlFormParameterEscaper().escape(s));
+    @FlowBench(group = "reserved-percent-encode", project = "guava", implementation = "UrlEscapers")
+    public void reservedPercentEncode(FlowBenchResultImpl benchResult) {
+        checkReservedPercentEncode(benchResult, TaintedPortionPolicy.ALL, s -> urlFormParameterEscaper().escape(s));
     }
 
-    @FlowBench
-    public void urlEncodeUnicode(FlowBenchResultImpl benchResult) {
-        checkPercentEncodeUnicode(benchResult, TaintedPortionPolicy.ALL, s -> urlFormParameterEscaper().escape(s));
+    @FlowBench(group = "unicode-percent-encode", project = "guava", implementation = "UrlEscapers")
+    public void unicodePercentEncode(FlowBenchResultImpl benchResult) {
+        checkUnicodePercentEncode(benchResult, TaintedPortionPolicy.ALL, s -> urlFormParameterEscaper().escape(s));
     }
 
-    @FlowBench
+    @FlowBench(group = "html-escape", project = "guava", implementation = "HtmlEscapers")
     public void htmlEscape(FlowBenchResultImpl benchResult) {
-        checkEscapeHtml(benchResult, TaintedPortionPolicy.ALL, s -> htmlEscaper().escape(s));
+        checkHtmlEscape(benchResult, TaintedPortionPolicy.ALL, s -> htmlEscaper().escape(s));
     }
 }

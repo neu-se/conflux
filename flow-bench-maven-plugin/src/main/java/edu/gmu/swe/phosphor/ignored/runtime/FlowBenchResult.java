@@ -6,18 +6,20 @@ import edu.columbia.cs.psl.phosphor.struct.TaintedPrimitiveWithObjTag;
 
 import java.util.*;
 
-@SuppressWarnings({"unused", "unchecked", "rawtypes"})
+@SuppressWarnings("unused")
 public abstract class FlowBenchResult {
 
-    public abstract String getBenchmarkTypeDesc();
+    FlowBenchResult() {
+
+    }
 
     public abstract void check(Set<?> expected, Set<?> predicted);
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, Object actualData, Taint actualDataTag) {
+    public <T> void check$$PHOSPHORTAGGED(Taint<T> thisTag, Collection<?> expected, Taint<T> expectedTag, Object actualData, Taint<T> actualDataTag) {
         check(expected, Taint.combineTags(actualDataTag, getTaint(actualData)));
     }
 
-    public void checkEmpty$$PHOSPHORTAGGED(Taint thisTag, Object actualData, Taint actualDataTag) {
+    public <T> void checkEmpty$$PHOSPHORTAGGED(Taint<T> thisTag, Object actualData, Taint<T> actualDataTag) {
         checkEmpty(Taint.combineTags(actualDataTag, getTaint(actualData)));
     }
 
@@ -53,42 +55,42 @@ public abstract class FlowBenchResult {
         throw new IllegalStateException("Calling un-instrumented Phosphor stubs");
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, boolean actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, boolean actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, byte actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, byte actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, char actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, char actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, double actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, double actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, float actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, float actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, int actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, int actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, long actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, long actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
-    public void check$$PHOSPHORTAGGED(Taint thisTag, Collection<?> expected, Taint expectedTag, short actualData, Taint actualDataTag) {
+    public void check$$PHOSPHORTAGGED(Taint<?> thisTag, Collection<?> expected, Taint<?> expectedTag, short actualData, Taint<?> actualDataTag) {
         check(expected, actualDataTag);
     }
 
     public void check(Collection<?> expected, Object actualData) {
         Set<?> expectedSet = new HashSet<>(expected);
         Set<Object> predictedSet = new HashSet<>();
-        Taint taint = getTaint(actualData);
+        Taint<?> taint = getTaint(actualData);
         if(taint != null && !taint.isEmpty()) {
             predictedSet.addAll(Arrays.asList(taint.getLabels()));
         }
@@ -100,11 +102,11 @@ public abstract class FlowBenchResult {
     }
 
     @SuppressWarnings("unchecked")
-    Taint getTaint(Object actualData) {
+    <T> Taint<T> getTaint(Object actualData) {
         if(actualData == null) {
             return null;
         } else if(actualData instanceof Taint) {
-            return (Taint) actualData;
+            return (Taint<T>) actualData;
         } else if(actualData instanceof TaintedPrimitiveWithObjTag) {
             return ((TaintedPrimitiveWithObjTag) actualData).taint;
         }

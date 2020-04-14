@@ -3,7 +3,8 @@ package edu.gmu.swe.phosphor.ignored.maven;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import edu.gmu.swe.phosphor.TaintedPortionPolicy;
+import edu.gmu.swe.phosphor.FlowBench;
+import edu.gmu.swe.phosphor.ignored.runtime.ErrorFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
 
 import java.io.*;
@@ -11,26 +12,56 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class FlowBenchReport {
+public final class FlowBenchReport {
 
     private final String className;
     private final String methodName;
     private final long timeElapsed;
     private final FlowBenchResult result;
+    private final String implementationDesc;
+    private final String project;
+    private final String group;
 
-    public FlowBenchReport(String className, String methodName, long timeElapsed, FlowBenchResult result) {
+    public FlowBenchReport(String className, String methodName, long timeElapsed, ErrorFlowBenchResult result) {
+        if(className == null || methodName == null || result == null) {
+            throw new NullPointerException();
+        }
         this.className = className;
         this.methodName = methodName;
         this.timeElapsed = timeElapsed;
         this.result = result;
-    }
-
-    public FlowBenchReport(Method benchMethod, TaintedPortionPolicy portion, long timeElapsed, FlowBenchResult result) {
-        this(benchMethod.getDeclaringClass().getName(), benchMethod.getName() + "-" + portion.getDesc(), timeElapsed, result);
+        implementationDesc = "";
+        project = "";
+        group = "";
     }
 
     public FlowBenchReport(Method benchMethod, long timeElapsed, FlowBenchResult result) {
-        this(benchMethod.getDeclaringClass().getName(), benchMethod.getName(), timeElapsed, result);
+        if(!benchMethod.isAnnotationPresent(FlowBench.class)) {
+            throw new IllegalArgumentException("Cannot make report for a method lacking a FlowBench annotation");
+        }
+        if(result == null) {
+            throw new NullPointerException();
+        }
+        FlowBench annotation = benchMethod.getAnnotation(FlowBench.class);
+        implementationDesc = annotation.implementation();
+        project = annotation.project();
+        group = annotation.group();
+        className = benchMethod.getDeclaringClass().getName();
+        methodName = benchMethod.getName();
+        this.timeElapsed = timeElapsed;
+        this.result = result;
+    }
+
+    public String getImplementationDesc() {
+        return implementationDesc;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public String getGroup() {
+        return group;
     }
 
     public String getSimpleClassName() {
@@ -65,6 +96,9 @@ public class FlowBenchReport {
                 ", methodName='" + methodName + '\'' +
                 ", timeElapsed=" + timeElapsed +
                 ", result=" + result +
+                ", implementationDesc='" + implementationDesc + '\'' +
+                ", project='" + project + '\'' +
+                ", testName='" + group + '\'' +
                 '}';
     }
 
