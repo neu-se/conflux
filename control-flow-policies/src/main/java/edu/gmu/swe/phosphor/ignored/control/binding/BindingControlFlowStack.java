@@ -133,7 +133,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
 
     @Override
     public Taint<E> copyTag() {
-        return isDisabled() ? Taint.emptyTaint() : stackTop.copyTag(getLevel(Integer.MAX_VALUE));
+        return copyTagConstant();
     }
 
     private static final class ControlFrame<E> {
@@ -142,7 +142,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         private final int[] argumentConstancyLevels;
         private final Map<Integer, Node<E>> levelStackMap;
         private int[] branchLevels;
-        private ControlFrame<E> next;
+        private final ControlFrame<E> next;
 
         private ControlFrame(int invocationLevel, int[] argumentConstancyLevels, ControlFrame<E> next) {
             this.next = next;

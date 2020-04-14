@@ -7,7 +7,6 @@ import edu.columbia.cs.psl.phosphor.control.standard.BranchEnd;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.MethodVisitor;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
-import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.VariantLoopLevel;
 
 import java.util.Iterator;
 
@@ -15,10 +14,11 @@ import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.COMBINE_TAGS;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.binding.BindingMethodRecord.*;
+import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
 
 public class BindingControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<BindingControlFlowAnalyzer> {
 
-    private static final LoopLevel defaultLevel = new VariantLoopLevel(0);
+    private static final LoopLevel defaultLevel = CONSTANT_LOOP_LEVEL;
 
     /**
      * The number of unique IDs assigned to branches in the method
@@ -189,5 +189,11 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
         } else if(info instanceof FrameConstancyInfo) {
             nextMethodFrameInfo = (FrameConstancyInfo) info;
         }
+    }
+
+    @Override
+    public void visitingInstanceOf() {
+        delegate.visitInsn(POP);
+        copyTag();
     }
 }

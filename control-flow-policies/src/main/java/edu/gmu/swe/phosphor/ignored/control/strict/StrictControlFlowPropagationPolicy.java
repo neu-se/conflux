@@ -208,4 +208,10 @@ public class StrictControlFlowPropagationPolicy extends AbstractControlFlowPropa
         delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
         CONTROL_STACK_COPY_TAG.delegateVisit(delegate);
     }
+
+    @Override
+    public void visitingInstanceOf() {
+        delegate.visitInsn(POP);
+        copyTag();
+    }
 }

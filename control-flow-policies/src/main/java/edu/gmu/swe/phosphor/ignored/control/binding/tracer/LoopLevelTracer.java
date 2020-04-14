@@ -115,7 +115,7 @@ public class LoopLevelTracer {
             Expression index = ((ArrayAccess) expression).getIndex();
             result = Constancy.merge(result, valueConstancies.getConstancy(index, source.getBasicBlock()));
         } else if(expression instanceof VariableExpression) {
-            result = calculateConstancyOfUses((VariableExpression) expression, candidateLoops, false, new HashSet<>());
+            result = calculateConstancyOfUses((VariableExpression) expression, candidateLoops, new HashSet<>());
         } else {
             throw new IllegalArgumentException();
         }
@@ -177,7 +177,7 @@ public class LoopLevelTracer {
     }
 
     private Constancy calculateConstancyOfUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops,
-                                               boolean includeMethodUses, Set<VariableExpression> visited) {
+                                               Set<VariableExpression> visited) {
         Constancy result = Constancy.CONSTANT;
         if(visited.add(expr) && usesMap.containsKey(expr)) {
             for(Statement s : usesMap.get(expr)) {
@@ -187,11 +187,6 @@ public class LoopLevelTracer {
                     Expression rhs = assign.getRightHandSide();
                     if(rhs instanceof InvokeExpression) {
                         return new Constancy.Nonconstant(candidateLoops);
-                    } else if(includeMethodUses && assign.definesVariable() && (rhs instanceof PhiFunction || rhs.equals(expr)
-                            || rhs instanceof UnaryExpression && ((UnaryExpression) rhs).getOperation() instanceof CastOperation)) {
-                        Constancy useConstancy = calculateConstancyOfUses(assign.getDefinedVariable(),
-                                candidateLoops, true, visited);
-                        result = Constancy.merge(result, useConstancy);
                     }
                     if(lhs instanceof FieldAccess) {
                         Expression receiver = ((FieldAccess) lhs).getReceiver();
@@ -206,8 +201,6 @@ public class LoopLevelTracer {
                     }
                 } else if(s instanceof ReturnStatement) {
                     result = Constancy.merge(result, new Constancy.ParameterDependent(method.getParameterTypes().size()));
-                } else if(s instanceof InvokeStatement && includeMethodUses) {
-                    return new Constancy.Nonconstant(candidateLoops);
                 }
             }
         }
@@ -276,7 +269,7 @@ public class LoopLevelTracer {
         }
         if(statement.definesVariable()) {
             Constancy c = calculateConstancyOfUses(statement.getDefinedVariable(),
-                    candidateLoops, true, new HashSet<>());
+                    candidateLoops, new HashSet<>());
             info.pushArgumentLevel(c.toLoopLevel());
         }
         return info;

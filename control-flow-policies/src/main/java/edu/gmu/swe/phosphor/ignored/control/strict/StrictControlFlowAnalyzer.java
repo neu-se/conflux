@@ -23,6 +23,7 @@ import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
  *     <li>Does not propagate along the false edge of IFNONNULL branches - doing so increases FP without decreasing FN</li>
  *     <li>Does not propagate along the default case of switches - no impact of FP or FN</li>
  *     <li>Does not propagate along switch cases where > 1 case (including the default) go to the same target block</li>
+ *     <li>Does not propagate through INSTANCEOF instructions</li>
  * </ul>
  */
 public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
