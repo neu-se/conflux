@@ -55,7 +55,7 @@ public class LoopLevelTracer {
 
     public LoopLevelTracer(SSAMethod method) {
         this.method = method;
-        propagatingVisitor = new PropagatingVisitor(method.getControlFlowGraph());
+        propagatingVisitor = new PropagatingVisitor(method.getControlFlowGraph(), false);
         valueConstancies = new ValueConstancies(method, propagatingVisitor);
         returnDependentConstancy = new Constancy.ParameterDependent(method.getParameterTypes().size());
         graph = method.getControlFlowGraph();
@@ -261,16 +261,16 @@ public class LoopLevelTracer {
         FrameConstancyInfo info = new FrameConstancyInfo(invocationLevel);
         if(expr.getReceiver() != null) {
             Constancy c = expr.getReceiver().accept(valueConstancies, candidateLoops);
-            info.pushArgumentLevel(c.toLoopLevel());
+            info.addLastArgumentLevel(c.toLoopLevel());
         }
         for(Expression arg : expr.getArguments()) {
             Constancy c = arg.accept(valueConstancies, candidateLoops);
-            info.pushArgumentLevel(c.toLoopLevel());
+            info.addLastArgumentLevel(c.toLoopLevel());
         }
         if(statement.definesVariable()) {
             Constancy c = calculateConstancyOfUses(statement.getDefinedVariable(),
                     candidateLoops, new HashSet<>());
-            info.pushArgumentLevel(c.toLoopLevel());
+            info.addLastArgumentLevel(c.toLoopLevel());
         }
         return info;
     }

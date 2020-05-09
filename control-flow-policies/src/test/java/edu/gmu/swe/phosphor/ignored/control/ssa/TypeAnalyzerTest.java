@@ -88,11 +88,20 @@ public class TypeAnalyzerTest {
     @Test
     public void testIntBinaryOperation() throws AnalyzerException {
         checkConditionalBranches(intBinaryOperation(), false);
+    }
 
+    @Test
+    public void testSingleBitCheck() throws AnalyzerException {
+        checkConditionalBranches(singleBitCheck(), true);
+    }
+
+    @Test
+    public void testSingleBitCheckArray() throws AnalyzerException {
+        checkConditionalBranches(singleBitCheckArray(), true);
     }
 
     private static void checkConditionalBranches(MethodNode mn, boolean expected) throws AnalyzerException {
-        TypeAnalyzer analyzer = new TypeAnalyzer(new SSAMethod(OWNER, mn));
+        TypeAnalyzer analyzer = new TypeAnalyzer(new SSAMethod(OWNER, mn), true);
         List<AbstractInsnNode> conditionalBranches = ControlAnalysisTestUtil.filterInstructions(mn,
                 (i) -> i.getOpcode() == IFEQ || i.getOpcode() == IFNE);
         for(AbstractInsnNode insn : conditionalBranches) {

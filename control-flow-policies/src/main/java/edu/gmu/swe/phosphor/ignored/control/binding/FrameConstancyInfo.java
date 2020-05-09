@@ -22,8 +22,8 @@ public class FrameConstancyInfo implements PhosphorInstructionInfo {
         return argumentLevels.size();
     }
 
-    public void pushArgumentLevel(LoopLevel level) {
-        argumentLevels.push(level);
+    public void addLastArgumentLevel(LoopLevel level) {
+        argumentLevels.addLast(level);
     }
 
     public Iterator<LoopLevel> getLevelIterator() {

@@ -14,8 +14,10 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 public class PropagatingVisitor implements StatefulExpressionVisitor<Expression, VariableExpression>, StatementVisitor<Statement> {
 
     private final Map<VariableExpression, Expression> propagatingDefinitions = new HashMap<>();
+    private final boolean propagateThroughOperations;
 
-    public PropagatingVisitor(FlowGraph<? extends AnnotatedBasicBlock> graph) {
+    public PropagatingVisitor(FlowGraph<? extends AnnotatedBasicBlock> graph, boolean propagateThroughOperations) {
+        this.propagateThroughOperations = propagateThroughOperations;
         Map<VariableExpression, Expression> currentDefinitions = new HashMap<>();
         for(AnnotatedBasicBlock block : graph.getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
@@ -49,9 +51,17 @@ public class PropagatingVisitor implements StatefulExpressionVisitor<Expression,
     }
 
     private boolean canPropagate(Expression valueExpr) {
-        return valueExpr instanceof ConstantExpression
-                || valueExpr instanceof ParameterExpression
-                || valueExpr instanceof VariableExpression;
+        if(valueExpr instanceof ConstantExpression || valueExpr instanceof ParameterExpression
+                || valueExpr instanceof VariableExpression) {
+            return true;
+        } else if(propagateThroughOperations && valueExpr instanceof BinaryExpression) {
+            return canPropagate(((BinaryExpression) valueExpr).getOperand1())
+                    && canPropagate(((BinaryExpression) valueExpr).getOperand2());
+        } else if(propagateThroughOperations && valueExpr instanceof UnaryExpression) {
+            return canPropagate(((UnaryExpression) valueExpr).getOperand());
+        } else {
+            return false;
+        }
     }
 
     @Override

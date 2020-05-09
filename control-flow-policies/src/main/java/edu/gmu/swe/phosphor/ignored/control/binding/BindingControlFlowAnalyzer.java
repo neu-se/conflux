@@ -84,7 +84,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                 SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
                 tracer = new LoopLevelTracer(ssaMethod);
                 Set<BindingBranchEdge> bindingEdges = new HashSet<>();
-                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, new TypeAnalyzer(ssaMethod));
+                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, new TypeAnalyzer(ssaMethod, true));
                 cfg = creator.createControlFlowGraph(methodNode);
                 numberOfUniqueBranchIDs = processEdges(bindingEdges);
                 for(BranchEdge edge : bindingEdges) {

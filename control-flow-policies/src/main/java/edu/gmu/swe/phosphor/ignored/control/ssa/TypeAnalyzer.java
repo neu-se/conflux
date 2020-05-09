@@ -26,10 +26,12 @@ public class TypeAnalyzer {
     private final Map<AbstractInsnNode, AnnotatedInstruction> insnMap = new HashMap<>();
     private final Map<AssignmentStatement, Frame<TypeValue>> phiFrameMap;
     private final Map<VariableExpression, Type> typeMap = new HashMap<>();
+    private final boolean considerSingleBitChecks;
 
-    public TypeAnalyzer(SSAMethod ssaMethod) {
+    public TypeAnalyzer(SSAMethod ssaMethod, boolean considerSingleBitChecks) {
+        this.considerSingleBitChecks = considerSingleBitChecks;
         parameterTypes = ssaMethod.getParameterTypes();
-        propagatingVisitor = new PropagatingVisitor(ssaMethod.getControlFlowGraph());
+        propagatingVisitor = new PropagatingVisitor(ssaMethod.getControlFlowGraph(), true);
         phiFrameMap = calculatePhiFrameMap(ssaMethod);
         for(AnnotatedBasicBlock block : ssaMethod.getControlFlowGraph().getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
@@ -351,10 +353,12 @@ public class TypeAnalyzer {
                 case NOT_EQUAL:
                     Type t1 = calculateType(be.getOperand1(), insn);
                     Type t2 = calculateType(be.getOperand2(), insn);
-                    return (t1 == null || t1.getSort() == Type.BOOLEAN) && (t2 == null || t2.getSort() == Type.BOOLEAN);
+                    if((t1 == null || t1.getSort() == Type.BOOLEAN) && (t2 == null || t2.getSort() == Type.BOOLEAN)) {
+                        return true;
+                    }
             }
         }
-        return false;
+        return considerSingleBitChecks && isSingleBitCheck(condition);
     }
 
     private static Map<AssignmentStatement, AbstractInsnNode> calculateDefinitions(FlowGraph<? extends AnnotatedBasicBlock> graph) {
@@ -396,5 +400,105 @@ public class TypeAnalyzer {
             builder.append("[");
         }
         return Type.getType(builder.append(elementType).toString());
+    }
+
+    /**
+     * Returns true if the specified expression is a conditional expression which test is a single bit in some int or
+     * long is set to one.
+     * <p>
+     * Checks the specified expression is of one of the following forms:
+     * <ul>
+     *     <li> X == 0 </li>
+     *     <li> X != 0 </li>
+     *     <li> 0 == X </li>
+     *     <li> 0 != X </li>
+     * </ul>
+     * where X is of some form Y or (Y LCMP 0) or (0 LCMP Y), and Y is of one of the following forms:
+     * <ul>
+     *     <li> Z & ? </li>
+     *     <li> ? & Z </li>
+     *     <li> (Z OP ?) & ? </li>
+     *     <li> ? & (Z OP ?)</li>
+     * </ul>
+     * where Z is a constant with only one bit set to one, OP is a shift operator, and ? is any value.
+     */
+    private boolean isSingleBitCheck(Expression condition) {
+        condition = condition.accept(propagatingVisitor, null);
+        if(condition instanceof BinaryExpression) {
+            BinaryExpression be = (BinaryExpression) condition;
+            BinaryOperation operation = be.getOperation();
+            Expression operand1 = be.getOperand1();
+            Expression operand2 = be.getOperand2();
+            if(operation != BinaryOperation.EQUAL && operation != BinaryOperation.NOT_EQUAL) {
+                return false;
+            }
+            Expression x;
+            if(isZeroConstant(operand1)) {
+                x = operand2;
+            } else if(isZeroConstant(operand2)) {
+                x = operand1;
+            } else {
+                return false;
+            }
+            if(x instanceof BinaryExpression) {
+                BinaryExpression bex = (BinaryExpression) x;
+                if(bex.getOperation() == BinaryOperation.COMPARE) {
+                    if(isZeroConstant(bex.getOperand1())) {
+                        x = bex.getOperand2();
+                    } else if(isZeroConstant(bex.getOperand2())) {
+                        x = bex.getOperand1();
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            if(x instanceof BinaryExpression) {
+                BinaryExpression bey = (BinaryExpression) x;
+                if(bey.getOperation() == BinaryOperation.BITWISE_AND) {
+                    Expression y1 = bey.getOperand1();
+                    Expression y2 = bey.getOperand2();
+                    return isSingleBitMask(y1) || isSingleBitMask(y2);
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean isZeroConstant(Expression e) {
+        if(e instanceof IntegerConstantExpression) {
+            return ((IntegerConstantExpression) e).getConstant() == 0;
+        } else if(e instanceof LongConstantExpression) {
+            return ((LongConstantExpression) e).getConstant() == 0;
+        } else if(e instanceof DoubleConstantExpression) {
+            return ((DoubleConstantExpression) e).getConstant() == 0;
+        } else if(e instanceof FloatConstantExpression) {
+            return ((FloatConstantExpression) e).getConstant() == 0;
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean isSingleBitMask(Expression e) {
+        if(isSingleBitConstant(e)) {
+            return true;
+        }
+        if(e instanceof BinaryExpression) {
+            BinaryExpression be = (BinaryExpression) e;
+            return (be.getOperation() == BinaryOperation.SHIFT_LEFT || be.getOperation() == BinaryOperation.SHIFT_RIGHT_UNSIGNED)
+                    && isSingleBitConstant(be.getOperand1());
+        }
+        return false;
+    }
+
+    private static boolean isSingleBitConstant(Expression e) {
+        if(e instanceof IntegerConstantExpression) {
+            int c = ((IntegerConstantExpression) e).getConstant();
+            return Integer.bitCount(c) == 1;
+        } else if(e instanceof LongConstantExpression) {
+            long c = ((LongConstantExpression) e).getConstant();
+            return Long.bitCount(c) == 1;
+        } else {
+            return false;
+        }
     }
 }

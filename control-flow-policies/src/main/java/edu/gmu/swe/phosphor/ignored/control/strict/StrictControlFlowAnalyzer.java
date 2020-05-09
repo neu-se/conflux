@@ -43,7 +43,7 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         if(methodNode.instructions.size() > 0) {
             try {
                 SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
-                StrictBranchGatheringGraphCreator creator = new StrictBranchGatheringGraphCreator(new TypeAnalyzer(ssaMethod));
+                StrictBranchGatheringGraphCreator creator = new StrictBranchGatheringGraphCreator(new TypeAnalyzer(ssaMethod, false));
                 FlowGraph<BasicBlock> cfg = creator.createControlFlowGraph(methodNode);
                 Set<BranchEdge> strictEdges = creator.getStrictEdges();
                 numberOfUniqueBranchIDs = processEdges(strictEdges, cfg);

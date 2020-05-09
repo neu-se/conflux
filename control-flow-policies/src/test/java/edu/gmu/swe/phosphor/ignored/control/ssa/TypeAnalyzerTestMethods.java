@@ -319,4 +319,66 @@ public class TypeAnalyzerTestMethods {
         mv.visitEnd();
         return mv;
     }
+
+    public static MethodNode singleBitCheck() {
+        //public static boolean singleBitCheck(long holder, int index) {
+        //    return (holder & (1L << index)) != 0;
+        //}
+        MethodNode mv = new MethodNode(ACC_PUBLIC + ACC_STATIC, "singleBitCheck", "(JI)Z",
+                null, null);
+        mv.visitCode();
+        mv.visitVarInsn(LLOAD, 0);
+        mv.visitInsn(LCONST_1);
+        mv.visitVarInsn(ILOAD, 2);
+        mv.visitInsn(LSHL);
+        mv.visitInsn(LAND);
+        mv.visitInsn(LCONST_0);
+        mv.visitInsn(LCMP);
+        Label l0 = new Label();
+        mv.visitJumpInsn(IFEQ, l0);
+        mv.visitInsn(ICONST_1);
+        Label l1 = new Label();
+        mv.visitJumpInsn(GOTO, l1);
+        mv.visitLabel(l0);
+        mv.visitFrame(F_NEW, 0, new Object[0], 0, new Object[0]);
+        mv.visitInsn(ICONST_0);
+        mv.visitLabel(l1);
+        mv.visitFrame(F_NEW, 0, new Object[0], 1, new Object[] {INTEGER});
+        mv.visitInsn(IRETURN);
+        mv.visitMaxs(5, 3);
+        mv.visitEnd();
+        return mv;
+    }
+
+    public static MethodNode singleBitCheckArray() {
+        //public static boolean singleBitCheckArray(long[] holders, int wordIndex, int bitIndex) {
+        //    return (holders[wordIndex] & (1L << bitIndex)) != 0;
+        //}
+        MethodNode mv = new MethodNode(ACC_PUBLIC + ACC_STATIC, "singleBitCheckArray", "([JII)Z",
+                null, null);
+        mv.visitCode();
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitVarInsn(ILOAD, 1);
+        mv.visitInsn(LALOAD);
+        mv.visitInsn(LCONST_1);
+        mv.visitVarInsn(ILOAD, 2);
+        mv.visitInsn(LSHL);
+        mv.visitInsn(LAND);
+        mv.visitInsn(LCONST_0);
+        mv.visitInsn(LCMP);
+        Label l0 = new Label();
+        mv.visitJumpInsn(IFEQ, l0);
+        mv.visitInsn(ICONST_1);
+        Label l1 = new Label();
+        mv.visitJumpInsn(GOTO, l1);
+        mv.visitLabel(l0);
+        mv.visitFrame(F_NEW, 0, new Object[0], 0, new Object[0]);
+        mv.visitInsn(ICONST_0);
+        mv.visitLabel(l1);
+        mv.visitFrame(F_NEW, 0, new Object[0], 1, new Object[] {INTEGER});
+        mv.visitInsn(IRETURN);
+        mv.visitMaxs(5, 3);
+        mv.visitEnd();
+        return mv;
+    }
 }
