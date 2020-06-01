@@ -19,30 +19,6 @@ import java.util.Iterator;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.findNextPrecedableInstruction;
 
-/**
- * Identifies and marks the scope of "binding" branch edges. Does not consider edges due to exceptional control flows.
- *
- * <p>For a control flow graph G = (V, E):
- *
- * <p>An edge (u, v) in E is said to be a branch edge if and only if there exits some edge (u, w) in E such that v != w.
- * Branch edges are the result of conditional jump instructions (i.e., IF_ACMP<cond>, IF_ICMP<cond>, IF<cond>,
- * TABLESWITCH, LOOKUPSWITCH, IFNULL, and IFNONNULL).
- *
- * <p>A branch edge (u, v) is said to be binding if and only if one of the following conditions is true:
- * <ul>
- *     <li>The basic block u ends with an IFEQ or IFNE instruction.</li>
- *     <li>The basic block u ends with an IF_ICMPEQ or IF_ACMEQ instruction that has a jump target t and t = v</li>
- *     <li>The basic block u ends with an IF_ICMPNE or IF_ACMPNE instruction that has a jump target t and t != v</li>
- *     <li>The basic block u ends with a TABLESWITCH or LOOKUPSWITCH instruction that has a set of jump targets T and
- *     v is an element of T.</li>
- * </ul>
- *
- * <p>The scope of a binding branch edge is the range of instructions that are considered to have a binding control
- * dependency on the edge. The scope of a binding branch edge (u, v) starts after the end of the basic block u and
- * before the start of the basic block v. The scope of a binding branch edge (u, v) ends before each basic block w
- * in V such that the exists a path from the distinguished start vertex of the control flow graph to w that does not
- * contain the edge (u, v).
- */
 public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     /**
@@ -56,7 +32,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     private FlowGraph<BasicBlock> cfg;
 
     /**
-     * Used to determine the constancy level of instructions in the method
+     * Used to determine the loop stability level of instructions in the method
      */
     private LoopLevelTracer tracer;
 
@@ -91,7 +67,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                     edge.markBranchEnds(instructions);
                 }
                 addCopyTagInfo();
-                addConstancyInfoNodes();
+                addLoopStabilityInfoNodes();
                 markLoopExits();
             } catch(AnalyzerException e) {
                 //
@@ -119,9 +95,9 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
     }
 
     /**
-     * Adds FrameConstancyInfo nodes before MethodInsnNodes and InvokeDynamicInsnNodes.
+     * Adds FrameLoopStabilityInfo nodes before MethodInsnNodes and InvokeDynamicInsnNodes.
      */
-    private void addConstancyInfoNodes() {
+    private void addLoopStabilityInfoNodes() {
         SinglyLinkedList<AbstractInsnNode> methodCalls = new SinglyLinkedList<>();
         Iterator<AbstractInsnNode> itr = instructions.iterator();
         while(itr.hasNext()) {
@@ -131,9 +107,9 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
             }
         }
         for(AbstractInsnNode insn : methodCalls) {
-            FrameConstancyInfo constancyInfo = tracer.generateMethodConstancyInfo(insn);
-            if(constancyInfo != null) {
-                instructions.insertBefore(insn, new LdcInsnNode(constancyInfo));
+            FrameLoopStabilityInfo stabilityInfo = tracer.generateMethodLoopStabilityInfo(insn);
+            if(stabilityInfo != null) {
+                instructions.insertBefore(insn, new LdcInsnNode(stabilityInfo));
             }
         }
     }

@@ -29,7 +29,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
 
     private BindingControlFlowStack(BindingControlFlowStack<E> stack) {
         super(stack.isDisabled());
-        stackTop = new ControlFrame<>(stack.stackTop.invocationLevel, stack.stackTop.argumentConstancyLevels, null);
+        stackTop = new ControlFrame<>(stack.stackTop.invocationLevel, stack.stackTop.argumentStabilityLevels, null);
         stackTop.levelStackMap.putAll(stack.stackTop.levelStackMap);
         frameBuilder = stack.frameBuilder.copy();
         nextBranchTag = Taint.emptyTaint();
@@ -50,7 +50,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         return this;
     }
 
-    public BindingControlFlowStack<E> setNextFrameArgConstant() {
+    public BindingControlFlowStack<E> setNextFrameArgStable() {
         frameBuilder.setNextArgLevel(0);
         return this;
     }
@@ -83,7 +83,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         stackTop = stackTop.next;
     }
 
-    public Taint<E> copyTagConstant() {
+    public Taint<E> copyTagStable() {
         return isDisabled() ? Taint.emptyTaint() : stackTop.copyTag(0);
     }
 
@@ -95,7 +95,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         return isDisabled() ? Taint.emptyTaint() : stackTop.copyTag(getLevel(levelOffset));
     }
 
-    public void pushConstant(int branchID, int branchesSize) {
+    public void pushStable(int branchID, int branchesSize) {
         if(!isDisabled()) {
             stackTop.push(nextBranchTag, branchID, branchesSize, 0);
         }
@@ -133,21 +133,21 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
 
     @Override
     public Taint<E> copyTag() {
-        return copyTagConstant();
+        return copyTagStable();
     }
 
     private static final class ControlFrame<E> {
 
         private final int invocationLevel;
-        private final int[] argumentConstancyLevels;
+        private final int[] argumentStabilityLevels;
         private final Map<Integer, Node<E>> levelStackMap;
         private int[] branchLevels;
         private final ControlFrame<E> next;
 
-        private ControlFrame(int invocationLevel, int[] argumentConstancyLevels, ControlFrame<E> next) {
+        private ControlFrame(int invocationLevel, int[] argumentStabilityLevels, ControlFrame<E> next) {
             this.next = next;
             this.invocationLevel = invocationLevel;
-            this.argumentConstancyLevels = argumentConstancyLevels;
+            this.argumentStabilityLevels = argumentStabilityLevels;
             if(next == null) {
                 levelStackMap = new HashMap<>();
             } else {
@@ -160,12 +160,12 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         }
 
         int getLevel(int[] dependencies) {
-            if(argumentConstancyLevels == null) {
+            if(argumentStabilityLevels == null) {
                 return 0;
             } else {
                 int max = 0;
                 for(int dependency : dependencies) {
-                    int value = argumentConstancyLevels[dependency];
+                    int value = argumentStabilityLevels[dependency];
                     if(value > max) {
                         max = value;
                     }
@@ -235,37 +235,37 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
     private static final class ControlFrameBuilder<E> {
 
         private int invocationLevel = 0;
-        private int[] argumentConstancyLevels = null;
+        private int[] argumentStabilityLevels = null;
         private int currentArg = 0;
 
         ControlFrameBuilder<E> copy() {
             ControlFrameBuilder<E> copy = new ControlFrameBuilder<>();
             copy.invocationLevel = invocationLevel;
-            copy.argumentConstancyLevels = argumentConstancyLevels == null ? null : argumentConstancyLevels.clone();
+            copy.argumentStabilityLevels = argumentStabilityLevels == null ? null : argumentStabilityLevels.clone();
             copy.currentArg = currentArg;
             return copy;
         }
 
         void start(int invocationLevel, int numArguments) {
             this.invocationLevel = invocationLevel;
-            argumentConstancyLevels = new int[numArguments];
+            argumentStabilityLevels = new int[numArguments];
             currentArg = 0;
         }
 
         void setNextArgLevel(int level) {
-            argumentConstancyLevels[currentArg++] = level;
+            argumentStabilityLevels[currentArg++] = level;
         }
 
         void reset() {
             invocationLevel = 0;
-            argumentConstancyLevels = null;
+            argumentStabilityLevels = null;
             currentArg = 0;
         }
 
         ControlFrame<E> build(ControlFrame<E> next) {
-            ControlFrame<E> frame = new ControlFrame<>(invocationLevel, argumentConstancyLevels, next);
+            ControlFrame<E> frame = new ControlFrame<>(invocationLevel, argumentStabilityLevels, next);
             invocationLevel = 0;
-            argumentConstancyLevels = null;
+            argumentStabilityLevels = null;
             currentArg = 0;
             return frame;
         }

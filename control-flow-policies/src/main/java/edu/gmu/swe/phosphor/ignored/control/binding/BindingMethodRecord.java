@@ -10,13 +10,13 @@ import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKEVIRTU
 public enum BindingMethodRecord implements MethodRecord {
 
     BINDING_CONTROL_STACK_START_FRAME(INVOKEVIRTUAL, BindingControlFlowStack.class, "startFrame", BindingControlFlowStack.class, false, int.class, int.class),
-    BINDING_CONTROL_STACK_SET_ARG_CONSTANT(INVOKEVIRTUAL, BindingControlFlowStack.class, "setNextFrameArgConstant", BindingControlFlowStack.class, false),
+    BINDING_CONTROL_STACK_SET_ARG_STABLE(INVOKEVIRTUAL, BindingControlFlowStack.class, "setNextFrameArgStable", BindingControlFlowStack.class, false),
     BINDING_CONTROL_STACK_SET_ARG_DEPENDENT(INVOKEVIRTUAL, BindingControlFlowStack.class, "setNextFrameArgDependent", BindingControlFlowStack.class, false, int[].class),
     BINDING_CONTROL_STACK_SET_ARG_VARIANT(INVOKEVIRTUAL, BindingControlFlowStack.class, "setNextFrameArgVariant", BindingControlFlowStack.class, false, int.class),
-    BINDING_CONTROL_STACK_COPY_TAG_CONSTANT(INVOKEVIRTUAL, BindingControlFlowStack.class, "copyTagConstant", Taint.class, false),
+    BINDING_CONTROL_STACK_COPY_TAG_STABLE(INVOKEVIRTUAL, BindingControlFlowStack.class, "copyTagStable", Taint.class, false),
     BINDING_CONTROL_STACK_COPY_TAG_DEPENDENT(INVOKEVIRTUAL, BindingControlFlowStack.class, "copyTagDependent", Taint.class, false, int[].class),
     BINDING_CONTROL_STACK_COPY_TAG_VARIANT(INVOKEVIRTUAL, BindingControlFlowStack.class, "copyTagVariant", Taint.class, false, int.class),
-    BINDING_CONTROL_STACK_PUSH_CONSTANT(INVOKEVIRTUAL, BindingControlFlowStack.class, "pushConstant", Void.TYPE, false, int.class, int.class),
+    BINDING_CONTROL_STACK_PUSH_STABLE(INVOKEVIRTUAL, BindingControlFlowStack.class, "pushStable", Void.TYPE, false, int.class, int.class),
     BINDING_CONTROL_STACK_PUSH_DEPENDENT(INVOKEVIRTUAL, BindingControlFlowStack.class, "pushDependent", Void.TYPE, false, int.class, int.class, int[].class),
     BINDING_CONTROL_STACK_PUSH_VARIANT(INVOKEVIRTUAL, BindingControlFlowStack.class, "pushVariant", Void.TYPE, false, int.class, int.class, int.class),
     BINDING_CONTROL_STACK_SET_NEXT_BRANCH_TAG(INVOKEVIRTUAL, BindingControlFlowStack.class, "setNextBranchTag", Void.TYPE, false, Taint.class),

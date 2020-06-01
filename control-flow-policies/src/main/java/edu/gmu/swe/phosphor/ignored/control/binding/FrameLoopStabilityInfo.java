@@ -5,12 +5,12 @@ import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
 
 import java.util.Iterator;
 
-public class FrameConstancyInfo implements PhosphorInstructionInfo {
+public class FrameLoopStabilityInfo implements PhosphorInstructionInfo {
 
     private final int invocationLevel;
     private final SinglyLinkedList<LoopLevel> argumentLevels = new SinglyLinkedList<>();
 
-    public FrameConstancyInfo(int invocationLevel) {
+    public FrameLoopStabilityInfo(int invocationLevel) {
         this.invocationLevel = invocationLevel;
     }
 

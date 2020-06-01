@@ -14,11 +14,11 @@ import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.COMBINE_TAGS;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.binding.BindingMethodRecord.*;
-import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
+import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
 
 public class BindingControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<BindingControlFlowAnalyzer> {
 
-    private static final LoopLevel defaultLevel = CONSTANT_LOOP_LEVEL;
+    private static final LoopLevel defaultLevel = STABLE_LOOP_LEVEL;
 
     /**
      * The number of unique IDs assigned to branches in the method
@@ -31,7 +31,7 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
      */
     private LoopLevel nextCopyTagInfo = defaultLevel;
 
-    private FrameConstancyInfo nextMethodFrameInfo = null;
+    private FrameLoopStabilityInfo nextMethodFrameInfo = null;
 
     public BindingControlFlowPropagationPolicy(BindingControlFlowAnalyzer flowAnalyzer) {
         super(flowAnalyzer);
@@ -186,8 +186,8 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
             ((BindingBranchStart) info).getLevel().pushTag(delegate);
         } else if(info instanceof CopyTagInfo) {
             nextCopyTagInfo = ((CopyTagInfo) info).getLevel();
-        } else if(info instanceof FrameConstancyInfo) {
-            nextMethodFrameInfo = (FrameConstancyInfo) info;
+        } else if(info instanceof FrameLoopStabilityInfo) {
+            nextMethodFrameInfo = (FrameLoopStabilityInfo) info;
         }
     }
 

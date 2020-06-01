@@ -5,7 +5,7 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil;
-import edu.gmu.swe.phosphor.ignored.control.binding.FrameConstancyInfo;
+import edu.gmu.swe.phosphor.ignored.control.binding.FrameLoopStabilityInfo;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedBasicBlock;
 import edu.gmu.swe.phosphor.ignored.control.ssa.AnnotatedInstruction;
@@ -16,29 +16,10 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.statement.*;
 
 import java.util.function.Predicate;
 
-import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
+import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
 import static edu.gmu.swe.phosphor.ignored.control.binding.tracer.PossibleArrayDefinitionPredicate.ARRAY_DEFINITION_PREDICATE;
 import static edu.gmu.swe.phosphor.ignored.control.binding.tracer.PossibleFieldDefinitionPredicate.FIELD_DEFINITION_PREDICATE;
 
-/**
- * Assignment Statements:
- * Let m be a method in static single assignment form, s be an assignment statement in m which stores the value
- * of an expression e into the variable x_v (i.e., x_v := e), L1 be the set of natural loops in M, and L2 be the
- * theoretical set of loops which contain a particular call to m at runtime.
- * TODO
- * <p>
- * Return Statements:
- * Non-void return statements can be seen as assignment statements that span a method call. The constancy of the value
- * of the statement is determined by the callee and the constancy of the memory location is determined by the caller.
- * TODO
- * <p>
- * Branches:
- * A branching statement that is conditional on some expression e is considered to be constant with respect to a loop L
- * if the value of e is considered to be constant with respect to L.
- * <p>
- * Method Calls:
- * TODO
- */
 public class LoopLevelTracer {
 
     private final SSAMethod method;
@@ -49,15 +30,15 @@ public class LoopLevelTracer {
     private final Map<VariableExpression, Expression> definitionValues = new HashMap<>();
     private final Map<VariableExpression, AnnotatedInstruction> definitionInsnMap = new HashMap<>();
     private final Map<VariableExpression, Set<Statement>> usesMap = new HashMap<>();
-    private final Constancy returnDependentConstancy;
-    private final ValueConstancies valueConstancies;
+    private final LoopStability returnDependentLoopStability;
+    private final ValueStabilities valueStabilities;
     private final PropagatingVisitor propagatingVisitor;
 
     public LoopLevelTracer(SSAMethod method) {
         this.method = method;
         propagatingVisitor = new PropagatingVisitor(method.getControlFlowGraph(), false);
-        valueConstancies = new ValueConstancies(method, propagatingVisitor);
-        returnDependentConstancy = new Constancy.ParameterDependent(method.getParameterTypes().size());
+        valueStabilities = new ValueStabilities(method, propagatingVisitor);
+        returnDependentLoopStability = new LoopStability.ParameterDependent(method.getParameterTypes().size());
         graph = method.getControlFlowGraph();
         containingLoops = FlowGraphUtil.calculateContainingLoops(graph);
         initializeMaps();
@@ -86,14 +67,14 @@ public class LoopLevelTracer {
         }
     }
 
-    private Constancy calculateConstancy(AnnotatedInstruction source, AssignmentStatement statement) {
+    private LoopStability calculateStability(AnnotatedInstruction source, AssignmentStatement statement) {
         statement = (AssignmentStatement) statement.accept(propagatingVisitor);
         Expression lhs = statement.getLeftHandSide();
         Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops = containingLoops.get(source.getBasicBlock());
-        Constancy c = getMemoryLocationConstancy(statement.getLeftHandSide(), source, candidateLoops);
+        LoopStability c = getMemoryLocationStability(statement.getLeftHandSide(), source, candidateLoops);
         if(lhs instanceof FieldAccess || lhs instanceof ArrayAccess || lhs instanceof VariableExpression) {
             for(Expression subExpression : gatherImpactingSubExpressions(source, statement)) {
-                c = Constancy.merge(c, subExpression.accept(valueConstancies, candidateLoops));
+                c = LoopStability.merge(c, subExpression.accept(valueStabilities, candidateLoops));
             }
         } else {
             throw new IllegalArgumentException();
@@ -101,21 +82,21 @@ public class LoopLevelTracer {
         return c;
     }
 
-    private Constancy getMemoryLocationConstancy(Expression expression, AnnotatedInstruction source,
-                                                 Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops) {
-        Constancy result = Constancy.CONSTANT;
+    private LoopStability getMemoryLocationStability(Expression expression, AnnotatedInstruction source,
+                                                     Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops) {
+        LoopStability result = LoopStability.STABLE;
         if(expression instanceof FieldAccess) {
             Expression receiver = ((FieldAccess) expression).getReceiver();
             if(receiver != null) {
-                result = Constancy.merge(result, valueConstancies.getConstancy(receiver, source.getBasicBlock()));
+                result = LoopStability.merge(result, valueStabilities.getStability(receiver, source.getBasicBlock()));
             }
         } else if(expression instanceof ArrayAccess) {
             Expression arrayRef = ((ArrayAccess) expression).getArrayRef();
-            result = Constancy.merge(result, valueConstancies.getConstancy(arrayRef, source.getBasicBlock()));
+            result = LoopStability.merge(result, valueStabilities.getStability(arrayRef, source.getBasicBlock()));
             Expression index = ((ArrayAccess) expression).getIndex();
-            result = Constancy.merge(result, valueConstancies.getConstancy(index, source.getBasicBlock()));
+            result = LoopStability.merge(result, valueStabilities.getStability(index, source.getBasicBlock()));
         } else if(expression instanceof VariableExpression) {
-            result = calculateConstancyOfUses((VariableExpression) expression, candidateLoops, new HashSet<>());
+            result = calculateStabilityOfUses((VariableExpression) expression, candidateLoops, new HashSet<>());
         } else {
             throw new IllegalArgumentException();
         }
@@ -176,9 +157,9 @@ public class LoopLevelTracer {
         return false;
     }
 
-    private Constancy calculateConstancyOfUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops,
-                                               Set<VariableExpression> visited) {
-        Constancy result = Constancy.CONSTANT;
+    private LoopStability calculateStabilityOfUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops,
+                                                   Set<VariableExpression> visited) {
+        LoopStability result = LoopStability.STABLE;
         if(visited.add(expr) && usesMap.containsKey(expr)) {
             for(Statement s : usesMap.get(expr)) {
                 if(s instanceof AssignmentStatement) {
@@ -186,21 +167,21 @@ public class LoopLevelTracer {
                     Expression lhs = assign.getLeftHandSide();
                     Expression rhs = assign.getRightHandSide();
                     if(rhs instanceof InvokeExpression) {
-                        return new Constancy.Nonconstant(candidateLoops);
+                        return new LoopStability.Unstable(candidateLoops);
                     }
                     if(lhs instanceof FieldAccess) {
                         Expression receiver = ((FieldAccess) lhs).getReceiver();
                         if(receiver != null) {
-                            result = Constancy.merge(result, receiver.accept(valueConstancies, candidateLoops));
+                            result = LoopStability.merge(result, receiver.accept(valueStabilities, candidateLoops));
                         }
                     } else if(lhs instanceof ArrayAccess) {
                         Expression arrayRef = ((ArrayAccess) lhs).getArrayRef();
-                        result = Constancy.merge(result, arrayRef.accept(valueConstancies, candidateLoops));
+                        result = LoopStability.merge(result, arrayRef.accept(valueStabilities, candidateLoops));
                         Expression index = ((ArrayAccess) lhs).getIndex();
-                        result = Constancy.merge(result, index.accept(valueConstancies, candidateLoops));
+                        result = LoopStability.merge(result, index.accept(valueStabilities, candidateLoops));
                     }
                 } else if(s instanceof ReturnStatement) {
-                    result = Constancy.merge(result, new Constancy.ParameterDependent(method.getParameterTypes().size()));
+                    result = LoopStability.merge(result, new LoopStability.ParameterDependent(method.getParameterTypes().size()));
                 }
             }
         }
@@ -240,7 +221,7 @@ public class LoopLevelTracer {
         return false;
     }
 
-    public FrameConstancyInfo generateMethodConstancyInfo(AbstractInsnNode insn) {
+    public FrameLoopStabilityInfo generateMethodLoopStabilityInfo(AbstractInsnNode insn) {
         Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops = containingLoops.get(blockMap.get(insn));
         if(candidateLoops == null) {
             candidateLoops = Collections.emptySet();
@@ -258,17 +239,17 @@ public class LoopLevelTracer {
         } else {
             throw new IllegalArgumentException();
         }
-        FrameConstancyInfo info = new FrameConstancyInfo(invocationLevel);
+        FrameLoopStabilityInfo info = new FrameLoopStabilityInfo(invocationLevel);
         if(expr.getReceiver() != null) {
-            Constancy c = expr.getReceiver().accept(valueConstancies, candidateLoops);
+            LoopStability c = expr.getReceiver().accept(valueStabilities, candidateLoops);
             info.addLastArgumentLevel(c.toLoopLevel());
         }
         for(Expression arg : expr.getArguments()) {
-            Constancy c = arg.accept(valueConstancies, candidateLoops);
+            LoopStability c = arg.accept(valueStabilities, candidateLoops);
             info.addLastArgumentLevel(c.toLoopLevel());
         }
         if(statement.definesVariable()) {
-            Constancy c = calculateConstancyOfUses(statement.getDefinedVariable(),
+            LoopStability c = calculateStabilityOfUses(statement.getDefinedVariable(),
                     candidateLoops, new HashSet<>());
             info.addLastArgumentLevel(c.toLoopLevel());
         }
@@ -278,27 +259,27 @@ public class LoopLevelTracer {
     public LoopLevel getLoopLevel(AbstractInsnNode insn) {
         if(insnMap.containsKey(insn)) {
             AnnotatedInstruction ai = insnMap.get(insn);
-            Constancy c = Constancy.CONSTANT;
+            LoopStability c = LoopStability.STABLE;
             for(Statement statement : ai.getStatements()) {
-                Constancy c2 = Constancy.CONSTANT;
+                LoopStability c2 = LoopStability.STABLE;
                 if(statement instanceof AssignmentStatement) {
-                    c2 = calculateConstancy(ai, (AssignmentStatement) statement);
+                    c2 = calculateStability(ai, (AssignmentStatement) statement);
                 } else if(statement instanceof SwitchStatement) {
                     Expression e = ((SwitchStatement) statement).getExpression();
-                    c2 = valueConstancies.getConstancy(e, ai.getBasicBlock());
+                    c2 = valueStabilities.getStability(e, ai.getBasicBlock());
                 } else if(statement instanceof IfStatement) {
                     Expression e = ((IfStatement) statement).getExpression();
-                    c2 = valueConstancies.getConstancy(e, ai.getBasicBlock());
+                    c2 = valueStabilities.getStability(e, ai.getBasicBlock());
                 } else if(statement instanceof ReturnStatement && !((ReturnStatement) statement).isVoid()) {
                     Expression e = ((ReturnStatement) statement).getExpression();
-                    c2 = valueConstancies.getConstancy(e, ai.getBasicBlock());
+                    c2 = valueStabilities.getStability(e, ai.getBasicBlock());
                     // Add a dependency on the return value memory location
-                    c = Constancy.merge(c, returnDependentConstancy);
+                    c = LoopStability.merge(c, returnDependentLoopStability);
                 }
-                c = Constancy.merge(c, c2);
+                c = LoopStability.merge(c, c2);
             }
             return c.toLoopLevel();
         }
-        return CONSTANT_LOOP_LEVEL;
+        return STABLE_LOOP_LEVEL;
     }
 }

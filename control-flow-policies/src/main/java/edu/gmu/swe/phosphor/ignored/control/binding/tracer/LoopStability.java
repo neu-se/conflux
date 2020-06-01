@@ -7,20 +7,20 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel;
 import edu.gmu.swe.phosphor.ignored.control.ssa.expression.ParameterExpression;
 
-import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
+import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
 
-interface Constancy {
+interface LoopStability {
 
-    Constancy CONSTANT = Constant.CONSTANT;
+    LoopStability STABLE = Stable.STABLE;
 
-    <T> Constancy restrict(Set<NaturalLoop<T>> containingLoops);
+    <T> LoopStability restrict(Set<NaturalLoop<T>> containingLoops);
 
     LoopLevel toLoopLevel();
 
-    static Constancy merge(Constancy c1, Constancy c2) {
-        if(c1 instanceof Constant) {
+    static LoopStability merge(LoopStability c1, LoopStability c2) {
+        if(c1 instanceof Stable) {
             return c2;
-        } else if(c2 instanceof Constant) {
+        } else if(c2 instanceof Stable) {
             return c1;
         } else if(c1 instanceof ParameterDependent && c2 instanceof ParameterDependent) {
             return new ParameterDependent((ParameterDependent) c1, (ParameterDependent) c2);
@@ -29,25 +29,25 @@ interface Constancy {
         } else if(c2 instanceof ParameterDependent) {
             return c1;
         } else {
-            return new Nonconstant((Nonconstant) c1, (Nonconstant) c2);
+            return new Unstable((Unstable) c1, (Unstable) c2);
         }
     }
 
-    enum Constant implements Constancy {
-        CONSTANT;
+    enum Stable implements LoopStability {
+        STABLE;
 
         @Override
-        public <T> Constancy restrict(Set<NaturalLoop<T>> containingLoops) {
+        public <T> LoopStability restrict(Set<NaturalLoop<T>> containingLoops) {
             return this;
         }
 
         @Override
         public LoopLevel toLoopLevel() {
-            return CONSTANT_LOOP_LEVEL;
+            return STABLE_LOOP_LEVEL;
         }
     }
 
-    final class ParameterDependent implements Constancy {
+    final class ParameterDependent implements LoopStability {
 
         private final BitSet dependencies;
 
@@ -61,12 +61,12 @@ interface Constancy {
             dependencies.add(expr.getParameterNumber());
         }
 
-        ParameterDependent(Constancy.ParameterDependent p1, Constancy.ParameterDependent p2) {
+        ParameterDependent(LoopStability.ParameterDependent p1, LoopStability.ParameterDependent p2) {
             dependencies = BitSet.union(p1.dependencies, p2.dependencies);
         }
 
         @Override
-        public <T> Constancy restrict(Set<NaturalLoop<T>> containingLoops) {
+        public <T> LoopStability restrict(Set<NaturalLoop<T>> containingLoops) {
             return this;
         }
 
@@ -76,25 +76,25 @@ interface Constancy {
         }
     }
 
-    final class Nonconstant implements Constancy {
-        private final Set<NaturalLoop<?>> nonconstantLoops = new HashSet<>();
+    final class Unstable implements LoopStability {
+        private final Set<NaturalLoop<?>> unstableLoops = new HashSet<>();
 
-        <T> Nonconstant(Set<NaturalLoop<T>> nonconstantLoops) {
-            this.nonconstantLoops.addAll(nonconstantLoops);
+        <T> Unstable(Set<NaturalLoop<T>> unstableLoops) {
+            this.unstableLoops.addAll(unstableLoops);
         }
 
-        Nonconstant(Nonconstant l1, Nonconstant l2) {
-            nonconstantLoops.addAll(l1.nonconstantLoops);
-            nonconstantLoops.addAll(l2.nonconstantLoops);
+        Unstable(Unstable l1, Unstable l2) {
+            unstableLoops.addAll(l1.unstableLoops);
+            unstableLoops.addAll(l2.unstableLoops);
         }
 
         @Override
-        public <T> Constancy restrict(Set<NaturalLoop<T>> containingLoops) {
-            if(containingLoops.containsAll(nonconstantLoops)) {
+        public <T> LoopStability restrict(Set<NaturalLoop<T>> containingLoops) {
+            if(containingLoops.containsAll(unstableLoops)) {
                 return this;
             } else {
-                Nonconstant result = new Nonconstant(containingLoops);
-                result.nonconstantLoops.retainAll(nonconstantLoops);
+                Unstable result = new Unstable(containingLoops);
+                result.unstableLoops.retainAll(unstableLoops);
                 return result;
 
             }
@@ -102,7 +102,7 @@ interface Constancy {
 
         @Override
         public LoopLevel toLoopLevel() {
-            return new LoopLevel.VariantLoopLevel(nonconstantLoops.size());
+            return new LoopLevel.VariantLoopLevel(unstableLoops.size());
         }
     }
 }

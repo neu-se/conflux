@@ -21,27 +21,27 @@ public interface LoopLevel {
     // stack_post = []
     void pushTag(MethodVisitor mv);
 
-    enum ConstantLoopLevel implements LoopLevel {
-        CONSTANT_LOOP_LEVEL;
+    enum StableLoopLevel implements LoopLevel {
+        STABLE_LOOP_LEVEL;
 
         @Override
         public String toString() {
-            return "ConstantLoopLevel";
+            return "StableLoopLevel";
         }
 
         @Override
         public void setArgument(MethodVisitor mv) {
-            BINDING_CONTROL_STACK_SET_ARG_CONSTANT.delegateVisit(mv);
+            BINDING_CONTROL_STACK_SET_ARG_STABLE.delegateVisit(mv);
         }
 
         @Override
         public void copyTag(MethodVisitor mv) {
-            BINDING_CONTROL_STACK_COPY_TAG_CONSTANT.delegateVisit(mv);
+            BINDING_CONTROL_STACK_COPY_TAG_STABLE.delegateVisit(mv);
         }
 
         @Override
         public void pushTag(MethodVisitor mv) {
-            BINDING_CONTROL_STACK_PUSH_CONSTANT.delegateVisit(mv);
+            BINDING_CONTROL_STACK_PUSH_STABLE.delegateVisit(mv);
         }
     }
 

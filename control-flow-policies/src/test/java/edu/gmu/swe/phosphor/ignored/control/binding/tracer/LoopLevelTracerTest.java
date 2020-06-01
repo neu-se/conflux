@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
-import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.ConstantLoopLevel.CONSTANT_LOOP_LEVEL;
+import static edu.gmu.swe.phosphor.ignored.control.binding.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
 import static edu.gmu.swe.phosphor.ignored.control.binding.tracer.LoopLevelTracerTestMethods.OWNER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -54,12 +54,12 @@ public class LoopLevelTracerTest {
     public void testArgDependentBranching() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.argDependentBranching();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
-                CONSTANT_LOOP_LEVEL,
-                CONSTANT_LOOP_LEVEL,
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(0),
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(0)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -69,8 +69,8 @@ public class LoopLevelTracerTest {
     public void testLocalSelfComputation() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.localSelfComputation();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
-                CONSTANT_LOOP_LEVEL
+                STABLE_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
     }
@@ -79,7 +79,7 @@ public class LoopLevelTracerTest {
     public void testArraySelfComputation() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.arraySelfComputation();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new DependentLoopLevel(new int[]{0})
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -89,7 +89,7 @@ public class LoopLevelTracerTest {
     public void testMultiArraySelfComputation() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.multiArraySelfComputation();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -99,7 +99,7 @@ public class LoopLevelTracerTest {
     public void testFieldSelfComputation() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.fieldSelfComputation();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new DependentLoopLevel(new int[]{0})
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -109,7 +109,7 @@ public class LoopLevelTracerTest {
     public void testArrayFieldSelfComputation() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.arrayFieldSelfComputation();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -119,7 +119,7 @@ public class LoopLevelTracerTest {
     public void testLocalAssignedVariantValue() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.localAssignedVariantValue();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -129,7 +129,7 @@ public class LoopLevelTracerTest {
     public void testArrayAssignedVariantValue() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.arrayAssignedVariantValue();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -139,7 +139,7 @@ public class LoopLevelTracerTest {
     public void testMultiArrayAssignedVariantValue() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.multiArrayAssignedVariantValue();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -149,7 +149,7 @@ public class LoopLevelTracerTest {
     public void testFieldAssignedVariantValue() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.fieldAssignedVariantValue();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -159,7 +159,7 @@ public class LoopLevelTracerTest {
     public void testArrayFieldAssignedVariantValue() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.arrayFieldAssignedVariantValue();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -169,7 +169,7 @@ public class LoopLevelTracerTest {
     public void testVariantArray() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.variantArray();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -180,7 +180,7 @@ public class LoopLevelTracerTest {
         MethodNode mn = LoopLevelTracerTestMethods.variantArray2();
         List<LoopLevel> expected = Arrays.asList(
                 new VariantLoopLevel(0),
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1),
                 new VariantLoopLevel(1)
         );
@@ -191,7 +191,7 @@ public class LoopLevelTracerTest {
     public void testTwoArrays() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.twoArrays();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new DependentLoopLevel(new int[]{1}),
                 new VariantLoopLevel(1)
         );
@@ -243,9 +243,9 @@ public class LoopLevelTracerTest {
     public void testIndexOf() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.indexOf();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(0),
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(1)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -255,9 +255,9 @@ public class LoopLevelTracerTest {
     public void testIndexOfBreak() throws Exception {
         MethodNode mn = LoopLevelTracerTestMethods.indexOfBreak();
         List<LoopLevel> expected = Arrays.asList(
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(0),
-                CONSTANT_LOOP_LEVEL,
+                STABLE_LOOP_LEVEL,
                 new VariantLoopLevel(0)
         );
         assertEquals(expected, getLoopLevels(getStoreInstructions(mn), mn));
@@ -314,7 +314,7 @@ public class LoopLevelTracerTest {
         List<LoopLevel> loopLevels = getLoopLevels(getStoreInstructions(mn), mn);
         Iterator<LoopLevel> itr = loopLevels.iterator();
         for(AbstractInsnNode insn : getStoreInstructions(mn)) {
-            assertTrue("Expected instruction to be at constant loop level:" + insn, itr.next() instanceof LoopLevel.ConstantLoopLevel);
+            assertTrue("Expected instruction to be at constant loop level:" + insn, itr.next() instanceof LoopLevel.StableLoopLevel);
         }
     }
 }
