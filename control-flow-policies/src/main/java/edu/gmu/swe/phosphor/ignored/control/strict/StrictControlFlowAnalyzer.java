@@ -15,6 +15,7 @@ import edu.gmu.swe.phosphor.ignored.control.ssa.TypeAnalyzer;
 import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
+import static edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowAnalyzer.findDuplicateTargets;
 
 /**
  * Choices:
@@ -43,7 +44,8 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         if(methodNode.instructions.size() > 0) {
             try {
                 SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
-                StrictBranchGatheringGraphCreator creator = new StrictBranchGatheringGraphCreator(new TypeAnalyzer(ssaMethod, false));
+                TypeAnalyzer typeAnalyzer = new TypeAnalyzer(ssaMethod, false);
+                StrictBranchGatheringGraphCreator creator = new StrictBranchGatheringGraphCreator(typeAnalyzer);
                 FlowGraph<BasicBlock> cfg = creator.createControlFlowGraph(methodNode);
                 Set<BranchEdge> strictEdges = creator.getStrictEdges();
                 numberOfUniqueBranchIDs = processEdges(strictEdges, cfg);
@@ -125,7 +127,6 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         @Override
         protected void addNonDefaultCaseSwitchEdge(BasicBlock source, BasicBlock target) {
             super.addNonDefaultCaseSwitchEdge(source, target);
-            branchEdges.add(new BranchEdge(source, target, true));
             if(!switchCaseEdges.containsKey(source)) {
                 switchCaseEdges.put(source, new LinkedList<>());
             }
@@ -139,22 +140,12 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         }
 
         public Set<BranchEdge> getStrictEdges() {
-            // Find switch edges where multiple cases go to the same block
+            // Add switch edges where only one non-default case goes to a target basic block
             for(BasicBlock source : switchCaseEdges.keySet()) {
-                BasicBlock defaultBlock = switchDefaultEdges.get(source);
-                Set<BasicBlock> targets = new HashSet<>();
-                targets.add(defaultBlock);
-                Set<BasicBlock> duplicateTargets = new HashSet<>();
+                Set<BasicBlock> duplicates = findDuplicateTargets(switchCaseEdges, switchDefaultEdges, source);
                 for(BasicBlock target : switchCaseEdges.get(source)) {
-                    if(!targets.add(target)) {
-                        duplicateTargets.add(target);
-                    }
-                }
-                Iterator<BranchEdge> itr = branchEdges.iterator();
-                while(itr.hasNext()) {
-                    BranchEdge edge = itr.next();
-                    if(edge.getSource().equals(source) && duplicateTargets.contains(edge.getTarget())) {
-                        itr.remove();
+                    if(!duplicates.contains(target)) {
+                        branchEdges.add(new BranchEdge(source, target, true));
                     }
                 }
             }

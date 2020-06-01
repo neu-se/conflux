@@ -7,9 +7,7 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
-import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.gmu.swe.phosphor.ignored.control.BranchEdge;
 import edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil;
 import edu.gmu.swe.phosphor.ignored.control.binding.tracer.LoopLevelTracer;
@@ -22,7 +20,7 @@ import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.gmu.swe.phosphor.ignored.control.FlowGraphUtil.findNextPrecedableInstruction;
 
 /**
- * Identifies and marks the scope of "binding" branch edges. Does not consider edges due to exceptional control flow.
+ * Identifies and marks the scope of "binding" branch edges. Does not consider edges due to exceptional control flows.
  *
  * <p>For a control flow graph G = (V, E):
  *
@@ -84,7 +82,8 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                 SSAMethod ssaMethod = new SSAMethod(owner, methodNode);
                 tracer = new LoopLevelTracer(ssaMethod);
                 Set<BindingBranchEdge> bindingEdges = new HashSet<>();
-                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, new TypeAnalyzer(ssaMethod, true));
+                TypeAnalyzer typeAnalyzer = new TypeAnalyzer(ssaMethod, false);
+                BindingControlFlowGraphCreator creator = new BindingControlFlowGraphCreator(bindingEdges, typeAnalyzer);
                 cfg = creator.createControlFlowGraph(methodNode);
                 numberOfUniqueBranchIDs = processEdges(bindingEdges);
                 for(BranchEdge edge : bindingEdges) {
@@ -226,6 +225,25 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
         }
     }
 
+    public static <E> Set<E> findDuplicates(Collection<E> items) {
+        Set<E> seen = new HashSet<>();
+        Set<E> duplicates = new HashSet<>();
+        for(E item : items) {
+            if(!seen.add(item)) {
+                duplicates.add(item);
+            }
+        }
+        return duplicates;
+    }
+
+    public static <E extends BasicBlock> Set<E> findDuplicateTargets(Map<E, ? extends List<E>> switchCaseEdges,
+                                                                     Map<E, E> switchDefaultEdges, E source) {
+        E defaultBlock = switchDefaultEdges.get(source);
+        List<E> allTargets = new LinkedList<>(switchCaseEdges.get(source));
+        allTargets.add(defaultBlock);
+        return findDuplicates(allTargets);
+    }
+
     /**
      * Builds a control flow graph where each binding branch edge (u, v) is replaced with a vertex w, an edge (u, w)
      * and an edge (w, v).
@@ -241,6 +259,16 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
          * Used to determine whether an IFEQ or IFNE instruction has a boolean condition
          */
         private final TypeAnalyzer typeAnalyzer;
+
+        /**
+         * Maps basic blocks containing switch statements to lists containing the targets of their cases
+         */
+        private final Map<BasicBlock, List<BasicBlock>> switchCaseEdges = new HashMap<>();
+
+        /**
+         * Maps basic blocks containing switch statements to the targets of their default cases
+         */
+        private final Map<BasicBlock, BasicBlock> switchDefaultEdges = new HashMap<>();
 
         BindingControlFlowGraphCreator(Set<? super BindingBranchEdge> bindingBranchEdges, TypeAnalyzer typeAnalyzer) {
             this.bindingBranchEdges = bindingBranchEdges;
@@ -287,12 +315,16 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
         @Override
         protected void addNonDefaultCaseSwitchEdge(BasicBlock source, BasicBlock target) {
-            addBindingBranchEdge(source, target, true);
+            if(!switchCaseEdges.containsKey(source)) {
+                switchCaseEdges.put(source, new LinkedList<>());
+            }
+            switchCaseEdges.get(source).add(target);
         }
 
         @Override
         protected void addDefaultCaseSwitchEdge(BasicBlock source, BasicBlock target) {
-            addBindingBranchEdge(source, target, true);
+            switchDefaultEdges.put(source, target);
+            super.addDefaultCaseSwitchEdge(source, target);
         }
 
         /**
@@ -309,6 +341,26 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
                 builder.addVertex(bindingBranchEdge);
                 builder.addEdge(source, bindingBranchEdge);
                 builder.addEdge(bindingBranchEdge, target);
+            }
+        }
+
+        @Override
+        protected FlowGraph<BasicBlock> buildGraph() {
+            addSwitchEdges();
+            return super.buildGraph();
+        }
+
+        private void addSwitchEdges() {
+            // Find switch edges where multiple cases go to the same block
+            for(BasicBlock source : switchCaseEdges.keySet()) {
+                Set<BasicBlock> duplicates = findDuplicateTargets(switchCaseEdges, switchDefaultEdges, source);
+                for(BasicBlock target : switchCaseEdges.get(source)) {
+                    if(duplicates.contains(target)) {
+                        super.addBranchTakenEdge(source, target);
+                    } else {
+                        addBindingBranchEdge(source, target, true);
+                    }
+                }
             }
         }
     }

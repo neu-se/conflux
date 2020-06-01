@@ -22,8 +22,10 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
             case 1:
                 y = 5;
                 break;
-            case 40:
             case 88:
+                y = 4;
+                break;
+            case 40:
             default:
                 y = 7;
         }
@@ -154,6 +156,7 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
         }
     }
 
+    @Ignore(value = "Special casing for single bit checking is disabled")
     @Test
     public void testBitSetGetTrue() {
         BitSet b = new BitSet(10);
