@@ -33,27 +33,27 @@ public class TomcatFlowBench {
         return chunk.toStringInternal();
     };
 
-    @FlowBench(group = "hex-encode", project = "tomcat-embed-core", implementation = "HexUtils")
+    @FlowBench(group = "hex-encode", project = "Tomcat Embed Core", implementation = "HexUtils")
     public void hexEncode(FlowBenchResultImpl benchResult) {
         checkHexEncode(benchResult, TaintedPortionPolicy.ALL, HexUtils::toHexString);
     }
 
-    @FlowBench(group = "hex-decode", project = "tomcat-embed-core", implementation = "HexUtils")
+    @FlowBench(group = "hex-decode", project = "Tomcat Embed Core", implementation = "HexUtils")
     public void hexDecode(FlowBenchResultImpl benchResult) {
         checkHexDecode(benchResult, TaintedPortionPolicy.ALL, HexUtils::fromHexString);
     }
 
-    @FlowBench(group = "spaces-url-decode", project = "tomcat-embed-core", implementation = "UDecoder")
+    @FlowBench(group = "spaces-url-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
     public void spacesUrlDecode(FlowBenchResultImpl benchResult) {
         checkSpacesUrlDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
 
-    @FlowBench(group = "reserved-percent-encode", project = "tomcat-embed-core", implementation = "UEncoder")
+    @FlowBench(group = "reserved-percent-encode", project = "Tomcat Embed Core", implementation = "UEncoder")
     public void reservedPercentEncode(FlowBenchResultImpl benchResult) {
         checkReservedPercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
     }
 
-    @FlowBench(group = "reserved-percent-decode", project = "tomcat-embed-core", implementation = "UDecoder")
+    @FlowBench(group = "reserved-percent-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
     public void reservedPercentDecode(FlowBenchResultImpl benchResult) {
         checkReservedPercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
     }
