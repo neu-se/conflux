@@ -14,7 +14,7 @@ public class BindingControlFlowStackTest {
     public void testCopyTagEmptyStack() {
         BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
         assertNullOrEmpty(ctrl.copyTagStable());
-        assertNullOrEmpty(ctrl.copyTagVariant(3));
+        assertNullOrEmpty(ctrl.copyTagUnstable(3));
     }
 
     @Test
@@ -23,11 +23,11 @@ public class BindingControlFlowStackTest {
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 3);
         ctrl.setNextBranchTag(Taint.withLabel(1));
-        ctrl.pushVariant(1, 3, 1);
+        ctrl.pushUnstable(1, 3, 1);
         ctrl.setNextBranchTag(Taint.withLabel(2));
         ctrl.pushStable(2, 3);
         assertContainsLabels(ctrl.copyTagStable(), 0, 2);
-        assertContainsLabels(ctrl.copyTagVariant(1), 0, 1, 2);
+        assertContainsLabels(ctrl.copyTagUnstable(1), 0, 1, 2);
     }
 
     @Test
@@ -36,9 +36,9 @@ public class BindingControlFlowStackTest {
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 3);
         ctrl.setNextBranchTag(Taint.withLabel(1));
-        ctrl.pushVariant(1, 3, 1);
+        ctrl.pushUnstable(1, 3, 1);
         ctrl.exitLoopLevel(1);
-        assertContainsLabels(ctrl.copyTagVariant(1), 0);
+        assertContainsLabels(ctrl.copyTagUnstable(1), 0);
     }
 
     @Test
@@ -71,9 +71,9 @@ public class BindingControlFlowStackTest {
         ctrl.pushStable(0, 1);
         ctrl.startFrame(1, 0).pushFrame();
         ctrl.setNextBranchTag(Taint.withLabel(1));
-        ctrl.pushVariant(0, 1, 0);
+        ctrl.pushUnstable(0, 1, 0);
         assertContainsLabels(ctrl.copyTagStable(), 0);
-        assertContainsLabels(ctrl.copyTagVariant(1), 0, 1);
+        assertContainsLabels(ctrl.copyTagUnstable(1), 0, 1);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class BindingControlFlowStackTest {
     @Test
     public void testDependentCopy() {
         BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
-        ctrl.startFrame(2, 2).setNextFrameArgStable().setNextFrameArgVariant(1).pushFrame();
+        ctrl.startFrame(2, 2).setNextFrameArgStable().setNextFrameArgUnstable(1).pushFrame();
     }
 
     public static void assertContainsLabels(Taint<Object> tag, Object... labels) {

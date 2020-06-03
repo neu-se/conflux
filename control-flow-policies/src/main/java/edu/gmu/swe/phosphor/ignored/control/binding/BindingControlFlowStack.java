@@ -60,7 +60,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         return this;
     }
 
-    public BindingControlFlowStack<E> setNextFrameArgVariant(int levelOffset) {
+    public BindingControlFlowStack<E> setNextFrameArgUnstable(int levelOffset) {
         frameBuilder.setNextArgLevel(getLevel(levelOffset));
         return this;
     }
@@ -91,7 +91,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         return isDisabled() ? Taint.emptyTaint() : stackTop.copyTag(getLevel(dependencies));
     }
 
-    public Taint<E> copyTagVariant(int levelOffset) {
+    public Taint<E> copyTagUnstable(int levelOffset) {
         return isDisabled() ? Taint.emptyTaint() : stackTop.copyTag(getLevel(levelOffset));
     }
 
@@ -107,7 +107,7 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         }
     }
 
-    public void pushVariant(int branchID, int branchesSize, int levelOffset) {
+    public void pushUnstable(int branchID, int branchesSize, int levelOffset) {
         if(!isDisabled()) {
             stackTop.push(nextBranchTag, branchID, branchesSize, getLevel(levelOffset));
         }

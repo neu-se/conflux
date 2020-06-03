@@ -138,19 +138,19 @@ public interface LoopLevel {
         @Override
         public void setArgument(MethodVisitor mv) {
             push(mv, levelOffset);
-            BINDING_CONTROL_STACK_SET_ARG_VARIANT.delegateVisit(mv);
+            BINDING_CONTROL_STACK_SET_ARG_UNSTABLE.delegateVisit(mv);
         }
 
         @Override
         public void copyTag(MethodVisitor mv) {
             push(mv, levelOffset);
-            BINDING_CONTROL_STACK_COPY_TAG_VARIANT.delegateVisit(mv);
+            BINDING_CONTROL_STACK_COPY_TAG_UNSTABLE.delegateVisit(mv);
         }
 
         @Override
         public void pushTag(MethodVisitor mv) {
             push(mv, levelOffset);
-            BINDING_CONTROL_STACK_PUSH_VARIANT.delegateVisit(mv);
+            BINDING_CONTROL_STACK_PUSH_UNSTABLE.delegateVisit(mv);
         }
 
         public int getLevelOffset() {
