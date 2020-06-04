@@ -5,7 +5,6 @@ import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 
@@ -50,70 +49,6 @@ public class ControlFlowBenchUtil {
         }
     }
 
-    public static void checkBaseNEncode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy, int n,
-                                        UnaryOperator<byte[]> encoder) {
-        int bitsPerChar = 8;
-        int bitsPerPack = 31 - Integer.numberOfLeadingZeros(n); // floor(log_2(x)), if x > 0
-        int gcd = gcd(bitsPerChar, bitsPerPack);
-        int charsPerGroup = bitsPerPack / gcd;
-        String value = repeat("Lorem ipsum", charsPerGroup); // ensure that the value cleanly divides into groups
-        String input = taintWithIndices(value + value, policy);
-        byte[] output = encoder.apply(input.getBytes());
-        // Build the expected sets
-        BitSet[] expected = new BitSet[output.length];
-        for(int i = 0; i < expected.length; i++) {
-            expected[i] = new BitSet();
-        }
-        for(int inputIndex = 0; inputIndex < input.length(); inputIndex++) {
-            if(policy.inTaintedRange(inputIndex, input.length())) {
-                for(int i = 0; i < bitsPerChar; i += bitsPerPack) {
-                    int bitIndex = bitsPerChar * inputIndex + i;
-                    int packIndex = bitIndex / bitsPerPack;
-                    expected[packIndex].set(inputIndex);
-                }
-            }
-        }
-        for(int outputIndex = 0; outputIndex < output.length; outputIndex++) {
-            Set<Integer> expectedSet = expected[outputIndex].stream()
-                    .boxed()
-                    .collect(Collectors.toSet());
-            benchResult.check(expectedSet, output[outputIndex]);
-        }
-    }
-
-    public static void checkBaseNDecode(FlowBenchResultImpl benchResult, TaintedPortionPolicy policy, int n,
-                                        UnaryOperator<byte[]> encoder, Function<byte[], byte[]> decoder) {
-        int bitsPerChar = 8;
-        int bitsPerPack = 31 - Integer.numberOfLeadingZeros(n); // floor(log_2(x)), if x > 0
-        int gcd = gcd(bitsPerChar, bitsPerPack);
-        int charsPerGroup = bitsPerPack / gcd;
-        String value = repeat("Lorem ipsum", charsPerGroup); // ensure that the value cleanly divides into groups
-        value += value;
-        byte[] input = encoder.apply(value.getBytes());
-        taintWithIndices(input, policy);
-        byte[] output = decoder.apply(input);
-        // Build the expected sets
-        BitSet[] expected = new BitSet[output.length];
-        for(int i = 0; i < expected.length; i++) {
-            expected[i] = new BitSet();
-        }
-        for(int inputIndex = 0; inputIndex < input.length; inputIndex++) {
-            if(policy.inTaintedRange(inputIndex, input.length)) {
-                for(int i = 0; i < bitsPerPack; i += bitsPerChar) {
-                    int bitIndex = bitsPerPack * inputIndex + i;
-                    int charIndex = bitIndex / bitsPerChar;
-                    expected[charIndex].set(inputIndex);
-                }
-            }
-        }
-        for(int outputIndex = 0; outputIndex < output.length; outputIndex++) {
-            Set<Integer> expectedSet = expected[outputIndex].stream()
-                    .boxed()
-                    .collect(Collectors.toSet());
-            benchResult.check(expectedSet, output[outputIndex]);
-        }
-    }
-
     /**
      * Converts an array of bytes into a string of hexadecimal digits
      */
@@ -146,19 +81,6 @@ public class ControlFlowBenchUtil {
                 benchResult.checkEmpty(output[i / 2]);
             }
         }
-    }
-
-    public static String repeat(String s, int n) {
-        StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < n; i++) {
-            builder.append(s);
-        }
-        return builder.toString();
-    }
-
-    public static int gcd(int a, int b) {
-        // Euclid's algorithm for greatest common divisor
-        return b == 0 ? a : gcd(b, a % b);
     }
 
     /**

@@ -190,7 +190,7 @@ class FlowBenchmarkFullReport {
         }
         writer.write("}\n");
         writer.write("\\toprule\n");
-        writer.write("\\multicolumn{1}{c}{\\textbf{Test}} & \\multicolumn{1}{c}{\\textbf{Project}} & " +
+        writer.write("\\multicolumn{1}{c}{\\textbf{Test Group}} & \\multicolumn{1}{c}{\\textbf{Project}} & " +
                 "\\multicolumn{1}{c}{\\textbf{Implementation}}");
 
         for(String configurationName : configurationNames) {
