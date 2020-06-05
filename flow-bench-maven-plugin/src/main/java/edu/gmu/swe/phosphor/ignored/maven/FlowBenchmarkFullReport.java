@@ -168,7 +168,6 @@ class FlowBenchmarkFullReport {
             writer.write("\t\\resizebox{\\textwidth}{!}{\\input{" + tableFile.getName() + "}}\n");
             writer.write("\\end{table}\n");
             for(File plotFile : plotFiles) {
-                writer.write(plotFile.getName() + "\n\n");
                 writer.write("\\input{" + PLOT_DIRECTORY_NAME + "/" + plotFile.getName() + "}\n\n");
             }
             writer.write("\\end{document}\n");
@@ -299,7 +298,9 @@ class FlowBenchmarkFullReport {
                 plotFiles.add(file);
                 try(FileWriter writer = new FileWriter(file)) {
                     writer.write("\\begin{tikzpicture}\n");
-                    writer.write("\t\\begin{axis}[title={}, legend pos=outer north east, " +
+                    writer.write("\t\\begin{axis}[title={" +
+                            String.format("%s - %s (%s)", test.group, test.project, test.implementationDesc) +
+                            "}, legend pos=outer north east, " +
                             "xlabel={Number of Syntactic Entities}, " +
                             "ylabel={" + statName + "}]\n");
                     for(String configurationName : configurationNames) {
