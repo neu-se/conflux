@@ -5,10 +5,8 @@ import edu.columbia.cs.psl.phosphor.struct.PowerSetTree;
 import edu.gmu.swe.phosphor.FlowBench;
 import edu.gmu.swe.phosphor.FlowBenchReportComparator;
 import edu.gmu.swe.phosphor.IdentityFilter;
-import edu.gmu.swe.phosphor.TaintedPortionPolicy;
 import edu.gmu.swe.phosphor.ignored.runtime.ErrorFlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
-import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.testset.TestListResolver;
 import org.apache.maven.surefire.util.DefaultScanResult;
@@ -28,12 +26,19 @@ public class ForkedFlowBenchmarkRunner {
     public static void main(String[] args) {
         File benchmarkOutputDir = new File(args[0]);
         File reportFile = new File(args[1]);
+        int[] numbersOfEntities = new int[args.length - 2];
+        for(int i = 2; i < args.length; i++) {
+            numbersOfEntities[i - 2] = Integer.parseInt(args[i]);
+        }
+        if(numbersOfEntities.length == 0) {
+            throw new IllegalArgumentException("At least one input length must be specified");
+        }
         List<FlowBenchReport> reports = new LinkedList<>();
         List<String> testErrors = new LinkedList<>();
         printHeader();
         for(Class<?> clazz : scanForBenchmarks(benchmarkOutputDir)) {
             if(!Modifier.isAbstract(clazz.getModifiers()) && !clazz.isInterface()) {
-                runBenchmarkClass(clazz, reports, testErrors);
+                runBenchmarkClass(clazz, reports, testErrors, numbersOfEntities);
             }
         }
         printFooter(reports.size(), testErrors);
@@ -41,7 +46,8 @@ public class ForkedFlowBenchmarkRunner {
         FlowBenchReport.writeJsonToFile(reports, reportFile);
     }
 
-    private static void runBenchmarkClass(Class<?> benchClass, List<FlowBenchReport> allReports, List<String> allTestErrors) {
+    private static void runBenchmarkClass(Class<?> benchClass, List<FlowBenchReport> allReports,
+                                          List<String> allTestErrors, int[] numbersOfEntities) {
         List<Method> tests = gatherTests(benchClass);
         if(!tests.isEmpty()) {
             List<FlowBenchReport> reports = new LinkedList<>();
@@ -53,7 +59,7 @@ public class ForkedFlowBenchmarkRunner {
             try {
                 receiver = benchClass.newInstance();
                 for(Method test : tests) {
-                    for(FlowBenchReport report : runTest(receiver, test, errors)) {
+                    for(FlowBenchReport report : runTest(receiver, test, errors, numbersOfEntities)) {
                         reports.add(report);
                         if(report.getResult() instanceof ErrorFlowBenchResult) {
                             long timeElapsed = Duration.between(start, Instant.now()).toMillis();
@@ -96,49 +102,31 @@ public class ForkedFlowBenchmarkRunner {
     private static void validateTestSignature(Method test) throws Exception {
         if(Modifier.isStatic(test.getModifiers())) {
             throw new Exception("Flow benchmark test method should not be static");
-        }
-        if(!Void.TYPE.equals(test.getReturnType())) {
-            throw new Exception("Flow benchmark test method should have void return type.");
-        }
-        boolean validParams = false;
-        if(test.getParameterCount() == 1 || test.getParameterCount() == 2) {
-            Class<?> firstParam = test.getParameterTypes()[0];
-            if(firstParam.equals(FlowBenchResultImpl.class)) {
-                if(test.getParameterCount() == 1 || test.getParameterTypes()[1].equals(TaintedPortionPolicy.class)) {
-                    validParams = true;
-                }
-            }
-        }
-        if(!validParams) {
-            throw new Exception("Flow benchmark test method should have one parameter of type BinaryFlowBenchResult " +
-                    "or FlowBenchResultImpl and may optionally have a second  parameter of type TaintedPortionPolicy");
+        } else if(!Void.TYPE.equals(test.getReturnType())) {
+            throw new Exception("Flow benchmark test method should have void return type");
+        } else if(test.getParameterCount() != 2
+                || !FlowBenchResult.class.isAssignableFrom(test.getParameterTypes()[0])
+                || !int.class.equals(test.getParameterTypes()[1])) {
+            throw new Exception("Flow benchmark test method should have two parameters: one of some subclass of " +
+                    "FlowBenchResult and one of type int");
         }
     }
 
-    private static List<FlowBenchReport> runTest(Object receiver, Method test, List<Throwable> errors) {
+    private static List<FlowBenchReport> runTest(Object receiver, Method test, List<Throwable> errors, int[] numbersOfEntities) {
         List<FlowBenchReport> reports = new LinkedList<>();
         try {
             validateTestSignature(test);
-            if(test.getParameterCount() == 2) {
-                FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
-                long timeElapsed = 0;
-                for(TaintedPortionPolicy portion : TaintedPortionPolicy.values()) {
-                    PowerSetTree.getInstance().reset();
-                    Instant start = Instant.now();
-                    test.invoke(receiver, result, portion);
-                    Instant finish = Instant.now();
-                    timeElapsed += Duration.between(start, finish).toMillis();
-                }
-                reports.add(new FlowBenchReport(test, timeElapsed, result));
-            } else {
+            FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
+            long timeElapsed = 0;
+            for(int numberOfEntities : numbersOfEntities) {
                 PowerSetTree.getInstance().reset();
-                FlowBenchResult result = (FlowBenchResult) test.getParameterTypes()[0].newInstance();
+                result.startingRun(numberOfEntities);
                 Instant start = Instant.now();
-                test.invoke(receiver, result);
+                test.invoke(receiver, result, numberOfEntities);
                 Instant finish = Instant.now();
-                long timeElapsed = Duration.between(start, finish).toMillis();
-                reports.add(new FlowBenchReport(test, timeElapsed, result));
+                timeElapsed += Duration.between(start, finish).toMillis();
             }
+            reports.add(new FlowBenchReport(test, timeElapsed, result));
         } catch(Throwable t) {
             errors.add(t);
             reports.add(new FlowBenchReport(test, -1, new ErrorFlowBenchResult()));
@@ -159,7 +147,8 @@ public class ForkedFlowBenchmarkRunner {
         System.out.println("-------------------------------------------------------");
     }
 
-    private static String[] getErrorMessages(String testName, String benchClassName, String benchClassSimpleName, long elapsedTime, Throwable error) {
+    private static String[] getErrorMessages(String testName, String benchClassName, String benchClassSimpleName,
+                                             long elapsedTime, Throwable error) {
         return new String[]{
                 String.format("%s(%s) Time elapsed: %.3f sec <<< ERROR!", testName, benchClassName, elapsedTime * 0.001),
                 String.format("%s.%s >>> %s", benchClassSimpleName, testName, error.toString())

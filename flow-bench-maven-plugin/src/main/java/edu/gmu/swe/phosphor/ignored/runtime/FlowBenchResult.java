@@ -13,6 +13,8 @@ public abstract class FlowBenchResult {
 
     }
 
+    public abstract void startingRun(int numberOfEntities);
+
     public abstract void check(Set<?> expected, Set<?> predicted);
 
     public <T> void check$$PHOSPHORTAGGED(Taint<T> thisTag, Collection<?> expected, Taint<T> expectedTag, Object actualData, Taint<T> actualDataTag) {

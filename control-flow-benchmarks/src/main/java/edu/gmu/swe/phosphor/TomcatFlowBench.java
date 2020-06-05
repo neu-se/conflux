@@ -34,27 +34,27 @@ public class TomcatFlowBench {
     };
 
     @FlowBench(group = "hex-encode", project = "Tomcat Embed Core", implementation = "HexUtils")
-    public void hexEncode(FlowBenchResultImpl benchResult) {
-        checkHexEncode(benchResult, TaintedPortionPolicy.ALL, HexUtils::toHexString);
+    public void hexEncode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+        checkHexEncode(benchResult, numberOfEntities, HexUtils::toHexString);
     }
 
     @FlowBench(group = "hex-decode", project = "Tomcat Embed Core", implementation = "HexUtils")
-    public void hexDecode(FlowBenchResultImpl benchResult) {
-        checkHexDecode(benchResult, TaintedPortionPolicy.ALL, HexUtils::fromHexString);
+    public void hexDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+        checkHexDecode(benchResult, numberOfEntities, HexUtils::fromHexString);
     }
 
     @FlowBench(group = "spaces-url-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
-    public void spacesUrlDecode(FlowBenchResultImpl benchResult) {
-        checkSpacesUrlDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    public void spacesUrlDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+        checkSpacesUrlDecode(benchResult, numberOfEntities, wrappedURLDecoder);
     }
 
     @FlowBench(group = "reserved-percent-encode", project = "Tomcat Embed Core", implementation = "UEncoder")
-    public void reservedPercentEncode(FlowBenchResultImpl benchResult) {
-        checkReservedPercentEncode(benchResult, TaintedPortionPolicy.ALL, wrappedURLEncoder);
+    public void reservedPercentEncode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+        checkReservedPercentEncode(benchResult, numberOfEntities, wrappedURLEncoder);
     }
 
     @FlowBench(group = "reserved-percent-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
-    public void reservedPercentDecode(FlowBenchResultImpl benchResult) {
-        checkReservedPercentDecode(benchResult, TaintedPortionPolicy.ALL, wrappedURLDecoder);
+    public void reservedPercentDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+        checkReservedPercentDecode(benchResult, numberOfEntities, wrappedURLDecoder);
     }
 }

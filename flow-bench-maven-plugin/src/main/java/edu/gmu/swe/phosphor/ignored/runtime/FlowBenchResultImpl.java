@@ -4,112 +4,47 @@ import java.util.*;
 
 public final class FlowBenchResultImpl extends FlowBenchResult {
 
-    private final List<SetComparison> comparisons = new LinkedList<>();
-    ConfusionMatrix globalMatrix = new ConfusionMatrix();
-    private Map<Object, ConfusionMatrix> confusionMatrices = null;
+    private final Map<Integer, RunResult> runResults = new HashMap<>();
+    private RunResult currentRun;
 
-    public double precision() {
-        initializeConfusionMatrices();
-        if(globalMatrix.truePositives + globalMatrix.falsePositives == 0) {
-            return 0; // undefined, no labels were predicted
-        } else {
-            return (1.0 * globalMatrix.truePositives) / (globalMatrix.truePositives + globalMatrix.falsePositives);
-        }
+    public double precision(int numberOfEntities) {
+        return runResults.get(numberOfEntities).precision();
     }
 
-    public double recall() {
-        initializeConfusionMatrices();
-        if(globalMatrix.truePositives + globalMatrix.falseNegatives == 0) {
-            return 0; // undefined, no labels were expected
-        } else {
-            return (1.0 * globalMatrix.truePositives) / (globalMatrix.truePositives + globalMatrix.falseNegatives);
-        }
+    public double recall(int numberOfEntities) {
+        return runResults.get(numberOfEntities).recall();
     }
 
     @TableStat(name = "F1", emphasizeMax = true)
-    public double f1Score() {
-        initializeConfusionMatrices();
-        if(globalMatrix.truePositives == 0) {
-            return 0;
-        }
-        double denominator = (2.0 * globalMatrix.truePositives + globalMatrix.falsePositives + globalMatrix.falseNegatives);
-        return (2.0 * globalMatrix.truePositives) / denominator;
+    @PlotStat(name = "F1 Score")
+    public double f1Score(int numberOfEntities) {
+        return runResults.get(numberOfEntities).f1Score();
     }
 
     @TableStat(name = "TP")
-    public int truePositives() {
-        initializeConfusionMatrices();
-        return globalMatrix.truePositives;
+    public int truePositives(int numberOfEntities) {
+        return runResults.get(numberOfEntities).truePositives();
     }
 
     @TableStat(name = "FP")
-    public int falsePositives() {
-        initializeConfusionMatrices();
-        return globalMatrix.falsePositives;
+    @PlotStat(name = "False Positives")
+    public int falsePositives(int numberOfEntities) {
+        return runResults.get(numberOfEntities).falsePositives();
     }
 
     @TableStat(name = "FN")
-    public int falseNegatives() {
-        initializeConfusionMatrices();
-        return globalMatrix.falseNegatives;
+    public int falseNegatives(int numberOfEntities) {
+        return runResults.get(numberOfEntities).falseNegatives();
+    }
+
+    @Override
+    public void startingRun(int numberOfEntities) {
+        currentRun = new RunResult();
+        runResults.put(numberOfEntities, currentRun);
     }
 
     @Override
     public void check(Set<?> expected, Set<?> predicted) {
-        comparisons.add(new SetComparison(expected, predicted));
-    }
-
-    private void initializeConfusionMatrices() {
-        if(confusionMatrices == null) {
-            confusionMatrices = new HashMap<>();
-            for(SetComparison comparison : comparisons) {
-                for(Object label : comparison.expected) {
-                    confusionMatrices.putIfAbsent(label, new ConfusionMatrix());
-                }
-                for(Object label : comparison.predicted) {
-                    confusionMatrices.putIfAbsent(label, new ConfusionMatrix());
-                }
-            }
-            for(SetComparison comparison : comparisons) {
-                for(Object label : confusionMatrices.keySet()) {
-                    ConfusionMatrix confusionMatrix = confusionMatrices.get(label);
-                    if(comparison.expected.contains(label)) {
-                        if(comparison.predicted.contains(label)) {
-                            confusionMatrix.truePositives++;
-                            globalMatrix.truePositives++;
-                        } else {
-                            confusionMatrix.falseNegatives++;
-                            globalMatrix.falseNegatives++;
-                        }
-                    } else {
-                        if(comparison.predicted.contains(label)) {
-                            confusionMatrix.falsePositives++;
-                            globalMatrix.falsePositives++;
-                        } else {
-                            confusionMatrix.trueNegatives++;
-                            globalMatrix.trueNegatives++;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static class SetComparison {
-
-        private final Set<Object> expected;
-        private final Set<Object> predicted;
-
-        private SetComparison(Set<?> expected, Set<?> predicted) {
-            this.expected = new HashSet<>(expected);
-            this.predicted = new HashSet<>(predicted);
-        }
-    }
-
-    private static class ConfusionMatrix {
-        private int truePositives = 0;
-        private int falsePositives = 0;
-        private int trueNegatives = 0;
-        private int falseNegatives = 0;
+        currentRun.addComparison(expected, predicted);
     }
 }

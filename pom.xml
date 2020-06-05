@@ -18,7 +18,6 @@
         <module>control-flow-policies-tests</module>
         <module>flow-bench-maven-plugin</module>
         <module>control-flow-benchmarks</module>
-        <module>general-flow-benchmarks</module>
   </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

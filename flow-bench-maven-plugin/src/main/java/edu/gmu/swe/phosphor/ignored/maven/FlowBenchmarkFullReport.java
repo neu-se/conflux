@@ -30,11 +30,24 @@ class FlowBenchmarkFullReport {
      */
     private final boolean reportExecutionTime;
 
+    /**
+     * Lengths of tainted inputs to be used in the generated plots
+     */
+    private final Set<Integer> plotNumbersOfEntities;
+
+    /**
+     * Length of tainted inputs to be used in the generated table
+     */
+    private final int tableNumberOfEntities;
+
     private final Set<TestReport> tests;
 
-    FlowBenchmarkFullReport(List<String> configurationNames, List<File> reportFiles, boolean reportExecutionTime) throws IOException {
+    FlowBenchmarkFullReport(List<String> configurationNames, List<File> reportFiles, boolean reportExecutionTime,
+                            Set<Integer> plotNumbersOfEntities, int tableNumberOfEntities) throws IOException {
         this.configurationNames = configurationNames;
         this.reportExecutionTime = reportExecutionTime;
+        this.plotNumbersOfEntities = plotNumbersOfEntities;
+        this.tableNumberOfEntities = tableNumberOfEntities;
         List<? extends List<FlowBenchReport>> reportLists = deserializeReports(reportFiles);
         tests = regroupByTest(reportLists);
         tests.forEach(TestReport::calculateEmphasis);
@@ -374,7 +387,7 @@ class FlowBenchmarkFullReport {
         }
     }
 
-    private static final class ConfigurationResult {
+    private final class ConfigurationResult {
         private final String configurationName;
         private final Object timeElapsed;
         private final List<Object> stats = new LinkedList<>();
@@ -396,7 +409,7 @@ class FlowBenchmarkFullReport {
             tableStatMethods.forEach((k, v) -> {
                 v.setAccessible(true);
                 try {
-                    Object value = v.invoke(report.getResult());
+                    Object value = v.invoke(report.getResult(), tableNumberOfEntities);
                     stats.add(value);
                 } catch(Exception e) {
                     stats.add("------");

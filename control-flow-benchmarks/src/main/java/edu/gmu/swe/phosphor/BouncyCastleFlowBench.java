@@ -9,12 +9,12 @@ import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkHexEncode;
 public class BouncyCastleFlowBench {
 
     @FlowBench(group = "hex-encode", project = "Bouncy Castle Provider", implementation = "Hex")
-    public void hexEncode(FlowBenchResultImpl benchResult) {
-        checkHexEncode(benchResult, TaintedPortionPolicy.ALL, b -> new String(org.bouncycastle.util.encoders.Hex.encode(b)));
+    public void hexEncode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+        checkHexEncode(benchResult, numberOfEntities, b -> new String(org.bouncycastle.util.encoders.Hex.encode(b)));
     }
 
     @FlowBench(group = "hex-decode", project = "Bouncy Castle Provider", implementation = "Hex")
-    public void hexDecode(FlowBenchResultImpl benchResult) {
-        checkHexDecode(benchResult, TaintedPortionPolicy.ALL, Hex::decode);
+    public void hexDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+        checkHexDecode(benchResult, numberOfEntities, Hex::decode);
     }
 }

@@ -99,6 +99,18 @@ public class FlowBenchmarkMojo extends AbstractMojo {
     private boolean reportExecutionTime;
 
     /**
+     * Lengths of tainted inputs to be used in the generated plots
+     */
+    @Parameter(property = "plotNumbersOfEntities", readonly = true)
+    private final Set<Integer> plotNumbersOfEntities = Collections.emptySet();
+
+    /**
+     * Length of tainted inputs to be used in the generated table
+     */
+    @Parameter(property = "tableNumberOfEntities", readonly = true)
+    private int tableNumberOfEntities;
+
+    /**
      * Runs flow benchmarks with different Phosphor configurations and reports the results to standard out.
      *
      * @throws MojoFailureException if benchmarks fail to run
@@ -109,16 +121,34 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             // Remove configurations that were not selected
             phosphorConfigurations.removeIf(phosphorConfig -> !selectedConfig.equals(phosphorConfig.name));
         }
+        validateNumberOfEntities();
         validatePhosphorConfigurations();
         try {
             File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
             PhosphorInstrumentUtil.createOrCleanDirectory(reportDirectory);
             List<File> reportFiles = runBenchmarks(reportDirectory);
-            FlowBenchmarkFullReport fullReport = new FlowBenchmarkFullReport(getConfigurationNames(), reportFiles, reportExecutionTime);
+            FlowBenchmarkFullReport fullReport = new FlowBenchmarkFullReport(getConfigurationNames(), reportFiles,
+                    reportExecutionTime, plotNumbersOfEntities, tableNumberOfEntities);
             fullReport.printResultsTable();
             fullReport.writeLatexTable(new File(buildDir, "table.tex"));
         } catch(InterruptedException | IOException e) {
             throw new MojoFailureException("Failed to benchmark configurations", e);
+        }
+    }
+
+    /**
+     * Validates plotNumberOfEntities and tableNumberOfEntities to ensure that lengths are non-negative.
+     *
+     * @throws MojoFailureException if a length is negative
+     */
+    private void validateNumberOfEntities() throws MojoFailureException {
+        for(int NumberOfEntities : plotNumbersOfEntities) {
+            if(NumberOfEntities < 0) {
+                throw new MojoFailureException("Plot input length cannot be less than 0");
+            }
+        }
+        if(tableNumberOfEntities < 0) {
+            throw new MojoFailureException("Table input length cannot be less than 0");
         }
     }
 
@@ -262,6 +292,11 @@ public class FlowBenchmarkMojo extends AbstractMojo {
         commands.add(ForkedFlowBenchmarkRunner.class.getName());
         commands.add(classesDirectory.getAbsolutePath());
         commands.add(reportFile.getAbsolutePath());
+        Set<Integer> allNumberOfEntitiess = new HashSet<>(plotNumbersOfEntities);
+        allNumberOfEntitiess.add(tableNumberOfEntities);
+        for(int NumberOfEntities : allNumberOfEntitiess) {
+            commands.add(Integer.toString(NumberOfEntities));
+        }
         Process process = new ProcessBuilder(commands).inheritIO().start();
         if(process.waitFor() != 0) {
             getLog().error("Error in flow benchmark process");
