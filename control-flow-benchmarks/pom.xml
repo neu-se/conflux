@@ -224,16 +224,16 @@
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                     </phosphorConfigurations>
-                                    <tableNumberOfEntities>10</tableNumberOfEntities>
+                                    <tableNumberOfEntities>8</tableNumberOfEntities>
                                     <plotNumbersOfEntities>
-                                        <param>10</param>
-                                        <param>30</param>
-                                        <param>50</param>
-                                        <param>70</param>
-                                        <param>90</param>
-                                        <param>110</param>
-                                        <param>130</param>
-                                        <param>150</param>
+                                        <param>8</param>
+                                        <param>16</param>
+                                        <param>32</param>
+                                        <param>64</param>
+                                        <param>128</param>
+                                        <param>256</param>
+                                        <param>512</param>
+                                        <param>1024</param>
                                     </plotNumbersOfEntities>
                                 </configuration>
                             </execution>

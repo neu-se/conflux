@@ -12,7 +12,7 @@ import static edu.gmu.swe.phosphor.FlowBenchUtil.taintWithIndices;
 
 public class ControlFlowBenchUtil {
 
-    public static final String RESERVED_CHARS_FOR_PERCENT_ENCODING = ":@&?%";
+    public static final String RESERVED_CHARS_FOR_PERCENT_ENCODING = ":@&%";
 
     /**
      * Treats the specified source lists as a circular list and returns a list containing the first n elements from this
@@ -132,7 +132,7 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when decoding reserved ascii characters from percent-encoded octets.
      */
     public static void checkReservedPercentDecode(FlowBenchResult benchResult, int numberOfEntities, UnaryOperator<String> decoder) {
-        checkTransformer(Arrays.asList("%3a", "%40", "%26", "%3f", "%25"), Collections.singletonList(3), benchResult,
+        checkTransformer(Arrays.asList("%3a", "%40", "%26", "%25"), Collections.singletonList(3), benchResult,
                 numberOfEntities, decoder, false);
     }
 
@@ -156,7 +156,7 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when escaping HTML reserved characters by replacing them with named character entities.
      */
     public static void checkHtmlEscape(FlowBenchResult benchResult, int numberOfEntities, UnaryOperator<String> escaper) {
-        checkTransformer(Arrays.asList("&", "<", ">"), Arrays.asList(5, 4, 4), benchResult, numberOfEntities,
+        checkTransformer(Arrays.asList("&", "<"), Arrays.asList(5, 4), benchResult, numberOfEntities,
                 escaper, true);
     }
 
@@ -164,7 +164,7 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when unescaping named character entities to HTML reserved characters;
      */
     public static void checkHtmlUnescape(FlowBenchResult benchResult, int numberOfEntities, UnaryOperator<String> unescaper) {
-        checkTransformer(Arrays.asList("&amp;", "&lt;", "&gt;"), Arrays.asList(5, 4, 4), benchResult, numberOfEntities,
+        checkTransformer(Arrays.asList("&amp;", "&lt;"), Arrays.asList(5, 4), benchResult, numberOfEntities,
                 unescaper, false);
     }
 
@@ -172,16 +172,16 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when escaping EcmaScript/JavaScript special characters.
      */
     public static void checkJavaScriptEscape(FlowBenchResult benchResult, int numberOfEntities, UnaryOperator<String> escaper) {
-        checkTransformer(Arrays.asList("\"", "'", "\\", "/", "\t", "\n", "\f", "\b", "\u2028", "\u2029"),
-                Arrays.asList(2, 2, 2, 2, 2, 2, 2, 2, 6, 6), benchResult, numberOfEntities, escaper, true);
+        checkTransformer(Arrays.asList("\"", "/", "\n", "\u2029"),
+                Arrays.asList(2, 2, 2, 6), benchResult, numberOfEntities, escaper, true);
     }
 
     /**
      * Checks taint propagation when unescaping EcmaScript/JavaScript special characters.
      */
     public static void checkJavaScriptUnescape(FlowBenchResult benchResult, int numberOfEntities, UnaryOperator<String> unescaper) {
-        checkTransformer(Arrays.asList("\\\"", "\\'", "\\\\", "\\/", "\\t", "\\n", "\\f", "\\b", "\\u2028", "\\u2029"),
-                Arrays.asList(2, 2, 2, 2, 2, 2, 2, 2, 6, 6), benchResult, numberOfEntities, unescaper, false);
+        checkTransformer(Arrays.asList("\\\"", "\\/", "\\n", "\\u2029"),
+                Arrays.asList(2, 2, 2, 6), benchResult, numberOfEntities, unescaper, false);
     }
 
     /**
