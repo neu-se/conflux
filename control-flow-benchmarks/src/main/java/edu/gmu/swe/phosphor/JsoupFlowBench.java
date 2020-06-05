@@ -7,7 +7,7 @@ import static edu.gmu.swe.phosphor.ControlFlowBenchUtil.checkHtmlEscape;
 
 public class JsoupFlowBench {
 
-    @FlowBench(group = "html-escape", project = "jsoup", implementation = "numberOfEntities")
+    @FlowBench(group = "html-escape", project = "jsoup", implementation = "Entities")
     public void htmlEscape(FlowBenchResultImpl benchResult, int numberOfEntities) {
         checkHtmlEscape(benchResult, numberOfEntities, Entities::escape);
     }

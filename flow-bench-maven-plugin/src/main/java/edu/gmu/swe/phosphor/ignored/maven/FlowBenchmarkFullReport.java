@@ -290,8 +290,11 @@ class FlowBenchmarkFullReport {
         for(String statName : plotStatMethods.keySet()) {
             String simpleStatName = statName.replace(" ", "");
             for(TestReport test : tests) {
-                String fileName = String.format("%s-%s-%s-plot.tex", simpleStatName,
-                        test.className.replace(" ", ""), test.group.replace(" ", ""));
+                String fileName = String.format("%s-%s-%s-%s-plot.tex",
+                        simpleStatName,
+                        test.project.replace(" ", ""),
+                        test.implementationDesc.replace(" ", ""),
+                        test.group.replace(" ", ""));
                 File file = new File(plotDir, fileName);
                 plotFiles.add(file);
                 try(FileWriter writer = new FileWriter(file)) {
