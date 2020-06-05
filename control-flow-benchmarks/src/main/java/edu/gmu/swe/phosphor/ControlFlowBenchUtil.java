@@ -188,7 +188,7 @@ public class ControlFlowBenchUtil {
      * Quoted-Printable content-transfer-encoding as defined by RFC 1521
      */
     public static void checkQuotedPrintableEncode(FlowBenchResult benchResult, int numberOfEntities, UnaryOperator<String> encoder) {
-        checkTransformer(Arrays.asList("\r", "\n", "\b", "\u03A9", "\u3399"), Arrays.asList(3, 3, 3, 6, 9),
+        checkTransformer(Arrays.asList("=", "\b", "\u03A9", "\u3399"), Arrays.asList(3, 3, 6, 9),
                 benchResult, numberOfEntities, encoder, true);
     }
 
@@ -197,7 +197,7 @@ public class ControlFlowBenchUtil {
      */
     public static void checkQuotedPrintableDecode(FlowBenchResult benchResult, int numberOfEntities,
                                                   UnaryOperator<String> decoder) {
-        checkTransformer(Arrays.asList("=0D", "=0A", "=08", "=CE=A9", "=E3=8E=99"), Arrays.asList(3, 3, 3, 6, 9),
+        checkTransformer(Arrays.asList("=3D", "=08", "=CE=A9", "=E3=8E=99"), Arrays.asList(3, 3, 6, 9),
                 benchResult, numberOfEntities, decoder, false);
     }
 }

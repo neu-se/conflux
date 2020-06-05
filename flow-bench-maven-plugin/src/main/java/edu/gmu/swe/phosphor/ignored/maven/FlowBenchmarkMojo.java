@@ -17,8 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createPhosphorAgentArgument;
-import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.getPhosphorJarFile;
+import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.*;
 
 /**
  * Runs benchmarks with different Phosphor configurations and reports the results.
@@ -102,7 +101,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      * Lengths of tainted inputs to be used in the generated plots
      */
     @Parameter(property = "plotNumbersOfEntities", readonly = true)
-    private final Set<Integer> plotNumbersOfEntities = Collections.emptySet();
+    private Set<Integer> plotNumbersOfEntities;
 
     /**
      * Length of tainted inputs to be used in the generated table
@@ -130,7 +129,7 @@ public class FlowBenchmarkMojo extends AbstractMojo {
             FlowBenchmarkFullReport fullReport = new FlowBenchmarkFullReport(getConfigurationNames(), reportFiles,
                     reportExecutionTime, plotNumbersOfEntities, tableNumberOfEntities);
             fullReport.printResultsTable();
-            fullReport.writeLatexTable(new File(buildDir, "table.tex"));
+            fullReport.writeLatexResults(buildDir);
         } catch(InterruptedException | IOException e) {
             throw new MojoFailureException("Failed to benchmark configurations", e);
         }
@@ -142,6 +141,9 @@ public class FlowBenchmarkMojo extends AbstractMojo {
      * @throws MojoFailureException if a length is negative
      */
     private void validateNumberOfEntities() throws MojoFailureException {
+        if(plotNumbersOfEntities == null) {
+            plotNumbersOfEntities = Collections.emptySet();
+        }
         for(int NumberOfEntities : plotNumbersOfEntities) {
             if(NumberOfEntities < 0) {
                 throw new MojoFailureException("Plot input length cannot be less than 0");

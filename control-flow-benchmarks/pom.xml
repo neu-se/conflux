@@ -227,10 +227,13 @@
                                     <tableNumberOfEntities>10</tableNumberOfEntities>
                                     <plotNumbersOfEntities>
                                         <param>10</param>
-                                        <param>20</param>
                                         <param>30</param>
-                                        <param>40</param>
                                         <param>50</param>
+                                        <param>70</param>
+                                        <param>90</param>
+                                        <param>110</param>
+                                        <param>130</param>
+                                        <param>150</param>
                                     </plotNumbersOfEntities>
                                 </configuration>
                             </execution>

@@ -99,12 +99,12 @@ public class CommonsCodecFlowBench {
 
     @FlowBench(group = "quoted-printable-encode", project = "Apache Commons Codec", implementation = "QuotedPrintableCodec")
     public void quotedPrintableEncode(FlowBenchResultImpl benchResult, int numberOfEntities) {
-        checkQuotedPrintableEncode(benchResult, numberOfEntities, wrapStringEncoder(new QuotedPrintableCodec(true)));
+        checkQuotedPrintableEncode(benchResult, numberOfEntities, wrapStringEncoder(new QuotedPrintableCodec(false)));
     }
 
     @FlowBench(group = "quoted-printable-decode", project = "Apache Commons Codec", implementation = "QuotedPrintableCodec")
     public void quotedPrintableDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
-        checkQuotedPrintableDecode(benchResult, numberOfEntities, wrapStringDecoder(new QuotedPrintableCodec(true)));
+        checkQuotedPrintableDecode(benchResult, numberOfEntities, wrapStringDecoder(new QuotedPrintableCodec(false)));
     }
 
     private static UnaryOperator<String> wrapBinaryEncoder(BinaryEncoder encoder) {

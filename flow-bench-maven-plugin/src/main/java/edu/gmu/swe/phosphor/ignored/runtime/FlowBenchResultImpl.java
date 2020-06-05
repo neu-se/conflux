@@ -27,7 +27,6 @@ public final class FlowBenchResultImpl extends FlowBenchResult {
     }
 
     @TableStat(name = "FP")
-    @PlotStat(name = "False Positives")
     public int falsePositives(int numberOfEntities) {
         return runResults.get(numberOfEntities).falsePositives();
     }
@@ -45,6 +44,6 @@ public final class FlowBenchResultImpl extends FlowBenchResult {
 
     @Override
     public void check(Set<?> expected, Set<?> predicted) {
-        currentRun.addComparison(expected, predicted);
+        currentRun.check(expected, predicted);
     }
 }

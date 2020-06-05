@@ -2,6 +2,7 @@ package edu.gmu.swe.phosphor.ignored.maven;
 
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResult;
 import edu.gmu.swe.phosphor.ignored.runtime.FlowBenchResultImpl;
+import edu.gmu.swe.phosphor.ignored.runtime.PlotStat;
 import edu.gmu.swe.phosphor.ignored.runtime.TableStat;
 import edu.gmu.swe.util.GroupedTable;
 
@@ -12,13 +13,26 @@ import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createOrCleanDirectory;
+
 class FlowBenchmarkFullReport {
 
     /**
-     * Mapping from the annotated names of methods annotated with the TableStat annotation from the FlowBenchResultImpl
+     * Name of directory used to store generated plots
+     */
+    private static final String PLOT_DIRECTORY_NAME = "flow-plots";
+
+    /**
+     * Mapping from annotation's name to methods annotated with the TableStat annotation from the FlowBenchResultImpl
      * class
      */
     private static final TreeMap<String, Method> tableStatMethods = getTableStatMethods();
+
+    /**
+     * Mapping from annotation's name to methods annotated with the PlotStat annotation from the FlowBenchResultImpl
+     * class
+     */
+    private static final TreeMap<String, Method> plotStatMethods = getPlotStatMethods();
 
     /**
      * Names of the configurations that were benchmarked
@@ -33,7 +47,7 @@ class FlowBenchmarkFullReport {
     /**
      * Lengths of tainted inputs to be used in the generated plots
      */
-    private final Set<Integer> plotNumbersOfEntities;
+    private final TreeSet<Integer> plotNumbersOfEntities;
 
     /**
      * Length of tainted inputs to be used in the generated table
@@ -46,11 +60,11 @@ class FlowBenchmarkFullReport {
                             Set<Integer> plotNumbersOfEntities, int tableNumberOfEntities) throws IOException {
         this.configurationNames = configurationNames;
         this.reportExecutionTime = reportExecutionTime;
-        this.plotNumbersOfEntities = plotNumbersOfEntities;
+        this.plotNumbersOfEntities = new TreeSet<>(plotNumbersOfEntities);
         this.tableNumberOfEntities = tableNumberOfEntities;
         List<? extends List<FlowBenchReport>> reportLists = deserializeReports(reportFiles);
         tests = regroupByTest(reportLists);
-        tests.forEach(TestReport::calculateEmphasis);
+        tests.forEach(TestReport::calculateTableEmphasis);
     }
 
     private Set<TestReport> regroupByTest(List<? extends List<FlowBenchReport>> reportLists) {
@@ -103,7 +117,7 @@ class FlowBenchmarkFullReport {
                     if(reportExecutionTime) {
                         rowData.add(result.timeElapsed.toString());
                     }
-                    for(Object stat : result.stats) {
+                    for(Object stat : result.tableStats) {
                         if(stat instanceof Float) {
                             rowData.add(String.format("%.4f", stat));
                         } else if(stat instanceof Double) {
@@ -121,15 +135,47 @@ class FlowBenchmarkFullReport {
         }
     }
 
-    void writeLatexTable(File file) throws IOException {
-        if(file.isDirectory()) {
-            throw new IOException("Cannot create latex table file: " + file);
+    void writeLatexResults(File outputDir) throws IOException {
+        File reportFile = new File(outputDir, "flow-report.tex");
+        File tableFile = new File(outputDir, "flow-table.tex");
+        File plotDir = new File(outputDir, PLOT_DIRECTORY_NAME);
+        writeLatexTable(tableFile);
+        List<File> plotFiles = Collections.emptyList();
+        if(!plotNumbersOfEntities.isEmpty()) {
+            createOrCleanDirectory(plotDir);
+            plotFiles = writePlots(plotDir);
         }
-        if(file.isFile()) {
-            if(!file.delete()) {
-                throw new IOException("Failed to delete: " + file);
+        writeReportFile(reportFile, tableFile, plotFiles);
+    }
+
+    private void writeReportFile(File file, File tableFile, List<File> plotFiles) throws IOException {
+        try(FileWriter writer = new FileWriter(file)) {
+            writer.write("\\documentclass{article}\n");
+            writer.write("\\usepackage{multirow}\n");
+            writer.write("\\usepackage{multicol}\n");
+            writer.write("\\usepackage{colortbl}\n");
+            writer.write("\\usepackage{xcolor}\n");
+            writer.write("\\usepackage{booktabs}\n");
+            writer.write("\\usepackage{fullpage}\n");
+            writer.write("\\definecolor{lightgrey}{rgb}{0.91,0.91,0.91}\n");
+            writer.write("\\usepackage{pgfplots}\n");
+            writer.write("\\pgfplotsset{compat=newest}\n");
+            writer.write("\\usetikzlibrary{plotmarks}\n");
+            writer.write("\\begin{document}\n");
+            writer.write("\\title{Generated Results for Control Flow Benchmark}\n");
+            writer.write("\\maketitle\n");
+            writer.write("\\begin{table}[!htb]\n");
+            writer.write("\t\\resizebox{\\textwidth}{!}{\\input{" + tableFile.getName() + "}}\n");
+            writer.write("\\end{table}\n");
+            for(File plotFile : plotFiles) {
+                writer.write(plotFile.getName() + "\n\n");
+                writer.write("\\input{" + PLOT_DIRECTORY_NAME + "/" + plotFile.getName() + "}\n\n");
             }
+            writer.write("\\end{document}\n");
         }
+    }
+
+    private void writeLatexTable(File file) throws IOException {
         TreeMap<String, List<TestReport>> groupMap = groupTestReports();
         try(FileWriter writer = new FileWriter(file)) {
             writeLatexTableHeader(writer);
@@ -162,9 +208,9 @@ class FlowBenchmarkFullReport {
             if(reportExecutionTime) {
                 writer.write(String.format(" & \\(%s\\)", result.timeElapsed));
             }
-            for(int i = 0; i < result.stats.size(); i++) {
-                Object stat = result.stats.get(i);
-                boolean emphasize = result.emphasize.get(i);
+            for(int i = 0; i < result.tableStats.size(); i++) {
+                Object stat = result.tableStats.get(i);
+                boolean emphasize = result.emphasizeTableStat.get(i);
                 String value;
                 if(stat instanceof Integer) {
                     value = String.format("%,d", stat);
@@ -239,12 +285,65 @@ class FlowBenchmarkFullReport {
         return groupMap;
     }
 
+    private List<File> writePlots(File plotDir) throws IOException {
+        List<File> plotFiles = new LinkedList<>();
+        for(String statName : plotStatMethods.keySet()) {
+            String simpleStatName = statName.replace(" ", "");
+            for(TestReport test : tests) {
+                String fileName = String.format("%s-%s-%s-plot.tex", simpleStatName,
+                        test.className.replace(" ", ""), test.group.replace(" ", ""));
+                File file = new File(plotDir, fileName);
+                plotFiles.add(file);
+                try(FileWriter writer = new FileWriter(file)) {
+                    writer.write("\\begin{tikzpicture}\n");
+                    writer.write("\t\\begin{axis}[title={}, legend pos=outer north east, " +
+                            "xlabel={Number of Syntactic Entities}, " +
+                            "ylabel={" + statName + "}]\n");
+                    for(String configurationName : configurationNames) {
+                        writePlotResult(writer, statName, test.results.get(configurationName));
+                    }
+                    writer.write("\t\\end{axis}\n");
+                    writer.write("\\end{tikzpicture}");
+                }
+            }
+        }
+        return plotFiles;
+    }
+
+    private void writePlotResult(Writer writer, String statName, ConfigurationResult result) throws IOException {
+        if(result.plotStats.containsKey(statName)) {
+            writer.write("\t\t\\addplot+[smooth] plot coordinates {\n");
+            Map<Integer, Object> valueMap = result.plotStats.get(statName);
+            for(Integer numberOfEntities : valueMap.keySet()) {
+                Object value = valueMap.get(numberOfEntities);
+                if(value instanceof Number) {
+                    writer.write(String.format("\t\t\t(%s, %s)\n", numberOfEntities, value));
+                }
+            }
+            writer.write("\t\t};\n");
+            writer.write("\t\t\\addlegendentry{" + result.configurationName + "})\n");
+        }
+    }
+
     private static TreeMap<String, Method> getTableStatMethods() {
         TreeMap<String, Method> statMethods = new TreeMap<>();
         for(Class<?> clazz = FlowBenchResultImpl.class; clazz != FlowBenchResult.class; clazz = clazz.getSuperclass()) {
             for(Method method : FlowBenchResultImpl.class.getDeclaredMethods()) {
                 if(method.isAnnotationPresent(TableStat.class)) {
                     String statName = method.getAnnotation(TableStat.class).name();
+                    statMethods.put(statName, method);
+                }
+            }
+        }
+        return statMethods;
+    }
+
+    private static TreeMap<String, Method> getPlotStatMethods() {
+        TreeMap<String, Method> statMethods = new TreeMap<>();
+        for(Class<?> clazz = FlowBenchResultImpl.class; clazz != FlowBenchResult.class; clazz = clazz.getSuperclass()) {
+            for(Method method : FlowBenchResultImpl.class.getDeclaredMethods()) {
+                if(method.isAnnotationPresent(PlotStat.class)) {
+                    String statName = method.getAnnotation(PlotStat.class).name();
                     statMethods.put(statName, method);
                 }
             }
@@ -267,6 +366,52 @@ class FlowBenchmarkFullReport {
             reports.add(FlowBenchReport.readJsonFromFile(reportFile));
         }
         return reports;
+    }
+
+    private final class ConfigurationResult {
+        private final String configurationName;
+        private final Object timeElapsed;
+        private final List<Object> tableStats = new LinkedList<>();
+        private final List<Boolean> emphasizeTableStat = new LinkedList<>();
+        private final Map<String, TreeMap<Integer, Object>> plotStats = new HashMap<>();
+
+        private ConfigurationResult(String configurationName) {
+            this.configurationName = configurationName;
+            timeElapsed = "Error";
+            tableStatMethods.forEach((k, v) -> tableStats.add("Error"));
+            tableStats.forEach(s -> emphasizeTableStat.add(false));
+        }
+
+        private ConfigurationResult(String configurationName, FlowBenchReport report) {
+            if(!(report.getResult() instanceof FlowBenchResultImpl)) {
+                throw new IllegalArgumentException();
+            }
+            this.configurationName = configurationName;
+            timeElapsed = report.getTimeElapsed();
+            tableStatMethods.forEach((k, v) -> {
+                v.setAccessible(true);
+                try {
+                    Object value = v.invoke(report.getResult(), tableNumberOfEntities);
+                    tableStats.add(value);
+                } catch(Exception e) {
+                    tableStats.add("------");
+                }
+            });
+            tableStats.forEach(s -> emphasizeTableStat.add(false));
+            plotStatMethods.forEach((k, v) -> {
+                v.setAccessible(true);
+                TreeMap<Integer, Object> valueMap = new TreeMap<>();
+                plotStats.put(k, valueMap);
+                for(int plotNumberOfEntities : plotNumbersOfEntities) {
+                    try {
+                        Object value = v.invoke(report.getResult(), plotNumberOfEntities);
+                        valueMap.put(plotNumberOfEntities, value);
+                    } catch(Exception e) {
+                        valueMap.put(plotNumberOfEntities, "------");
+                    }
+                }
+            });
+        }
     }
 
     private static final class TestReport implements Comparable<TestReport> {
@@ -357,14 +502,14 @@ class FlowBenchmarkFullReport {
             return methodName.compareTo(o.methodName);
         }
 
-        private void calculateEmphasis() {
+        private void calculateTableEmphasis() {
             int i = 0;
             for(Method m : tableStatMethods.values()) {
                 TableStat annotation = m.getAnnotation(TableStat.class);
                 if(annotation.emphasizeMax()) {
                     Double max = null;
                     for(ConfigurationResult result : results.values()) {
-                        Object stat = result.stats.get(i);
+                        Object stat = result.tableStats.get(i);
                         if(stat instanceof Number) {
                             Double value = ((Number) stat).doubleValue();
                             if(max == null || value.compareTo(max) > 0) {
@@ -373,49 +518,17 @@ class FlowBenchmarkFullReport {
                         }
                     }
                     for(ConfigurationResult result : results.values()) {
-                        Object stat = result.stats.get(i);
+                        Object stat = result.tableStats.get(i);
                         if(stat instanceof Number) {
                             Double value = ((Number) stat).doubleValue();
                             if(max != null && value.compareTo(max) == 0) {
-                                result.emphasize.set(i, true);
+                                result.emphasizeTableStat.set(i, true);
                             }
                         }
                     }
                 }
                 i++;
             }
-        }
-    }
-
-    private final class ConfigurationResult {
-        private final String configurationName;
-        private final Object timeElapsed;
-        private final List<Object> stats = new LinkedList<>();
-        private final List<Boolean> emphasize = new LinkedList<>();
-
-        private ConfigurationResult(String configurationName) {
-            this.configurationName = configurationName;
-            timeElapsed = "Error";
-            tableStatMethods.forEach((k, v) -> stats.add("Error"));
-            stats.forEach(s -> emphasize.add(false));
-        }
-
-        private ConfigurationResult(String configurationName, FlowBenchReport report) {
-            if(!(report.getResult() instanceof FlowBenchResultImpl)) {
-                throw new IllegalArgumentException();
-            }
-            this.configurationName = configurationName;
-            timeElapsed = report.getTimeElapsed();
-            tableStatMethods.forEach((k, v) -> {
-                v.setAccessible(true);
-                try {
-                    Object value = v.invoke(report.getResult(), tableNumberOfEntities);
-                    stats.add(value);
-                } catch(Exception e) {
-                    stats.add("------");
-                }
-            });
-            stats.forEach(s -> emphasize.add(false));
         }
     }
 }
