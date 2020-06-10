@@ -301,7 +301,7 @@ class FlowBenchmarkFullReport {
                     writer.write("\t\\begin{axis}[title={" +
                             String.format("%s - %s (%s)", test.group, test.project, test.implementationDesc) +
                             "}, legend pos=outer north east, " +
-                            "xlabel={Number of Syntactic Entities}, " +
+                            "xlabel={Number of Abstract Entities}, " +
                             "ylabel={" + statName + "}]\n");
                     for(String configurationName : configurationNames) {
                         writePlotResult(writer, statName, test.results.get(configurationName));
@@ -325,7 +325,7 @@ class FlowBenchmarkFullReport {
                 }
             }
             writer.write("\t\t};\n");
-            writer.write("\t\t\\addlegendentry{" + result.configurationName + "})\n");
+            writer.write("\t\t\\addlegendentry{" + result.configurationName + "}\n");
         }
     }
 
