@@ -5,16 +5,16 @@
     <artifactId>conflux-policies-tests</artifactId>
     <packaging>pom</packaging>
     <parent>
-        <groupId>edu.neu.cs.conflux</groupId>
+        <groupId>edu.neu.ccs.conflux</groupId>
         <artifactId>conflux</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <properties>
-        <conflux.cache>${project.build.directory}/cached-binding-flows</conflux.cache>
-        <conflux.jvm>jvm-inst-binding-control</conflux.jvm>
-        <binding.control.manager>
-            edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager
-        </binding.control.manager>
+        <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
+        <conflux.jvm>jvm-inst-conflux</conflux.jvm>
+        <conflux.control.manager>
+            edu.neu.ccs.conflux.internal.policy.binding.BindingControlFlowManager
+        </conflux.control.manager>
     </properties>
     <build>
         <plugins>
@@ -66,21 +66,21 @@
                         <artifactId>phosphor-instrument-maven-plugin</artifactId>
                         <dependencies>
                             <dependency>
-                                <groupId>edu.neu.cs.conflux</groupId>
+                                <groupId>edu.neu.ccs.conflux</groupId>
                                 <artifactId>conflux-policies</artifactId>
                                 <version>1.0.0-SNAPSHOT</version>
                             </dependency>
                         </dependencies>
                         <executions>
                             <execution>
-                                <id>binding-flows</id>
+                                <id>conflux</id>
                                 <goals>
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
                                     <targetName>${conflux.jvm}</targetName>
                                     <options>
-                                        <controlFlowManager>${binding.control.manager}</controlFlowManager>
+                                        <controlFlowManager>${conflux.control.manager}</controlFlowManager>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <quiet/>
@@ -106,8 +106,8 @@
                                     <reuseForks>false</reuseForks>
                                     <argLine>
                                         -Dphosphor.verify=true
-                                        -Xbootclasspath/p:${edu.gmu.swe.phosphor:Phosphor:jar}:${edu.neu.cs.conflux:conflux-policies:jar}
-                                        -javaagent:${edu.gmu.swe.phosphor:Phosphor:jar}=enum,acmpeq,cacheDir=${conflux.cache},controlFlowManager=${binding.control.manager}
+                                        -Xbootclasspath/p:${edu.gmu.swe.phosphor:Phosphor:jar}:${edu.neu.ccs.conflux:conflux-policies:jar}
+                                        -javaagent:${edu.gmu.swe.phosphor:Phosphor:jar}=enum,acmpeq,cacheDir=${conflux.cache},controlFlowManager=${conflux.control.manager}
                                     </argLine>
                                 </configuration>
                                 <goals>
@@ -127,7 +127,7 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>edu.neu.cs.conflux</groupId>
+            <groupId>edu.neu.ccs.conflux</groupId>
             <artifactId>conflux-policies</artifactId>
         </dependency>
     </dependencies>

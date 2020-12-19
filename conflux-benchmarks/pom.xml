@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>conflux-benchmarks</artifactId>
     <parent>
-        <groupId>edu.neu.cs.conflux</groupId>
+        <groupId>edu.neu.ccs.conflux</groupId>
         <artifactId>conflux</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
@@ -17,19 +17,19 @@
         <basic.control.jvm>jvm-inst-basic-control</basic.control.jvm>
         <basic.control.cache>${project.build.directory}/basic-control-cache</basic.control.cache>
         <basic.control.manager>
-            edu.gmu.swe.phosphor.ignored.control.basic.BasicControlFlowManager
+            edu.neu.ccs.conflux.internal.policy.basic.BasicControlFlowManager
         </basic.control.manager>
         <!-- Conflux -->
         <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
         <conflux.jvm>jvm-inst-conflux</conflux.jvm>
         <conflux.manager>
-            edu.gmu.swe.phosphor.ignored.control.binding.BindingControlFlowManager
+            edu.neu.ccs.conflux.internal.policy.binding.BindingControlFlowManager
         </conflux.manager>
         <!-- Strict Control -->
         <strict.control.cache>${project.build.directory}/strict-control-cache</strict.control.cache>
         <strict.control.jvm>jvm-inst-strict-control</strict.control.jvm>
         <strict.control.manager>
-            edu.gmu.swe.phosphor.ignored.control.strict.StrictControlFlowManager
+            edu.neu.ccs.conflux.internal.policy.strict.StrictControlFlowManager
         </strict.control.manager>
     </properties>
     <profiles>
@@ -136,7 +136,7 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>edu.neu.cs.conflux</groupId>
+                        <groupId>edu.neu.ccs.conflux</groupId>
                         <artifactId>conflux-maven-plugin</artifactId>
                         <executions>
                             <execution>
@@ -145,7 +145,7 @@
                                 </goals>
                                 <configuration>
                                     <bootClasspathJars>
-                                        <bootClasspathJar>${edu.neu.cs.conflux:conflux-policies:jar}</bootClasspathJar>
+                                        <bootClasspathJar>${edu.neu.ccs.conflux:conflux-policies:jar}</bootClasspathJar>
                                     </bootClasspathJars>
                                     <phosphorConfigurations>
                                         <phosphorConfiguration>
@@ -159,6 +159,9 @@
                                                 <withArrayIndexTags/>
                                                 <reenableCaches/>
                                                 <withHeavyObjEqualsHashcode/>
+                                                <taintTagFactory>
+                                                    edu.neu.ccs.conflux.internal.policy.ConfluxTaintTagFactory
+                                                </taintTagFactory>
                                             </options>
                                             <instrumentedJVM>
                                                 ${project.build.directory}/${data.array.index.jvm}
@@ -272,11 +275,11 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>edu.neu.cs.conflux</groupId>
+            <groupId>edu.neu.ccs.conflux</groupId>
             <artifactId>conflux-maven-plugin</artifactId>
         </dependency>
         <dependency>
-            <groupId>edu.neu.cs.conflux</groupId>
+            <groupId>edu.neu.ccs.conflux</groupId>
             <artifactId>conflux-policies</artifactId>
         </dependency>
         <dependency>
