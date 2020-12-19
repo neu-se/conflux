@@ -22,53 +22,45 @@ import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createPh
 import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.getPhosphorJarFile;
 
 /**
- * Runs benchmarks with different Phosphor configurations and reports the results.
+ * Runs benchmarks and studies with different Phosphor configurations and reports the results.
  */
-@Mojo(name = "benchmark", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
+@Mojo(name = "evaluate", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
 public class FlowEvaluationMojo extends AbstractMojo {
 
     /**
      * Name of the directory used to store results from the different configurations
      */
-    private static final String REPORT_DIRECTORY = "flow-benchmark-reports";
-
+    private static final String REPORT_DIRECTORY = "flow-reports";
     /**
      * Name of the file used to store the Phosphor configuration options used for a particular cache directory
      */
     private static final String PHOSPHOR_CACHE_PROPERTIES_FILE = "phosphor-cache-properties";
-
     /**
      * String argument used to tell "forked" JVMs to wait for a debugger
      */
     private static final String DEBUG_ARG = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
-
     /**
      * Configuration option name used by Phosphor to specify a cache directory for instrumented files
      */
     private static final String phosphorCacheDirectoryOptionName = PhosphorOption.CACHE_DIR.createOption().getOpt();
-
     /**
      * True if "forked" JVMs should wait for a debugger
      */
     private static final boolean debugForks = Boolean.getBoolean("phosphor.flow.bench.debug");
-
     /**
      * The name of the Phosphor configuration to be run or null if all of the configurations should be run
      */
     private static final String selectedConfig = System.getProperty("flow.config", null);
-
     /**
      * Maven build output directory
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File buildDir;
-
     /**
      * The project being benchmarked
      */
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
     /**
      * The directory containing generated test classes of the project being benchmarked
      */

@@ -34,7 +34,7 @@
         <module>conflux-policies</module>
         <module>conflux-policies-tests</module>
         <module>conflux-maven-plugin</module>
-        <module>conflux-benchmarks</module>
+        <module>conflux-experiments</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
