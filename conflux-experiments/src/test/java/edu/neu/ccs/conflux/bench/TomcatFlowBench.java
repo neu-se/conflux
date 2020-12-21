@@ -1,7 +1,7 @@
 package edu.neu.ccs.conflux.bench;
 
 import edu.neu.ccs.conflux.FlowBench;
-import edu.neu.ccs.conflux.internal.runtime.FlowBenchResultImpl;
+import edu.neu.ccs.conflux.internal.runtime.FlowBenchResult;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.apache.tomcat.util.buf.UDecoder;
@@ -33,27 +33,27 @@ public class TomcatFlowBench {
     };
 
     @FlowBench(group = "hex-encode", project = "Tomcat Embed Core", implementation = "HexUtils")
-    public void hexEncode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+    public void hexEncode(FlowBenchResult benchResult, int numberOfEntities) {
         ControlFlowBenchUtil.checkHexEncode(benchResult, numberOfEntities, HexUtils::toHexString);
     }
 
     @FlowBench(group = "hex-decode", project = "Tomcat Embed Core", implementation = "HexUtils")
-    public void hexDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+    public void hexDecode(FlowBenchResult benchResult, int numberOfEntities) {
         ControlFlowBenchUtil.checkHexDecode(benchResult, numberOfEntities, HexUtils::fromHexString);
     }
 
     @FlowBench(group = "spaces-url-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
-    public void spacesUrlDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+    public void spacesUrlDecode(FlowBenchResult benchResult, int numberOfEntities) {
         ControlFlowBenchUtil.checkSpacesUrlDecode(benchResult, numberOfEntities, wrappedURLDecoder);
     }
 
     @FlowBench(group = "reserved-percent-encode", project = "Tomcat Embed Core", implementation = "UEncoder")
-    public void reservedPercentEncode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+    public void reservedPercentEncode(FlowBenchResult benchResult, int numberOfEntities) {
         ControlFlowBenchUtil.checkReservedPercentEncode(benchResult, numberOfEntities, wrappedURLEncoder);
     }
 
     @FlowBench(group = "reserved-percent-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
-    public void reservedPercentDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+    public void reservedPercentDecode(FlowBenchResult benchResult, int numberOfEntities) {
         ControlFlowBenchUtil.checkReservedPercentDecode(benchResult, numberOfEntities, wrappedURLDecoder);
     }
 }

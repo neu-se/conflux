@@ -1,22 +1,20 @@
 package edu.neu.ccs.conflux.bench;
 
 import edu.neu.ccs.conflux.FlowBenchUtil;
-import edu.neu.ccs.conflux.internal.runtime.FlowBenchResultImpl;
-
-import static edu.neu.ccs.conflux.FlowBenchUtil.taintWithIndices;
+import edu.neu.ccs.conflux.internal.runtime.FlowBenchResult;
 
 public class ExampleFlowBench {
 
 
     //@FlowBench(group = "example", project = "example", implementation = "example")
-    public void spaceDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+    public void spaceDecode(FlowBenchResult benchResult, int numberOfEntities) {
         char[] input = "Hello+World".toCharArray();
         FlowBenchUtil.taintWithIndices(input);
         char[] output = spaceDecode(input);
     }
 
     //@FlowBench(group = "example2", project = "example2", implementation = "example2")
-    public void percentDecode(FlowBenchResultImpl benchResult, int numberOfEntities) {
+    public void percentDecode(FlowBenchResult benchResult, int numberOfEntities) {
         char[] input = "%48%69%21".toCharArray();
         FlowBenchUtil.taintWithIndices(input);
         char[] output = percentDecode(input);

@@ -5,7 +5,7 @@ import com.google.javascript.jscomp.Compiler;
 import com.google.javascript.jscomp.CompilerOptions;
 import com.google.javascript.jscomp.SourceFile;
 import edu.neu.ccs.conflux.FlowBench;
-import edu.neu.ccs.conflux.internal.runtime.FlowBenchResultImpl;
+import edu.neu.ccs.conflux.internal.runtime.FlowBenchResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -20,8 +20,7 @@ public class ClosureFlowStudy {
     }
 
     //@FlowExperiment(project="closure", issue=652)
-    @FlowBench(group = "-", project = "-", implementation = "-")
-    public void example(FlowBenchResultImpl benchResult, int ignored) {
+    public void example(FlowBenchResult benchResult) {
         String code = taintWithIndices("%48%69%21");
         Compiler compiler = new Compiler(new PrintStream(new ByteArrayOutputStream(), false));
         SourceFile extern = SourceFile.fromCode("extern", "");
