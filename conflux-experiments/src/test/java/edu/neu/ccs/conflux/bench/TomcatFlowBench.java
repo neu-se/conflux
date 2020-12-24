@@ -1,7 +1,7 @@
 package edu.neu.ccs.conflux.bench;
 
-import edu.neu.ccs.conflux.FlowBench;
-import edu.neu.ccs.conflux.internal.runtime.FlowBenchResult;
+import edu.neu.ccs.conflux.internal.FlowBench;
+import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
 import org.apache.tomcat.util.buf.ByteChunk;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.apache.tomcat.util.buf.UDecoder;
@@ -33,27 +33,27 @@ public class TomcatFlowBench {
     };
 
     @FlowBench(group = "hex-encode", project = "Tomcat Embed Core", implementation = "HexUtils")
-    public void hexEncode(FlowBenchResult benchResult, int numberOfEntities) {
-        ControlFlowBenchUtil.checkHexEncode(benchResult, numberOfEntities, HexUtils::toHexString);
+    public void hexEncode(TaintTagChecker checker, int numberOfEntities) {
+        ControlFlowBenchUtil.checkHexEncode(checker, numberOfEntities, HexUtils::toHexString);
     }
 
     @FlowBench(group = "hex-decode", project = "Tomcat Embed Core", implementation = "HexUtils")
-    public void hexDecode(FlowBenchResult benchResult, int numberOfEntities) {
-        ControlFlowBenchUtil.checkHexDecode(benchResult, numberOfEntities, HexUtils::fromHexString);
+    public void hexDecode(TaintTagChecker checker, int numberOfEntities) {
+        ControlFlowBenchUtil.checkHexDecode(checker, numberOfEntities, HexUtils::fromHexString);
     }
 
     @FlowBench(group = "spaces-url-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
-    public void spacesUrlDecode(FlowBenchResult benchResult, int numberOfEntities) {
-        ControlFlowBenchUtil.checkSpacesUrlDecode(benchResult, numberOfEntities, wrappedURLDecoder);
+    public void spacesUrlDecode(TaintTagChecker checker, int numberOfEntities) {
+        ControlFlowBenchUtil.checkSpacesUrlDecode(checker, numberOfEntities, wrappedURLDecoder);
     }
 
     @FlowBench(group = "reserved-percent-encode", project = "Tomcat Embed Core", implementation = "UEncoder")
-    public void reservedPercentEncode(FlowBenchResult benchResult, int numberOfEntities) {
-        ControlFlowBenchUtil.checkReservedPercentEncode(benchResult, numberOfEntities, wrappedURLEncoder);
+    public void reservedPercentEncode(TaintTagChecker checker, int numberOfEntities) {
+        ControlFlowBenchUtil.checkReservedPercentEncode(checker, numberOfEntities, wrappedURLEncoder);
     }
 
     @FlowBench(group = "reserved-percent-decode", project = "Tomcat Embed Core", implementation = "UDecoder")
-    public void reservedPercentDecode(FlowBenchResult benchResult, int numberOfEntities) {
-        ControlFlowBenchUtil.checkReservedPercentDecode(benchResult, numberOfEntities, wrappedURLDecoder);
+    public void reservedPercentDecode(TaintTagChecker checker, int numberOfEntities) {
+        ControlFlowBenchUtil.checkReservedPercentDecode(checker, numberOfEntities, wrappedURLDecoder);
     }
 }

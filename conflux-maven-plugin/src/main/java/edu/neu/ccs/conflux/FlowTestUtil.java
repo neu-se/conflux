@@ -3,7 +3,7 @@ package edu.neu.ccs.conflux;
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 
-public class FlowBenchUtil {
+public class FlowTestUtil {
 
     public static String taintWithIndices(String input) {
         return taintWithIndices(input, 0, input.length());

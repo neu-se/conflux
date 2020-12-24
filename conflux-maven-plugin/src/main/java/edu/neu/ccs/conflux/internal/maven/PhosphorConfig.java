@@ -11,6 +11,18 @@ public class PhosphorConfig {
     public Properties options = new Properties();
     public File instrumentedJVM = null;
 
+    public String getName() {
+        return name;
+    }
+
+    public Properties getOptions() {
+        return options;
+    }
+
+    public File getInstrumentedJVM() {
+        return instrumentedJVM;
+    }
+
     @Override
     public String toString() {
         return "PhosphorConfig{" +

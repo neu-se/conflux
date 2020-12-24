@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.util;
+package edu.neu.ccs.conflux.internal.maven;
 
 import java.io.PrintStream;
 import java.util.ArrayList;

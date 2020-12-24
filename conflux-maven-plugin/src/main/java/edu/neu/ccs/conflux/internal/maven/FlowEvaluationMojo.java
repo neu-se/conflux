@@ -3,6 +3,7 @@ package edu.neu.ccs.conflux.internal.maven;
 import edu.columbia.cs.psl.phosphor.PhosphorOption;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 import edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil;
+import edu.neu.ccs.conflux.internal.FlowEvaluationRunner;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -28,74 +29,69 @@ import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.getPhosp
 public class FlowEvaluationMojo extends AbstractMojo {
 
     /**
-     * Name of the directory used to store results from the different configurations
+     * Name of the directory used to store results for the different configurations.
      */
     private static final String REPORT_DIRECTORY = "flow-reports";
     /**
-     * Name of the file used to store the Phosphor configuration options used for a particular cache directory
+     * Name of the file used to store the Phosphor configuration options used for a particular cache directory.
      */
     private static final String PHOSPHOR_CACHE_PROPERTIES_FILE = "phosphor-cache-properties";
     /**
-     * String argument used to tell "forked" JVMs to wait for a debugger
+     * String argument used to tell forked JVMs to wait for a debugger.
      */
     private static final String DEBUG_ARG = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
     /**
-     * Configuration option name used by Phosphor to specify a cache directory for instrumented files
+     * Configuration option name used by Phosphor to specify a cache directory for instrumented files.
      */
     private static final String phosphorCacheDirectoryOptionName = PhosphorOption.CACHE_DIR.createOption().getOpt();
     /**
-     * True if "forked" JVMs should wait for a debugger
+     * True if forked JVMs should wait for a debugger.
      */
-    private static final boolean debugForks = Boolean.getBoolean("phosphor.flow.bench.debug");
+    private static final boolean debugForks = Boolean.getBoolean("flow.bench.debug");
     /**
-     * The name of the Phosphor configuration to be run or null if all of the configurations should be run
+     * The name of the Phosphor configuration to be run or null if all of the configurations should be run.
      */
     private static final String selectedConfig = System.getProperty("flow.config", null);
     /**
-     * Maven build output directory
+     * Maven build output directory.
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File buildDir;
     /**
-     * The project being benchmarked
+     * The project being evaluated.
      */
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
     /**
-     * The directory containing generated test classes of the project being benchmarked
+     * The directory containing generated test classes of the project being evaluated.
      */
     @Parameter(defaultValue = "${project.build.testOutputDirectory}", readonly = true)
     private File testClassesDirectory;
     /**
-     * Phosphor configurations to be benchmarked
+     * Phosphor configurations to be evaluated.
      */
     @Parameter(property = "phosphorConfigurations", readonly = true, required = true)
     private List<PhosphorConfig> phosphorConfigurations;
     /**
-     * List of paths to any JAR files, other than the JAR file for Phosphor, that need to be added to the bootclasspath
+     * List of paths to any JAR files, other than the JAR file for Phosphor, that need to be added to the bootclasspath.
      */
     @Parameter(property = "bootClasspathJars", readonly = true)
     private List<String> bootClasspathJars;
     /**
-     * True if execution times should be reported in tables
-     */
-    @Parameter(property = "reportExecutionTime", readonly = true, defaultValue = "false")
-    private boolean reportExecutionTime;
-    /**
-     * Lengths of tainted inputs to be used in the generated plots
+     * Lengths of tainted inputs to be used in the generated plots.
      */
     @Parameter(property = "plotNumbersOfEntities", readonly = true)
     private Set<Integer> plotNumbersOfEntities;
     /**
-     * Length of tainted inputs to be used in the generated table
+     * Length of tainted inputs to be used in the generated table.
      */
     @Parameter(property = "tableNumberOfEntities", readonly = true)
     private int tableNumberOfEntities;
 
     /**
-     * Runs flow benchmarks with different Phosphor configurations and reports the results to standard out.
+     * Runs evaluations with different Phosphor configurations and reports the results to standard out.
      *
-     * @throws MojoFailureException if benchmarks fail to run
+     * @throws MojoFailureException if evaluations fail to run
      */
     @Override
     public void execute() throws MojoFailureException {
@@ -108,13 +104,23 @@ public class FlowEvaluationMojo extends AbstractMojo {
         try {
             File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
             PhosphorInstrumentUtil.createOrCleanDirectory(reportDirectory);
-            List<File> reportFiles = runBenchmarks(reportDirectory);
-            FlowBenchmarkFullReport fullReport = new FlowBenchmarkFullReport(getConfigurationNames(), reportFiles,
-                    reportExecutionTime, plotNumbersOfEntities, tableNumberOfEntities);
-            fullReport.printResultsTable();
-            fullReport.writeLatexResults(buildDir);
+            List<File> reportFiles = new LinkedList<>();
+            boolean success = runEvaluations(reportDirectory, reportFiles);
+            if (success) {
+                List<String> configurationNames = new ArrayList<>();
+                for (PhosphorConfig config : phosphorConfigurations) {
+                    configurationNames.add(config.getName());
+                }
+                ReportManager reportManager = new ReportManager(configurationNames, reportFiles,
+                        plotNumbersOfEntities, tableNumberOfEntities);
+                reportManager.printBenchResultsTable();
+                reportManager.printStudyResultsTable();
+                reportManager.writeLatexResults(buildDir);
+            } else {
+                throw new MojoFailureException("Failed to evaluation configurations");
+            }
         } catch (InterruptedException | IOException e) {
-            throw new MojoFailureException("Failed to benchmark configurations", e);
+            throw new MojoFailureException("Failed to evaluation configurations", e);
         } catch (DependencyResolutionRequiredException e) {
             throw new MojoFailureException("A required dependency could not be resolved", e);
         }
@@ -140,18 +146,8 @@ public class FlowEvaluationMojo extends AbstractMojo {
     }
 
     /**
-     * @return list of names for the Phosphor configurations being benchmarked in the order they are benchmarked
-     */
-    private List<String> getConfigurationNames() {
-        List<String> names = new LinkedList<>();
-        for(PhosphorConfig config : phosphorConfigurations) {
-            names.add(config.name);
-        }
-        return names;
-    }
-
-    /**
-     * Validates phosphorConfigurations to ensure that configurations have valid names and instrumented JVM directories.
+     * Validates phosphorConfigurations to ensure that configurations have valid names and instrumented
+     * JVM directories.
      * Canonicalizes the phosphorConfigurations' properties.
      *
      * @throws MojoFailureException if a PhosphorConfig in phosphorConfigurations has an invalid name or instrumentedJVM
@@ -220,18 +216,19 @@ public class FlowEvaluationMojo extends AbstractMojo {
     }
 
     /**
-     * Runs flow benchmarks in isolated Phosphor-instrumented JVMs.
+     * Runs flow evaluations in isolated Phosphor-instrumented JVMs.
      *
-     * @param reportDirectory directory to which .json benchmarks reports should be written
-     * @return a list of the files to which benchmark results were written
+     * @param reportDirectory directory to which evaluation reports should be written
+     * @param reportFiles     list to which files containing evaluation reports should be written
+     * @return true if all of the evaluations completed successfully
      * @throws IOException                           if an I/O error occurs
-     * @throws InterruptedException                  if a thread interrupts this thread while it is waiting for a benchmark process to
-     *                                               finish
+     * @throws InterruptedException                  if a thread interrupts this thread while it is waiting for an
+     *                                               evaluation process to finish
      * @throws DependencyResolutionRequiredException if a required dependency could not be resolved
      */
-    private List<File> runBenchmarks(File reportDirectory) throws IOException, InterruptedException,
-            DependencyResolutionRequiredException {
-        List<File> reportFiles = new LinkedList<>();
+    private boolean runEvaluations(File reportDirectory, List<File> reportFiles) throws IOException,
+            InterruptedException, DependencyResolutionRequiredException {
+        boolean success = true;
         for (PhosphorConfig config : phosphorConfigurations) {
             File cacheDir = getCacheDir(config);
             if (!isExistingCacheDirectory(cacheDir, config.options)) {
@@ -244,25 +241,27 @@ public class FlowEvaluationMojo extends AbstractMojo {
                 getLog().info("Using existing Phosphor cache directory: " + cacheDir);
             }
             File reportFile = new File(reportDirectory, config.name + ".json");
-            getLog().info("Running flow benchmarks for Phosphor configuration: " + config.name);
-            forkBenchmarkRunner(config.instrumentedJVM, config.options, reportFile);
+            getLog().info("Running evaluation for Phosphor configuration: " + config.name);
+            success &= runEvaluation(config.instrumentedJVM, config.options, reportFile);
             reportFiles.add(reportFile);
         }
-        return reportFiles;
+        return success;
     }
 
     /**
-     * Runs benchmarks for a particular Phosphor configuration is a separate process.
+     * Evaluates a Phosphor configuration is a separate process.
      *
-     * @param instrumentedJVM directory of the instrumented JVM that should be used to run the benchmark
-     * @param properties      canonicalized properties that specify the Phosphor configuration options that should be used
-     *                        in the fork
+     * @param instrumentedJVM directory of the instrumented JVM that should be used to run the evaluation
+     * @param properties      canonicalized properties that specify the Phosphor configuration options that should be
+     *                        used in the fork
      * @param reportFile      file to which created process should write its json report
-     * @throws InterruptedException                  if a thread interrupts this thread while it is waiting for the benchmark process to finish
+     * @return true if the forked process return successfully
+     * @throws InterruptedException                  if a thread interrupts this thread while it is waiting for the
+     *                                               evaluation process to finish
      * @throws IOException                           if an I/O error occurs
      * @throws DependencyResolutionRequiredException if a required dependency could not be resolved
      */
-    private void forkBenchmarkRunner(File instrumentedJVM, Properties properties, File reportFile)
+    private boolean runEvaluation(File instrumentedJVM, Properties properties, File reportFile)
             throws InterruptedException, IOException, DependencyResolutionRequiredException {
         String javaCommand = new File(instrumentedJVM, "bin" + File.separator + "java").getAbsolutePath();
         List<String> commands = new LinkedList<>();
@@ -281,7 +280,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
         if (debugForks) {
             commands.add(DEBUG_ARG);
         }
-        commands.add(ForkedFlowBenchmarkRunner.class.getName());
+        commands.add(FlowEvaluationRunner.class.getName());
         commands.add(testClassesDirectory.getAbsolutePath());
         commands.add(reportFile.getAbsolutePath());
         Set<Integer> allNumberOfEntities = new HashSet<>(plotNumbersOfEntities);
@@ -291,7 +290,9 @@ public class FlowEvaluationMojo extends AbstractMojo {
         }
         Process process = new ProcessBuilder(commands).inheritIO().start();
         if (process.waitFor() != 0) {
-            getLog().error("Error in flow benchmark process");
+            getLog().error("Error in flow evaluation process");
+            return false;
         }
+        return true;
     }
 }

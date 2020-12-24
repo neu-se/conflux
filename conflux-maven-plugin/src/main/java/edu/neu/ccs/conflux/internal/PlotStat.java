@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.runtime;
+package edu.neu.ccs.conflux.internal;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
