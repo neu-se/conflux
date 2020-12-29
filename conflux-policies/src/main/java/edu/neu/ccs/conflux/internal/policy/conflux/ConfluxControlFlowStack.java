@@ -1,34 +1,34 @@
-package edu.neu.ccs.conflux.internal.policy.binding;
+package edu.neu.ccs.conflux.internal.policy.conflux;
 
-import edu.columbia.cs.psl.phosphor.control.ControlFlowStack;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashMap;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
+import edu.neu.ccs.conflux.internal.policy.exception.ExceptionTrackingControlFlowStack;
 
-public final class BindingControlFlowStack<E> extends ControlFlowStack {
+public final class ConfluxControlFlowStack<E> extends ExceptionTrackingControlFlowStack<E> {
 
     @SuppressWarnings("rawtypes")
-    private static final BindingControlFlowStack disabledInstance = new BindingControlFlowStack(true);
+    private static final ConfluxControlFlowStack disabledInstance = new ConfluxControlFlowStack(true);
     private static final int NOT_PUSHED = -1;
     private ControlFrame<E> stackTop;
     private final ControlFrameBuilder<E> frameBuilder;
     private Taint<E> nextBranchTag;
 
-    public BindingControlFlowStack() {
+    public ConfluxControlFlowStack() {
         this(false);
     }
 
-    public BindingControlFlowStack(boolean disabled) {
+    public ConfluxControlFlowStack(boolean disabled) {
         super(disabled);
         stackTop = new ControlFrame<>(0, null, null);
         frameBuilder = new ControlFrameBuilder<>();
         nextBranchTag = Taint.emptyTaint();
     }
 
-    private BindingControlFlowStack(BindingControlFlowStack<E> stack) {
-        super(stack.isDisabled());
+    private ConfluxControlFlowStack(ConfluxControlFlowStack<E> stack) {
+        super(stack);
         stackTop = new ControlFrame<>(stack.stackTop.invocationLevel, stack.stackTop.argumentStabilityLevels, null);
         stackTop.levelStackMap.putAll(stack.stackTop.levelStackMap);
         frameBuilder = stack.frameBuilder.copy();
@@ -36,8 +36,8 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
     }
 
     @Override
-    public BindingControlFlowStack<E> copyTop() {
-        return new BindingControlFlowStack<>(this);
+    public ConfluxControlFlowStack<E> copyTop() {
+        return new ConfluxControlFlowStack<>(this);
     }
 
     @Override
@@ -45,22 +45,22 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
         frameBuilder.reset();
     }
 
-    public BindingControlFlowStack<E> startFrame(int invocationLevel, int numArguments) {
+    public ConfluxControlFlowStack<E> startFrame(int invocationLevel, int numArguments) {
         frameBuilder.start(invocationLevel, numArguments);
         return this;
     }
 
-    public BindingControlFlowStack<E> setNextFrameArgStable() {
+    public ConfluxControlFlowStack<E> setNextFrameArgStable() {
         frameBuilder.setNextArgLevel(0);
         return this;
     }
 
-    public BindingControlFlowStack<E> setNextFrameArgDependent(int[] dependencies) {
+    public ConfluxControlFlowStack<E> setNextFrameArgDependent(int[] dependencies) {
         frameBuilder.setNextArgLevel(getLevel(dependencies));
         return this;
     }
 
-    public BindingControlFlowStack<E> setNextFrameArgUnstable(int levelOffset) {
+    public ConfluxControlFlowStack<E> setNextFrameArgUnstable(int levelOffset) {
         frameBuilder.setNextArgLevel(getLevel(levelOffset));
         return this;
     }
@@ -301,11 +301,11 @@ public final class BindingControlFlowStack<E> extends ControlFlowStack {
     }
 
     @SuppressWarnings("unchecked")
-    public static <E> BindingControlFlowStack<E> factory(boolean disabled) {
-        if(disabled) {
+    public static <E> ConfluxControlFlowStack<E> factory(boolean disabled) {
+        if (disabled) {
             return disabledInstance;
         } else {
-            return new BindingControlFlowStack<>(false);
+            return new ConfluxControlFlowStack<>(false);
         }
     }
 }

@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.policy.binding.tracer;
+package edu.neu.ccs.conflux.internal.policy.conflux.tracer;
 
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Collections;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;

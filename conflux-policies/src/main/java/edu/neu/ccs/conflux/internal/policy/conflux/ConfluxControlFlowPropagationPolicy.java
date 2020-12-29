@@ -1,20 +1,23 @@
-package edu.neu.ccs.conflux.internal.policy.binding;
+package edu.neu.ccs.conflux.internal.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.PhosphorInstructionInfo;
 import edu.columbia.cs.psl.phosphor.control.AbstractControlFlowPropagationPolicy;
 import edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy;
 import edu.columbia.cs.psl.phosphor.control.standard.BranchEnd;
+import edu.columbia.cs.psl.phosphor.control.standard.ExceptionHandlerStart;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.MethodVisitor;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
+import edu.neu.ccs.conflux.internal.policy.exception.MaybeThrownException;
 
 import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.push;
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.COMBINE_TAGS;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionTrackingMethodRecord.EXCEPTION_HANDLER_START;
 
-public class BindingControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<BindingControlFlowAnalyzer> {
+public class ConfluxControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<ConfluxControlFlowAnalyzer> {
 
     private static final LoopLevel defaultLevel = LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
 
@@ -31,7 +34,7 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
 
     private FrameLoopStabilityInfo nextMethodFrameInfo = null;
 
-    public BindingControlFlowPropagationPolicy(BindingControlFlowAnalyzer flowAnalyzer) {
+    public ConfluxControlFlowPropagationPolicy(ConfluxControlFlowAnalyzer flowAnalyzer) {
         super(flowAnalyzer);
     }
 
@@ -54,7 +57,7 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
             // Start the frame and set the argument levels
             ControlFlowPropagationPolicy.push(delegate, nextMethodFrameInfo.getInvocationLevel());
             ControlFlowPropagationPolicy.push(delegate, nextMethodFrameInfo.getNumArguments());
-            BindingMethodRecord.BINDING_CONTROL_STACK_START_FRAME.delegateVisit(delegate);
+            ConfluxMethodRecord.CONFLUX_CONTROL_STACK_START_FRAME.delegateVisit(delegate);
             Iterator<LoopLevel> argLevels = nextMethodFrameInfo.getLevelIterator();
             while(argLevels.hasNext()) {
                 argLevels.next().setArgument(delegate);
@@ -164,28 +167,34 @@ public class BindingControlFlowPropagationPolicy extends AbstractControlFlowProp
     private void setNextBranchTag() {
         delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
         delegate.visitInsn(SWAP);
-        BindingMethodRecord.BINDING_CONTROL_STACK_SET_NEXT_BRANCH_TAG.delegateVisit(delegate);
+        ConfluxMethodRecord.CONFLUX_CONTROL_STACK_SET_NEXT_BRANCH_TAG.delegateVisit(delegate);
     }
 
     @Override
     public void visitingPhosphorInstructionInfo(PhosphorInstructionInfo info) {
-        if(info instanceof ExitLoopLevelInfo) {
+        if (info instanceof ExitLoopLevelInfo) {
             delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
             push(delegate, ((ExitLoopLevelInfo) info).getLevelOffset());
-            BindingMethodRecord.BINDING_CONTROL_STACK_EXIT_LOOP_LEVEL.delegateVisit(delegate);
-        } else if(info instanceof BranchEnd) {
+            ConfluxMethodRecord.CONFLUX_CONTROL_STACK_EXIT_LOOP_LEVEL.delegateVisit(delegate);
+        } else if (info instanceof BranchEnd) {
             delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
             push(delegate, ((BranchEnd) info).getBranchID());
-            BindingMethodRecord.BINDING_CONTROL_STACK_POP.delegateVisit(delegate);
-        } else if(info instanceof BindingBranchStart) {
+            ConfluxMethodRecord.CONFLUX_CONTROL_STACK_POP.delegateVisit(delegate);
+        } else if (info instanceof ConfluxBranchStart) {
             delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
-            push(delegate, ((BindingBranchStart) info).getBranchID());
+            push(delegate, ((ConfluxBranchStart) info).getBranchID());
             push(delegate, numberOfUniqueBranchIDs);
-            ((BindingBranchStart) info).getLevel().pushTag(delegate);
-        } else if(info instanceof CopyTagInfo) {
+            ((ConfluxBranchStart) info).getLevel().pushTag(delegate);
+        } else if (info instanceof CopyTagInfo) {
             nextCopyTagInfo = ((CopyTagInfo) info).getLevel();
-        } else if(info instanceof FrameLoopStabilityInfo) {
+        } else if (info instanceof FrameLoopStabilityInfo) {
             nextMethodFrameInfo = (FrameLoopStabilityInfo) info;
+        } else if (info instanceof ExceptionHandlerStart) {
+            delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
+            delegate.visitInsn(SWAP);
+            EXCEPTION_HANDLER_START.delegateVisit(delegate);
+        } else if (info instanceof MaybeThrownException) {
+            ((MaybeThrownException) info).visit(delegate, localVariableManager, analyzer);
         }
     }
 

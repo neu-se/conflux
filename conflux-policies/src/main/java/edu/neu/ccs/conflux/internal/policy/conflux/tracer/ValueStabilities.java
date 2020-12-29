@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.policy.binding.tracer;
+package edu.neu.ccs.conflux.internal.policy.conflux.tracer;
 
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;

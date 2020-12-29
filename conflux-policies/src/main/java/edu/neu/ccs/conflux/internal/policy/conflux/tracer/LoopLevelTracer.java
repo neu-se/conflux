@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.policy.binding.tracer;
+package edu.neu.ccs.conflux.internal.policy.conflux.tracer;
 
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
@@ -11,11 +11,11 @@ import edu.neu.ccs.conflux.internal.policy.ssa.PropagatingVisitor;
 import edu.neu.ccs.conflux.internal.policy.ssa.SSAMethod;
 import edu.neu.ccs.conflux.internal.policy.ssa.expression.*;
 import edu.neu.ccs.conflux.internal.policy.ssa.statement.*;
-import edu.neu.ccs.conflux.internal.policy.binding.FrameLoopStabilityInfo;
-import edu.neu.ccs.conflux.internal.policy.binding.LoopLevel;
+import edu.neu.ccs.conflux.internal.policy.conflux.FrameLoopStabilityInfo;
+import edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel;
 import java.util.function.Predicate;
 
-import static edu.neu.ccs.conflux.internal.policy.binding.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
+import static edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
 
 public class LoopLevelTracer {
 

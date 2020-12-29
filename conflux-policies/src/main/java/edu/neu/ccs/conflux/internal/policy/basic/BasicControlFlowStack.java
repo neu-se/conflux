@@ -1,14 +1,15 @@
 package edu.neu.ccs.conflux.internal.policy.basic;
 
-import edu.columbia.cs.psl.phosphor.control.ControlFlowStack;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
+import edu.neu.ccs.conflux.internal.policy.exception.ExceptionTrackingControlFlowStack;
 
-public class BasicControlFlowStack<E> extends ControlFlowStack {
+public class BasicControlFlowStack<E> extends ExceptionTrackingControlFlowStack<E> {
 
     @SuppressWarnings("rawtypes")
     private static final BasicControlFlowStack disabledInstance = new BasicControlFlowStack(true);
     private final SinglyLinkedList<Taint<E>> taintHistory = new SinglyLinkedList<>();
+    private Taint<E> instructionExceptionTag = Taint.emptyTaint();
 
     public BasicControlFlowStack(boolean disabled) {
         super(disabled);
@@ -16,8 +17,21 @@ public class BasicControlFlowStack<E> extends ControlFlowStack {
     }
 
     protected BasicControlFlowStack(BasicControlFlowStack<E> other) {
-        super(other.isDisabled());
+        super(other);
         taintHistory.push(other.taintHistory.peek());
+        instructionExceptionTag = other.instructionExceptionTag;
+    }
+
+    public void setInstructionExceptionTag(Taint<E> instructionExceptionTag) {
+        this.instructionExceptionTag = Taint.combineTags(instructionExceptionTag, copyTag());
+    }
+
+    /**
+     * Called at the start of an exception handler.
+     * Returns the taint tag for the handled exception.
+     */
+    public Taint<E> exceptionHandlerStart(Taint<E> handledExceptionTag) {
+        return Taint.combineTags(instructionExceptionTag, handledExceptionTag);
     }
 
     @Override
@@ -29,9 +43,10 @@ public class BasicControlFlowStack<E> extends ControlFlowStack {
     public void reset() {
         int size = taintHistory.size();
         taintHistory.clear();
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             taintHistory.push(Taint.emptyTaint());
         }
+        instructionExceptionTag = Taint.emptyTaint();
     }
 
     @Override

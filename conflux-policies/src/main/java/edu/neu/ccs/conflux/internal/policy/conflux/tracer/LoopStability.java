@@ -1,10 +1,10 @@
-package edu.neu.ccs.conflux.internal.policy.binding.tracer;
+package edu.neu.ccs.conflux.internal.policy.conflux.tracer;
 
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.struct.BitSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
-import edu.neu.ccs.conflux.internal.policy.binding.LoopLevel;
+import edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel;
 import edu.neu.ccs.conflux.internal.policy.ssa.expression.ParameterExpression;
 
 interface LoopStability {

@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.policy.binding;
+package edu.neu.ccs.conflux.internal.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.control.ControlFlowAnalyzer;
 import edu.columbia.cs.psl.phosphor.control.OpcodesUtil;
@@ -10,15 +10,16 @@ import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.neu.ccs.conflux.internal.policy.BranchEdge;
 import edu.neu.ccs.conflux.internal.policy.FlowGraphUtil;
-import edu.neu.ccs.conflux.internal.policy.binding.tracer.LoopLevelTracer;
+import edu.neu.ccs.conflux.internal.policy.conflux.tracer.LoopLevelTracer;
 import edu.neu.ccs.conflux.internal.policy.ssa.SSAMethod;
 import edu.neu.ccs.conflux.internal.policy.ssa.TypeAnalyzer;
 
 import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionMarkingAnalyzer.MARKER;
 
-public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
+public class ConfluxControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     /**
      * The instructions of the method being analyzed
@@ -71,6 +72,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
             } catch(AnalyzerException e) {
                 //
             }
+            MARKER.annotate(owner, methodNode);
         }
     }
 
@@ -181,7 +183,7 @@ public class BindingControlFlowAnalyzer implements ControlFlowAnalyzer {
 
         @Override
         public AbstractInsnNode createScopeStartNode() {
-            return new LdcInsnNode(new BindingBranchStart(level, getBranchId()));
+            return new LdcInsnNode(new ConfluxBranchStart(level, getBranchId()));
         }
 
         boolean hasNonEmptyScope(FlowGraph<BasicBlock> cfg) {

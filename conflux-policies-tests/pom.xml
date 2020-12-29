@@ -13,7 +13,7 @@
         <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
         <conflux.jvm>jvm-inst-conflux</conflux.jvm>
         <conflux.control.manager>
-            edu.neu.ccs.conflux.internal.policy.binding.BindingControlFlowManager
+            edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowManager
         </conflux.control.manager>
     </properties>
     <build>

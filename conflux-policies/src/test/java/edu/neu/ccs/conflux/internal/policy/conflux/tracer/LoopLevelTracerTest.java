@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.policy.binding.tracer;
+package edu.neu.ccs.conflux.internal.policy.conflux.tracer;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
@@ -7,17 +7,17 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.LinkedList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
 import edu.neu.ccs.conflux.internal.policy.ssa.SSAMethod;
-import edu.neu.ccs.conflux.internal.policy.binding.LoopLevel;
-import edu.neu.ccs.conflux.internal.policy.binding.LoopLevel.DependentLoopLevel;
-import edu.neu.ccs.conflux.internal.policy.binding.LoopLevel.VariantLoopLevel;
+import edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel;
+import edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel.DependentLoopLevel;
+import edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel.VariantLoopLevel;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.function.Predicate;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
-import static edu.neu.ccs.conflux.internal.policy.binding.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
-import static edu.neu.ccs.conflux.internal.policy.binding.tracer.LoopLevelTracerTestMethods.OWNER;
+import static edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
+import static edu.neu.ccs.conflux.internal.policy.conflux.tracer.LoopLevelTracerTestMethods.OWNER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

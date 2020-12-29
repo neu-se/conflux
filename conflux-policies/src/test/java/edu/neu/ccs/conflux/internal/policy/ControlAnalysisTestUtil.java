@@ -24,6 +24,7 @@ public class ControlAnalysisTestUtil {
         }
         throw new NoSuchMethodException();
     }
+
     public static List<AbstractInsnNode> filterInstructions(MethodNode mn, Predicate<AbstractInsnNode> predicate) {
         List<AbstractInsnNode> filtered = new LinkedList<>();
         Iterator<AbstractInsnNode> itr = mn.instructions.iterator();

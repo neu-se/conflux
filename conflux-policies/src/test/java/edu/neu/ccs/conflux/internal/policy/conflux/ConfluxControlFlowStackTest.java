@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.policy.binding;
+package edu.neu.ccs.conflux.internal.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
@@ -8,18 +8,18 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class BindingControlFlowStackTest {
+public class ConfluxControlFlowStackTest {
 
     @Test
     public void testCopyTagEmptyStack() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         assertNullOrEmpty(ctrl.copyTagStable());
         assertNullOrEmpty(ctrl.copyTagUnstable(3));
     }
 
     @Test
     public void testCopyTagDifferentLevels() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 3);
         ctrl.setNextBranchTag(Taint.withLabel(1));
@@ -32,7 +32,7 @@ public class BindingControlFlowStackTest {
 
     @Test
     public void testExitLoop() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 3);
         ctrl.setNextBranchTag(Taint.withLabel(1));
@@ -43,7 +43,7 @@ public class BindingControlFlowStackTest {
 
     @Test
     public void testPushFramePushTag() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 1);
         ctrl.startFrame(0, 0).pushFrame();
@@ -54,7 +54,7 @@ public class BindingControlFlowStackTest {
 
     @Test
     public void testPushFramePushPopTag() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 1);
         ctrl.startFrame(0, 0).pushFrame();
@@ -66,7 +66,7 @@ public class BindingControlFlowStackTest {
 
     @Test
     public void testPushFrameOffset() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 1);
         ctrl.startFrame(1, 0).pushFrame();
@@ -78,7 +78,7 @@ public class BindingControlFlowStackTest {
 
     @Test
     public void testPopFrame() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 1);
         ctrl.startFrame(1, 0).pushFrame();
@@ -90,7 +90,7 @@ public class BindingControlFlowStackTest {
 
     @Test
     public void testReset() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.setNextBranchTag(Taint.withLabel(0));
         ctrl.pushStable(0, 1);
         ctrl.startFrame(1, 0).pushFrame();
@@ -109,7 +109,7 @@ public class BindingControlFlowStackTest {
 
     @Test
     public void testDependentCopy() {
-        BindingControlFlowStack<Object> ctrl = new BindingControlFlowStack<>();
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
         ctrl.startFrame(2, 2).setNextFrameArgStable().setNextFrameArgUnstable(1).pushFrame();
     }
 

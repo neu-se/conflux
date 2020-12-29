@@ -6,7 +6,7 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
-import edu.neu.ccs.conflux.internal.policy.binding.tracer.UseGatheringVisitor;
+import edu.neu.ccs.conflux.internal.policy.conflux.tracer.UseGatheringVisitor;
 import edu.neu.ccs.conflux.internal.policy.ssa.expression.*;
 import edu.neu.ccs.conflux.internal.policy.ssa.statement.AssignmentStatement;
 import edu.neu.ccs.conflux.internal.policy.ssa.statement.Statement;

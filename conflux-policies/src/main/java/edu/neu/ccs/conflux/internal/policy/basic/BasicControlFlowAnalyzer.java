@@ -15,6 +15,9 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionMarkingAnalyzer.MARKER;
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionMarkingAnalyzer.findNextPrecedableInstruction;
+
 public class BasicControlFlowAnalyzer implements ControlFlowAnalyzer {
 
     private int numberOfUniqueBranchIDs = 0;
@@ -26,18 +29,19 @@ public class BasicControlFlowAnalyzer implements ControlFlowAnalyzer {
     @Override
     public void annotate(String owner, MethodNode methodNode) {
         numberOfUniqueBranchIDs = 0;
-        if(methodNode.instructions.size() > 0) {
+        if (methodNode.instructions.size() > 0) {
             Set<Branch> branches = gatherBranches(methodNode);
             markBranchEnds(branches, methodNode.instructions);
             markBranchStarts(branches, methodNode.instructions);
             numberOfUniqueBranchIDs = branches.size();
+            MARKER.annotate(owner, methodNode);
         }
     }
 
     private void markBranchEnds(Set<Branch> branches, InsnList instructions) {
-        for(Branch branch : branches) {
+        for (Branch branch : branches) {
             BasicBlock scopeEnd = branch.immediatePostDominator;
-            if(!(scopeEnd instanceof DummyBasicBlock)) {
+            if (!(scopeEnd instanceof DummyBasicBlock)) {
                 AbstractInsnNode insn = findNextPrecedableInstruction(scopeEnd.getFirstInsn());
                 instructions.insertBefore(insn, new LdcInsnNode(new BranchEnd(branch.branchID)));
             }
@@ -51,13 +55,6 @@ public class BasicControlFlowAnalyzer implements ControlFlowAnalyzer {
         }
     }
 
-    private static AbstractInsnNode findNextPrecedableInstruction(AbstractInsnNode insn) {
-        while(insn.getType() == AbstractInsnNode.FRAME || insn.getType() == AbstractInsnNode.LINE
-                || insn.getType() == AbstractInsnNode.LABEL || insn.getOpcode() > 200) {
-            insn = insn.getNext();
-        }
-        return insn;
-    }
 
     private static Set<Branch> gatherBranches(MethodNode methodNode) {
         BranchGatheringGraphCreator graphCreator = new BranchGatheringGraphCreator();

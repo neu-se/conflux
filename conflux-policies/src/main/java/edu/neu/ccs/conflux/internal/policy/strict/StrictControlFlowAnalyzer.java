@@ -9,13 +9,14 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.MethodNode;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.analysis.AnalyzerException;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.neu.ccs.conflux.internal.policy.BranchEdge;
-import edu.neu.ccs.conflux.internal.policy.binding.BindingControlFlowAnalyzer;
+import edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowAnalyzer;
 import edu.neu.ccs.conflux.internal.policy.ssa.SSAMethod;
 import edu.neu.ccs.conflux.internal.policy.ssa.TypeAnalyzer;
 
 import java.util.Iterator;
 
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionMarkingAnalyzer.MARKER;
 
 /**
  * Choices:
@@ -56,6 +57,7 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
             } catch(AnalyzerException e) {
                 //
             }
+            MARKER.annotate(owner, methodNode);
         }
     }
 
@@ -142,7 +144,7 @@ public class StrictControlFlowAnalyzer implements ControlFlowAnalyzer {
         public Set<BranchEdge> getStrictEdges() {
             // Add switch edges where only one non-default case goes to a target basic block
             for(BasicBlock source : switchCaseEdges.keySet()) {
-                Set<BasicBlock> duplicates = BindingControlFlowAnalyzer.findDuplicateTargets(switchCaseEdges, switchDefaultEdges, source);
+                Set<BasicBlock> duplicates = ConfluxControlFlowAnalyzer.findDuplicateTargets(switchCaseEdges, switchDefaultEdges, source);
                 for(BasicBlock target : switchCaseEdges.get(source)) {
                     if(!duplicates.contains(target)) {
                         branchEdges.add(new BranchEdge(source, target, true));

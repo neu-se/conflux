@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.policy.binding;
+package edu.neu.ccs.conflux.internal.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.PhosphorInstructionInfo;
 import edu.columbia.cs.psl.phosphor.struct.SinglyLinkedList;

@@ -1,11 +1,11 @@
-package edu.neu.ccs.conflux.internal.policy.binding;
+package edu.neu.ccs.conflux.internal.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.MethodVisitor;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Arrays;
 
 import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.push;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
-import static edu.neu.ccs.conflux.internal.policy.binding.BindingMethodRecord.*;
+import static edu.neu.ccs.conflux.internal.policy.conflux.ConfluxMethodRecord.*;
 
 public interface LoopLevel {
 
@@ -31,17 +31,17 @@ public interface LoopLevel {
 
         @Override
         public void setArgument(MethodVisitor mv) {
-            BINDING_CONTROL_STACK_SET_ARG_STABLE.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_SET_ARG_STABLE.delegateVisit(mv);
         }
 
         @Override
         public void copyTag(MethodVisitor mv) {
-            BINDING_CONTROL_STACK_COPY_TAG_STABLE.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_COPY_TAG_STABLE.delegateVisit(mv);
         }
 
         @Override
         public void pushTag(MethodVisitor mv) {
-            BINDING_CONTROL_STACK_PUSH_STABLE.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_PUSH_STABLE.delegateVisit(mv);
         }
     }
 
@@ -78,19 +78,19 @@ public interface LoopLevel {
         @Override
         public void setArgument(MethodVisitor mv) {
             pushDependencies(mv);
-            BINDING_CONTROL_STACK_SET_ARG_DEPENDENT.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_SET_ARG_DEPENDENT.delegateVisit(mv);
         }
 
         @Override
         public void copyTag(MethodVisitor mv) {
             pushDependencies(mv);
-            BINDING_CONTROL_STACK_COPY_TAG_DEPENDENT.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_COPY_TAG_DEPENDENT.delegateVisit(mv);
         }
 
         @Override
         public void pushTag(MethodVisitor mv) {
             pushDependencies(mv);
-            BINDING_CONTROL_STACK_PUSH_DEPENDENT.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_PUSH_DEPENDENT.delegateVisit(mv);
         }
 
         private void pushDependencies(MethodVisitor mv) {
@@ -138,19 +138,19 @@ public interface LoopLevel {
         @Override
         public void setArgument(MethodVisitor mv) {
             push(mv, levelOffset);
-            BINDING_CONTROL_STACK_SET_ARG_UNSTABLE.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_SET_ARG_UNSTABLE.delegateVisit(mv);
         }
 
         @Override
         public void copyTag(MethodVisitor mv) {
             push(mv, levelOffset);
-            BINDING_CONTROL_STACK_COPY_TAG_UNSTABLE.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_COPY_TAG_UNSTABLE.delegateVisit(mv);
         }
 
         @Override
         public void pushTag(MethodVisitor mv) {
             push(mv, levelOffset);
-            BINDING_CONTROL_STACK_PUSH_UNSTABLE.delegateVisit(mv);
+            CONFLUX_CONTROL_STACK_PUSH_UNSTABLE.delegateVisit(mv);
         }
 
         public int getLevelOffset() {

@@ -23,7 +23,7 @@
         <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
         <conflux.jvm>jvm-inst-conflux</conflux.jvm>
         <conflux.manager>
-            edu.neu.ccs.conflux.internal.policy.binding.BindingControlFlowManager
+            edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowManager
         </conflux.manager>
         <!-- Strict Control -->
         <strict.control.cache>${project.build.directory}/strict-control-cache</strict.control.cache>

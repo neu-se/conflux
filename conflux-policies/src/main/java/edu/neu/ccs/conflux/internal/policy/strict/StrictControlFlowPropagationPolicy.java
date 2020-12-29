@@ -5,15 +5,18 @@ import edu.columbia.cs.psl.phosphor.control.AbstractControlFlowPropagationPolicy
 import edu.columbia.cs.psl.phosphor.control.LocalVariable;
 import edu.columbia.cs.psl.phosphor.control.standard.BranchEnd;
 import edu.columbia.cs.psl.phosphor.control.standard.BranchStart;
+import edu.columbia.cs.psl.phosphor.control.standard.ExceptionHandlerStart;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.MethodVisitor;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
+import edu.neu.ccs.conflux.internal.policy.exception.MaybeThrownException;
 
 import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.push;
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.COMBINE_TAGS;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.neu.ccs.conflux.internal.policy.basic.BasicMethodRecord.*;
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionTrackingMethodRecord.EXCEPTION_HANDLER_START;
 import static edu.neu.ccs.conflux.internal.policy.strict.StrictMethodRecord.STRICT_CONTROL_STACK_PUSH;
 import static edu.neu.ccs.conflux.internal.policy.strict.StrictMethodRecord.STRICT_CONTROL_STACK_SET_NEXT_BRANCH_TAG;
 
@@ -177,7 +180,7 @@ public class StrictControlFlowPropagationPolicy extends AbstractControlFlowPropa
 
     @Override
     public void visitingPhosphorInstructionInfo(PhosphorInstructionInfo info) {
-        if(info instanceof BranchStart) {
+        if (info instanceof BranchStart) {
             delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
             delegate.visitVarInsn(ALOAD, pushedBranchesIndex);
             push(delegate, ((BranchStart) info).getBranchID());
@@ -185,14 +188,20 @@ public class StrictControlFlowPropagationPolicy extends AbstractControlFlowPropa
             // control-stack [Z I I
             STRICT_CONTROL_STACK_PUSH.delegateVisit(delegate);
             delegate.visitVarInsn(ASTORE, pushedBranchesIndex);
-        } else if(info instanceof BranchEnd) {
-            if(pushedBranchesIndex != -1) {
+        } else if (info instanceof BranchEnd) {
+            if (pushedBranchesIndex != -1) {
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(ALOAD, pushedBranchesIndex);
                 push(delegate, ((BranchEnd) info).getBranchID());
                 // control-stack [Z I
                 BASIC_CONTROL_STACK_POP.delegateVisit(delegate);
             }
+        } else if (info instanceof ExceptionHandlerStart) {
+            delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
+            delegate.visitInsn(SWAP);
+            EXCEPTION_HANDLER_START.delegateVisit(delegate);
+        } else if (info instanceof MaybeThrownException) {
+            ((MaybeThrownException) info).visit(delegate, localVariableManager, analyzer);
         }
     }
 

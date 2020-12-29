@@ -1,12 +1,12 @@
-package edu.neu.ccs.conflux.internal.policy.binding;
+package edu.neu.ccs.conflux.internal.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.control.standard.BranchStart;
 
-public class BindingBranchStart extends BranchStart {
+public class ConfluxBranchStart extends BranchStart {
 
     private final LoopLevel level;
 
-    public BindingBranchStart(LoopLevel level, int branchID) {
+    public ConfluxBranchStart(LoopLevel level, int branchID) {
         super(branchID);
         if(level == null) {
             throw new NullPointerException();
@@ -22,10 +22,10 @@ public class BindingBranchStart extends BranchStart {
     public boolean equals(Object o) {
         if(this == o) {
             return true;
-        } else if(!(o instanceof BindingBranchStart) || !super.equals(o)) {
+        } else if(!(o instanceof ConfluxBranchStart) || !super.equals(o)) {
             return false;
         }
-        BindingBranchStart that = (BindingBranchStart) o;
+        ConfluxBranchStart that = (ConfluxBranchStart) o;
         return level.equals(that.level);
     }
 
