@@ -56,6 +56,10 @@ public class FlowReportingMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoFailureException {
         try {
+            File finalReportDirectory = new File(project.getBuild().getDirectory());
+            if (!finalReportDirectory.mkdirs()) {
+                throw new MojoFailureException("Failed to create directory for final reports");
+            }
             Set<File> reportFiles = reportDirectories.stream()
                     .map(File::listFiles)
                     .filter(Objects::nonNull)
@@ -75,7 +79,7 @@ public class FlowReportingMojo extends AbstractMojo {
             ReportManager reportManager = new ReportManager(report);
             reportManager.printBenchResultsTable();
             reportManager.printStudyResultsTable();
-            reportManager.writeLatexResults(new File(project.getBuild().getDirectory()));
+            reportManager.writeLatexResults(finalReportDirectory);
         } catch (IOException e) {
             throw new MojoFailureException("Failed to create or write flow report", e);
         }
@@ -107,6 +111,7 @@ public class FlowReportingMojo extends AbstractMojo {
             }
         }
         // Check that all of the benchmarks have entries for all of the plotNumbersOfEntities and tableNumberOfEntities
+        // values
         for (FlowReport report : configReportMap.values()) {
             for (BenchInfo benchmark : benchmarks) {
                 Map<Integer, RunResult> results = report.getBenchReports().get(benchmark);
