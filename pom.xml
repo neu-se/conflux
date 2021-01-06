@@ -158,6 +158,12 @@
                                 <goal>jar</goal>
                             </goals>
                         </execution>
+                        <execution>
+                            <id>attach-test-sources</id>
+                            <goals>
+                                <goal>test-jar</goal>
+                            </goals>
+                        </execution>
                     </executions>
                 </plugin>
                 <plugin>

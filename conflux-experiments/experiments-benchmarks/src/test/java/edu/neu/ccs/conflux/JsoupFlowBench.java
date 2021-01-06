@@ -1,10 +1,10 @@
-package edu.neu.ccs.conflux.bench;
+package edu.neu.ccs.conflux;
 
 import edu.neu.ccs.conflux.internal.FlowBench;
 import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
 import org.jsoup.nodes.Entities;
 
-import static edu.neu.ccs.conflux.bench.ControlFlowBenchUtil.checkHtmlEscape;
+import static edu.neu.ccs.conflux.ControlFlowBenchUtil.checkHtmlEscape;
 
 public class JsoupFlowBench {
 

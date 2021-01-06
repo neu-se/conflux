@@ -1,11 +1,11 @@
-package edu.neu.ccs.conflux.bench;
+package edu.neu.ccs.conflux;
 
 import edu.neu.ccs.conflux.internal.FlowBench;
 import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
 
 import static com.google.common.html.HtmlEscapers.htmlEscaper;
 import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
-import static edu.neu.ccs.conflux.bench.ControlFlowBenchUtil.*;
+import static edu.neu.ccs.conflux.ControlFlowBenchUtil.*;
 
 public class GuavaFlowBench {
 

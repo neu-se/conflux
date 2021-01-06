@@ -160,7 +160,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
     private static Type getTypeOfTop(NeverNullArgAnalyzerAdapter analyzer) {
         Object obj = analyzer.stack.get(analyzer.stack.size() - 1);
         if (obj instanceof String) {
-            return Type.getType("Ljava/lang/Object;");
+            return Type.getObjectType((String) obj);
         } else if (obj == Opcodes.INTEGER) {
             return Type.INT_TYPE;
         } else if (obj == Opcodes.FLOAT) {

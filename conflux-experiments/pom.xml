@@ -1,37 +1,57 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>conflux-experiments</artifactId>
+    <packaging>pom</packaging>
     <parent>
         <groupId>edu.neu.ccs.conflux</groupId>
         <artifactId>conflux</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
+    <modules>
+        <module>experiments-closure-v20140814</module>
+        <module>experiments-benchmarks</module>
+    </modules>
     <properties>
+        <main.build.directory>${project.build.directory}</main.build.directory>
         <!--  Data + Array Index   -->
         <data.array.index.jvm>jvm-inst-data-only</data.array.index.jvm>
         <data.array.index.cache>${project.build.directory}/data-only-cache</data.array.index.cache>
         <!-- Basic Control -->
         <basic.control.jvm>jvm-inst-basic-control</basic.control.jvm>
-        <basic.control.cache>${project.build.directory}/basic-control-cache</basic.control.cache>
         <basic.control.manager>
             edu.neu.ccs.conflux.internal.policy.basic.BasicControlFlowManager
         </basic.control.manager>
-        <!-- Conflux -->
-        <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
-        <conflux.jvm>jvm-inst-conflux</conflux.jvm>
-        <conflux.manager>
-            edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowManager
-        </conflux.manager>
+        <basic.control.cache>${project.build.directory}/basic-control-cache</basic.control.cache>
         <!-- Strict Control -->
-        <strict.control.cache>${project.build.directory}/strict-control-cache</strict.control.cache>
         <strict.control.jvm>jvm-inst-strict-control</strict.control.jvm>
         <strict.control.manager>
             edu.neu.ccs.conflux.internal.policy.strict.StrictControlFlowManager
         </strict.control.manager>
+        <strict.control.cache>${project.build.directory}/strict-control-cache</strict.control.cache>
+        <!-- Conflux -->
+        <conflux.jvm>jvm-inst-conflux</conflux.jvm>
+        <conflux.manager>
+            edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowManager
+        </conflux.manager>
+        <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
     </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <profiles>
         <profile>
             <id>evaluate</id>
@@ -52,7 +72,7 @@
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
-                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
+                                    <targetBaseDir>${main.build.directory}</targetBaseDir>
                                     <targetName>${data.array.index.jvm}</targetName>
                                     <options>
                                         <forceUnboxAcmpEq/>
@@ -62,9 +82,6 @@
                                         <withHeavyObjEqualsHashcode/>
                                         <quiet/>
                                     </options>
-                                    <associatedCaches>
-                                        <associatedCache>${data.array.index.cache}</associatedCache>
-                                    </associatedCaches>
                                 </configuration>
                             </execution>
                             <execution>
@@ -73,7 +90,7 @@
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
-                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
+                                    <targetBaseDir>${main.build.directory}</targetBaseDir>
                                     <targetName>${basic.control.jvm}</targetName>
                                     <options>
                                         <quiet/>
@@ -84,9 +101,6 @@
                                         <reenableCaches/>
                                         <withHeavyObjEqualsHashcode/>
                                     </options>
-                                    <associatedCaches>
-                                        <associatedCache>${basic.control.cache}</associatedCache>
-                                    </associatedCaches>
                                 </configuration>
                             </execution>
                             <execution>
@@ -95,7 +109,7 @@
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
-                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
+                                    <targetBaseDir>${main.build.directory}</targetBaseDir>
                                     <targetName>${strict.control.jvm}</targetName>
                                     <options>
                                         <quiet/>
@@ -106,18 +120,15 @@
                                         <reenableCaches/>
                                         <withHeavyObjEqualsHashcode/>
                                     </options>
-                                    <associatedCaches>
-                                        <associatedCache>${strict.control.cache}</associatedCache>
-                                    </associatedCaches>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>binding-control</id>
+                                <id>conflux</id>
                                 <goals>
                                     <goal>instrument</goal>
                                 </goals>
                                 <configuration>
-                                    <targetBaseDir>${project.build.directory}</targetBaseDir>
+                                    <targetBaseDir>${main.build.directory}</targetBaseDir>
                                     <targetName>${conflux.jvm}</targetName>
                                     <options>
                                         <controlFlowManager>${conflux.manager}</controlFlowManager>
@@ -128,9 +139,6 @@
                                         <withHeavyObjEqualsHashcode/>
                                         <quiet/>
                                     </options>
-                                    <associatedCaches>
-                                        <associatedCache>${conflux.cache}</associatedCache>
-                                    </associatedCaches>
                                 </configuration>
                             </execution>
                         </executions>
@@ -164,7 +172,7 @@
                                                 </taintTagFactory>
                                             </options>
                                             <instrumentedJVM>
-                                                ${project.build.directory}/${data.array.index.jvm}
+                                                ${main.build.directory}/${data.array.index.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
@@ -180,7 +188,7 @@
                                                 <withHeavyObjEqualsHashcode/>
                                             </options>
                                             <instrumentedJVM>
-                                                ${project.build.directory}/${basic.control.jvm}
+                                                ${main.build.directory}/${basic.control.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
@@ -196,7 +204,7 @@
                                                 <withHeavyObjEqualsHashcode/>
                                             </options>
                                             <instrumentedJVM>
-                                                ${project.build.directory}/${strict.control.jvm}
+                                                ${main.build.directory}/${strict.control.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                         <phosphorConfiguration>
@@ -212,7 +220,7 @@
                                                 <withHeavyObjEqualsHashcode/>
                                             </options>
                                             <instrumentedJVM>
-                                                ${project.build.directory}/${conflux.jvm}
+                                                ${main.build.directory}/${conflux.jvm}
                                             </instrumentedJVM>
                                         </phosphorConfiguration>
                                     </phosphorConfigurations>
@@ -235,44 +243,6 @@
             </build>
         </profile>
     </profiles>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>properties</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>edu.neu.ccs.conflux</groupId>
@@ -281,46 +251,6 @@
         <dependency>
             <groupId>edu.neu.ccs.conflux</groupId>
             <artifactId>conflux-policies</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
-            <version>9.0.19</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.11.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>5.2.5.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.14</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15</artifactId>
-            <version>1.46</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>28.2-jre</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.javascript</groupId>
-            <artifactId>closure-compiler</artifactId>
-            <version>v20140814</version>
         </dependency>
     </dependencies>
 </project>

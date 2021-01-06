@@ -15,8 +15,8 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.HashSet;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Map;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 
+import static edu.neu.ccs.conflux.internal.policy.FlowGraphUtil.findNextPrecedableInstruction;
 import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionMarkingAnalyzer.MARKER;
-import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionMarkingAnalyzer.findNextPrecedableInstruction;
 
 public class BasicControlFlowAnalyzer implements ControlFlowAnalyzer {
 

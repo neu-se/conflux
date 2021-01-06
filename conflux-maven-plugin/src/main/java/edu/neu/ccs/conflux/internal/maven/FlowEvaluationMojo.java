@@ -17,7 +17,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createPhosphorAgentArgument;
 import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.getPhosphorJarFile;
@@ -43,30 +46,20 @@ public class FlowEvaluationMojo extends AbstractMojo {
     /**
      * Configuration option name used by Phosphor to specify a cache directory for instrumented files.
      */
-    private static final String phosphorCacheDirectoryOptionName = PhosphorOption.CACHE_DIR.createOption().getOpt();
+    private static final String PHOSPHOR_CACHE_DIRECTORY_OPTION_NAME = PhosphorOption.CACHE_DIR.createOption().getOpt();
     /**
      * True if forked JVMs should wait for a debugger.
      */
-    private static final boolean debugForks = Boolean.getBoolean("flow.bench.debug");
+    private static final boolean debugForks = Boolean.getBoolean("flow.debug");
     /**
      * The name of the Phosphor configuration to be run or null if all of the configurations should be run.
      */
     private static final String selectedConfig = System.getProperty("flow.config", null);
     /**
-     * Maven build output directory.
-     */
-    @Parameter(defaultValue = "${project.build.directory}", readonly = true)
-    private File buildDir;
-    /**
      * The project being evaluated.
      */
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-    /**
-     * The directory containing generated test classes of the project being evaluated.
-     */
-    @Parameter(defaultValue = "${project.build.testOutputDirectory}", readonly = true)
-    private File testClassesDirectory;
     /**
      * Phosphor configurations to be evaluated.
      */
@@ -95,14 +88,22 @@ public class FlowEvaluationMojo extends AbstractMojo {
      */
     @Override
     public void execute() throws MojoFailureException {
-        if(selectedConfig != null) {
+        try {
+            if (!isNonEmptyDirectory(getEvaluationDirectory())) {
+                getLog().info("No flow evaluations detected");
+                return;
+            }
+        } catch (IOException e) {
+            throw new MojoFailureException("Failed to check test output directory for evaluations", e);
+        }
+        if (selectedConfig != null) {
             // Remove configurations that were not selected
             phosphorConfigurations.removeIf(phosphorConfig -> !selectedConfig.equals(phosphorConfig.name));
         }
         validateNumberOfEntities();
         validatePhosphorConfigurations();
         try {
-            File reportDirectory = new File(buildDir, REPORT_DIRECTORY);
+            File reportDirectory = new File(project.getBuild().getDirectory(), REPORT_DIRECTORY);
             PhosphorInstrumentUtil.createOrCleanDirectory(reportDirectory);
             List<File> reportFiles = new LinkedList<>();
             boolean success = runEvaluations(reportDirectory, reportFiles);
@@ -115,7 +116,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
                         plotNumbersOfEntities, tableNumberOfEntities);
                 reportManager.printBenchResultsTable();
                 reportManager.printStudyResultsTable();
-                reportManager.writeLatexResults(buildDir);
+                reportManager.writeLatexResults(new File(project.getBuild().getDirectory()));
             } else {
                 throw new MojoFailureException("Failed to evaluation configurations");
             }
@@ -180,13 +181,13 @@ public class FlowEvaluationMojo extends AbstractMojo {
      * @return a cache directory for phosphorConfiguration
      */
     private File getCacheDir(PhosphorConfig phosphorConfiguration) {
-        String cacheDirProperty = phosphorConfiguration.options.getProperty(phosphorCacheDirectoryOptionName);
+        String cacheDirProperty = phosphorConfiguration.options.getProperty(PHOSPHOR_CACHE_DIRECTORY_OPTION_NAME);
         if(cacheDirProperty != null && cacheDirProperty.length() > 0) {
             return new File(cacheDirProperty);
         } else {
             String cacheDirName = phosphorConfiguration.name + "-cache";
-            phosphorConfiguration.options.setProperty(phosphorCacheDirectoryOptionName, cacheDirName);
-            return new File(buildDir, cacheDirName);
+            phosphorConfiguration.options.setProperty(PHOSPHOR_CACHE_DIRECTORY_OPTION_NAME, cacheDirName);
+            return new File(project.getBuild().getDirectory(), cacheDirName);
         }
     }
 
@@ -281,7 +282,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
             commands.add(DEBUG_ARG);
         }
         commands.add(FlowEvaluationRunner.class.getName());
-        commands.add(testClassesDirectory.getAbsolutePath());
+        commands.add(getEvaluationDirectory().getAbsolutePath());
         commands.add(reportFile.getAbsolutePath());
         Set<Integer> allNumberOfEntities = new HashSet<>(plotNumbersOfEntities);
         allNumberOfEntities.add(tableNumberOfEntities);
@@ -294,5 +295,19 @@ public class FlowEvaluationMojo extends AbstractMojo {
             return false;
         }
         return true;
+    }
+
+    private File getEvaluationDirectory() {
+        return new File(project.getBuild().getTestOutputDirectory());
+    }
+
+    public static boolean isNonEmptyDirectory(File file) throws IOException {
+        Path path = file.toPath();
+        if (Files.isDirectory(path)) {
+            try (Stream<Path> entries = Files.list(path)) {
+                return entries.findFirst().isPresent();
+            }
+        }
+        return false;
     }
 }

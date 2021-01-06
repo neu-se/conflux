@@ -11,6 +11,7 @@ import org.apache.maven.surefire.api.testset.TestListResolver;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.time.Duration;
@@ -146,7 +147,11 @@ public class FlowEvaluationRunner {
                     Object receiver = testClass.newInstance();
                     TaintTagChecker checker = new TaintTagChecker();
                     PowerSetTree.getInstance().reset();
-                    testMethod.invoke(receiver, checker);
+                    try {
+                        testMethod.invoke(receiver, checker);
+                    } catch (InvocationTargetException e) {
+                        return e.getCause();
+                    }
                     report.addStudyReport(testClass, testMethod, checker.toRunResult());
                     return null;
                 } catch (Throwable t) {

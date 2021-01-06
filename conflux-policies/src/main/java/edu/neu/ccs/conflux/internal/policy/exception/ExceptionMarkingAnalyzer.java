@@ -6,6 +6,8 @@ import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.*;
 
 import java.util.List;
 
+import static edu.neu.ccs.conflux.internal.policy.FlowGraphUtil.findNextPrecedableInstruction;
+
 public enum ExceptionMarkingAnalyzer implements ControlFlowAnalyzer {
     MARKER;
 
@@ -27,17 +29,9 @@ public enum ExceptionMarkingAnalyzer implements ControlFlowAnalyzer {
     private void markExceptionThrowingInstructions(InsnList instructions) {
         for (AbstractInsnNode instruction : instructions.toArray()) {
             if (MaybeThrownException.mayThrowException(instruction.getOpcode())) {
-                instructions.insertBefore(instruction, new LdcInsnNode(MaybeThrownException.getInstance(instruction)));
+                instructions.insertBefore(instruction,
+                        new LdcInsnNode(MaybeThrownException.getInstance(instruction)));
             }
         }
     }
-
-    public static AbstractInsnNode findNextPrecedableInstruction(AbstractInsnNode insn) {
-        while (insn.getType() == AbstractInsnNode.FRAME || insn.getType() == AbstractInsnNode.LINE
-                || insn.getType() == AbstractInsnNode.LABEL || insn.getOpcode() > 200) {
-            insn = insn.getNext();
-        }
-        return insn;
-    }
-
 }

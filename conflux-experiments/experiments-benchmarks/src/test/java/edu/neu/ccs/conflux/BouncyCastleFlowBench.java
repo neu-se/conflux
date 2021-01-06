@@ -1,11 +1,11 @@
-package edu.neu.ccs.conflux.bench;
+package edu.neu.ccs.conflux;
 
 import edu.neu.ccs.conflux.internal.FlowBench;
 import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
 import org.bouncycastle.util.encoders.Hex;
 
-import static edu.neu.ccs.conflux.bench.ControlFlowBenchUtil.checkHexDecode;
-import static edu.neu.ccs.conflux.bench.ControlFlowBenchUtil.checkHexEncode;
+import static edu.neu.ccs.conflux.ControlFlowBenchUtil.checkHexDecode;
+import static edu.neu.ccs.conflux.ControlFlowBenchUtil.checkHexEncode;
 
 public class BouncyCastleFlowBench {
 

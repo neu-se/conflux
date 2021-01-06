@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.bench;
+package edu.neu.ccs.conflux;
 
 import edu.neu.ccs.conflux.FlowTestUtil;
 import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
