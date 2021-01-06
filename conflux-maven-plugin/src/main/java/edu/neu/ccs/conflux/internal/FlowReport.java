@@ -1,9 +1,8 @@
-package edu.neu.ccs.conflux.internal.report;
+package edu.neu.ccs.conflux.internal;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import edu.neu.ccs.conflux.internal.RunResult;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -11,7 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FlowEvaluationReport {
+public class FlowReport {
     private static final Gson gson = new GsonBuilder()
             .setPrettyPrinting()
             .disableHtmlEscaping()
@@ -43,6 +42,25 @@ public class FlowEvaluationReport {
         studyReports.put(new StudyInfo(testClass, testMethod), result);
     }
 
+    public void addAll(FlowReport other) {
+        for (BenchInfo bench : other.benchReports.keySet()) {
+            if (this.benchReports.containsKey(bench)) {
+                throw new IllegalArgumentException();
+            }
+        }
+        for (StudyInfo study : other.studyReports.keySet()) {
+            if (this.studyReports.containsKey(study)) {
+                throw new IllegalArgumentException();
+            }
+        }
+        for (BenchInfo bench : other.benchReports.keySet()) {
+            this.benchReports.put(bench, other.benchReports.get(bench));
+        }
+        for (StudyInfo study : other.studyReports.keySet()) {
+            this.studyReports.put(study, other.studyReports.get(study));
+        }
+    }
+
     public void writeToFile(File reportFile) throws FileNotFoundException {
         String json = gson.toJson(this);
         try (PrintWriter out = new PrintWriter(reportFile)) {
@@ -50,10 +68,10 @@ public class FlowEvaluationReport {
         }
     }
 
-    public static FlowEvaluationReport readFromFile(File reportFile) throws IOException {
+    public static FlowReport readFromFile(File reportFile) throws IOException {
         try (JsonReader reader = new JsonReader(new FileReader(reportFile))) {
             reader.setLenient(true);
-            return gson.fromJson(reader, FlowEvaluationReport.class);
+            return gson.fromJson(reader, FlowReport.class);
         }
     }
 }

@@ -3,7 +3,6 @@ package edu.neu.ccs.conflux.internal;
 import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.columbia.cs.psl.phosphor.struct.PowerSetTree;
 import edu.neu.ccs.conflux.IdentityFilter;
-import edu.neu.ccs.conflux.internal.report.FlowEvaluationReport;
 import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.api.testset.TestListResolver;
@@ -30,7 +29,7 @@ public class FlowEvaluationRunner {
         for (int i = 2; i < args.length; i++) {
             numbersOfEntities[i - 2] = Integer.parseInt(args[i]);
         }
-        FlowEvaluationReport report = new FlowEvaluationReport();
+        FlowReport report = new FlowReport();
         List<TestError> errors = new ArrayList<>();
         printHeader();
         int testsRun = 0;
@@ -61,7 +60,7 @@ public class FlowEvaluationRunner {
         }
     }
 
-    private static int runTestClass(TestType type, Class<?> testClass, FlowEvaluationReport report,
+    private static int runTestClass(TestType type, Class<?> testClass, FlowReport report,
                                     List<TestError> errors, int[] numbersOfEntities) {
         List<Method> tests = type.gatherTestMethods(testClass);
         if (!tests.isEmpty()) {
@@ -120,7 +119,7 @@ public class FlowEvaluationRunner {
         BENCH(FlowBench.class, TaintTagChecker.class, int.class) {
             @Override
             public Throwable runTest(Class<?> testClass, Method testMethod, int[] numbersOfEntities,
-                                     FlowEvaluationReport report) {
+                                     FlowReport report) {
                 try {
                     validateTestMethod(testMethod);
                     Map<Integer, RunResult> result = new HashMap<>();
@@ -141,7 +140,7 @@ public class FlowEvaluationRunner {
         STUDY(FlowStudy.class, TaintTagChecker.class) {
             @Override
             public Throwable runTest(Class<?> testClass, Method testMethod, int[] numbersOfEntities,
-                                     FlowEvaluationReport report) {
+                                     FlowReport report) {
                 try {
                     validateTestMethod(testMethod);
                     Object receiver = testClass.newInstance();
@@ -207,7 +206,7 @@ public class FlowEvaluationRunner {
         }
 
         public abstract Throwable runTest(Class<?> testClass, Method testMethod, int[] numbersOfEntities,
-                                          FlowEvaluationReport report);
+                                          FlowReport report);
     }
 
     private static final class TestError {

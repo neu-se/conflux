@@ -1,6 +1,4 @@
-package edu.neu.ccs.conflux.internal.report;
-
-import edu.neu.ccs.conflux.internal.FlowStudy;
+package edu.neu.ccs.conflux.internal;
 
 import java.lang.reflect.Method;
 

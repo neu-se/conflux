@@ -1,4 +1,4 @@
-package edu.neu.ccs.conflux.internal.report;
+package edu.neu.ccs.conflux.internal;
 
 import java.lang.reflect.Method;
 

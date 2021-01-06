@@ -26,7 +26,7 @@ import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.createPh
 import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.getPhosphorJarFile;
 
 /**
- * Runs benchmarks and studies with different Phosphor configurations and reports the results.
+ * Runs benchmarks and studies with different Phosphor configurations.
  */
 @Mojo(name = "evaluate", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
 public class FlowEvaluationMojo extends AbstractMojo {
@@ -82,14 +82,14 @@ public class FlowEvaluationMojo extends AbstractMojo {
     private int tableNumberOfEntities;
 
     /**
-     * Runs evaluations with different Phosphor configurations and reports the results to standard out.
+     * Runs evaluations with different Phosphor configurations..
      *
      * @throws MojoFailureException if evaluations fail to run
      */
     @Override
     public void execute() throws MojoFailureException {
         try {
-            if (!isNonEmptyDirectory(getEvaluationDirectory())) {
+            if (!isNonEmptyDirectory(getTestOutputDirectory())) {
                 getLog().info("No flow evaluations detected");
                 return;
             }
@@ -106,18 +106,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
             File reportDirectory = new File(project.getBuild().getDirectory(), REPORT_DIRECTORY);
             PhosphorInstrumentUtil.createOrCleanDirectory(reportDirectory);
             List<File> reportFiles = new LinkedList<>();
-            boolean success = runEvaluations(reportDirectory, reportFiles);
-            if (success) {
-                List<String> configurationNames = new ArrayList<>();
-                for (PhosphorConfig config : phosphorConfigurations) {
-                    configurationNames.add(config.getName());
-                }
-                ReportManager reportManager = new ReportManager(configurationNames, reportFiles,
-                        plotNumbersOfEntities, tableNumberOfEntities);
-                reportManager.printBenchResultsTable();
-                reportManager.printStudyResultsTable();
-                reportManager.writeLatexResults(new File(project.getBuild().getDirectory()));
-            } else {
+            if (!runEvaluations(reportDirectory, reportFiles)) {
                 throw new MojoFailureException("Failed to evaluation configurations");
             }
         } catch (InterruptedException | IOException e) {
@@ -241,7 +230,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
             } else {
                 getLog().info("Using existing Phosphor cache directory: " + cacheDir);
             }
-            File reportFile = new File(reportDirectory, config.name + ".json");
+            File reportFile = createReportFile(reportDirectory, config);
             getLog().info("Running evaluation for Phosphor configuration: " + config.name);
             success &= runEvaluation(config.instrumentedJVM, config.options, reportFile);
             reportFiles.add(reportFile);
@@ -282,7 +271,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
             commands.add(DEBUG_ARG);
         }
         commands.add(FlowEvaluationRunner.class.getName());
-        commands.add(getEvaluationDirectory().getAbsolutePath());
+        commands.add(getTestOutputDirectory().getAbsolutePath());
         commands.add(reportFile.getAbsolutePath());
         Set<Integer> allNumberOfEntities = new HashSet<>(plotNumbersOfEntities);
         allNumberOfEntities.add(tableNumberOfEntities);
@@ -297,7 +286,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
         return true;
     }
 
-    private File getEvaluationDirectory() {
+    private File getTestOutputDirectory() {
         return new File(project.getBuild().getTestOutputDirectory());
     }
 
@@ -309,5 +298,21 @@ public class FlowEvaluationMojo extends AbstractMojo {
             }
         }
         return false;
+    }
+
+    static File createReportFile(File reportDirectory, PhosphorConfig config) {
+        return new File(reportDirectory, config.name + ".json");
+    }
+
+    static String getConfigurationName(File reportFile) {
+        return removeExtension(reportFile.getName());
+    }
+
+    public static String removeExtension(String fileName) {
+        if (fileName.indexOf(".") > 0) {
+            return fileName.substring(0, fileName.lastIndexOf("."));
+        } else {
+            return fileName;
+        }
     }
 }

@@ -1,9 +1,9 @@
 package edu.neu.ccs.conflux.internal.maven;
 
+import edu.neu.ccs.conflux.internal.BenchInfo;
 import edu.neu.ccs.conflux.internal.PlotStat;
+import edu.neu.ccs.conflux.internal.StudyInfo;
 import edu.neu.ccs.conflux.internal.TableStat;
-import edu.neu.ccs.conflux.internal.report.BenchInfo;
-import edu.neu.ccs.conflux.internal.report.StudyInfo;
 
 import java.io.*;
 import java.util.*;
@@ -28,12 +28,13 @@ public class ReportManager {
             .thenComparing(BenchInfo::getImplementation)
             .thenComparing(BenchInfo::getClassName)
             .thenComparing(BenchInfo::getMethodName);
-    private final AggregateFlowEvaluationReport report;
+    private final AggregateFlowReport report;
 
-    ReportManager(List<String> configurationNames, List<File> reportFiles,
-                  Collection<Integer> plotNumbersOfEntities, int tableNumberOfEntities) throws IOException {
-        this.report = new AggregateFlowEvaluationReport(configurationNames, reportFiles,
-                plotNumbersOfEntities, tableNumberOfEntities);
+    ReportManager(AggregateFlowReport report) {
+        if (report == null) {
+            throw new NullPointerException();
+        }
+        this.report = report;
     }
 
     void writeLatexResults(File outputDir) throws IOException {
@@ -53,7 +54,7 @@ public class ReportManager {
 
     private List<File> writePlots(File plotDir) {
         List<File> plotFiles = new LinkedList<>();
-        for (PlotStat stat : report.getPlotStatistics()) {
+        for (PlotStat stat : AggregateFlowReport.getPlotStatistics()) {
             report.getBenchmarks()
                     .stream()
                     .sorted(benchComparator)
@@ -141,7 +142,7 @@ public class ReportManager {
         writer.write(String.format(" & %s & %s", bench.getProject(),
                 bench.getImplementation()));
         for (String configurationName : report.getConfigurationNames()) {
-            for (TableStat stat : report.getTableStatistics()) {
+            for (TableStat stat : AggregateFlowReport.getTableStatistics()) {
                 String value = formatValue(report.getValue(configurationName, bench, report.getTableNumberOfEntities(),
                         stat));
                 boolean emphasize = report.shouldEmphasizeTableStat(configurationName, bench, report.getTableNumberOfEntities(), stat);
@@ -155,7 +156,7 @@ public class ReportManager {
     }
 
     private void writeLatexTableHeader(StringWriter writer) {
-        int statsPerConfig = report.getTableStatistics().size();
+        int statsPerConfig = AggregateFlowReport.getTableStatistics().size();
         writer.write("\\begin{tabular}{lll");
         for (int i = 0; i < report.getConfigurationNames().size(); i++) {
             writer.write(" ");
@@ -183,7 +184,7 @@ public class ReportManager {
         }
         writer.write("\n & &");
         for (String ignored : report.getConfigurationNames()) {
-            for (TableStat stat : report.getTableStatistics()) {
+            for (TableStat stat : AggregateFlowReport.getTableStatistics()) {
                 writer.write(String.format(" & \\multicolumn{1}{c}{\\textbf{%s}}", stat.name()));
             }
         }
@@ -194,7 +195,7 @@ public class ReportManager {
     public void printBenchResultsTable() {
         GroupedTable table = new GroupedTable("Flow Benchmark Results")
                 .addGroup("", "Benchmark", "Test");
-        String[] stats = report.getTableStatistics().stream().map(TableStat::name).toArray(String[]::new);
+        String[] stats = AggregateFlowReport.getTableStatistics().stream().map(TableStat::name).toArray(String[]::new);
         for (String name : report.getConfigurationNames()) {
             table.addGroup(name, stats);
         }
@@ -210,7 +211,7 @@ public class ReportManager {
     public void printStudyResultsTable() {
         GroupedTable table = new GroupedTable("Flow Study Results")
                 .addGroup("", "Study", "Test");
-        String[] stats = report.getTableStatistics().stream().map(TableStat::name).toArray(String[]::new);
+        String[] stats = AggregateFlowReport.getTableStatistics().stream().map(TableStat::name).toArray(String[]::new);
         for (String name : report.getConfigurationNames()) {
             table.addGroup(name, stats);
         }
@@ -228,7 +229,7 @@ public class ReportManager {
         row[0] = new String[]{bench.getShortenedClassName(), bench.getMethodName()};
         int i = 1;
         for (String name : report.getConfigurationNames()) {
-            row[i++] = report.getTableStatistics()
+            row[i++] = AggregateFlowReport.getTableStatistics()
                     .stream()
                     .map(stat -> report.getValue(name, bench, report.getTableNumberOfEntities(), stat))
                     .map(ReportManager::formatValue)
@@ -242,7 +243,7 @@ public class ReportManager {
         row[0] = new String[]{study.getShortenedClassName(), study.getMethodName()};
         int i = 1;
         for (String name : report.getConfigurationNames()) {
-            row[i++] = report.getTableStatistics()
+            row[i++] = AggregateFlowReport.getTableStatistics()
                     .stream()
                     .map(stat -> report.getValue(name, study, stat))
                     .map(ReportManager::formatValue)

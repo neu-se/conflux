@@ -1,13 +1,7 @@
 package edu.neu.ccs.conflux.internal.maven;
 
-import edu.neu.ccs.conflux.internal.PlotStat;
-import edu.neu.ccs.conflux.internal.RunResult;
-import edu.neu.ccs.conflux.internal.TableStat;
-import edu.neu.ccs.conflux.internal.report.BenchInfo;
-import edu.neu.ccs.conflux.internal.report.FlowEvaluationReport;
-import edu.neu.ccs.conflux.internal.report.StudyInfo;
+import edu.neu.ccs.conflux.internal.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,7 +9,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AggregateFlowEvaluationReport {
+public class AggregateFlowReport {
 
     private static final SortedMap<TableStat, Method> tableStatMap = Arrays.stream(RunResult.class.getDeclaredMethods())
             .filter(m -> m.isAnnotationPresent(TableStat.class))
@@ -32,7 +26,7 @@ public class AggregateFlowEvaluationReport {
     /**
      * Maps the names of the configurations to their evaluation reports.
      */
-    private final Map<String, FlowEvaluationReport> configurationReportMap = new HashMap<>();
+    private final Map<String, FlowReport> configurationReportMap = new HashMap<>();
     /**
      * Lengths of tainted inputs to be used in the generated plots for benchmarks.
      */
@@ -42,9 +36,9 @@ public class AggregateFlowEvaluationReport {
      */
     private final int tableNumberOfEntities;
 
-    AggregateFlowEvaluationReport(List<String> configurationNames, List<File> reportFiles,
-                                  Collection<Integer> plotNumbersOfEntities,
-                                  int tableNumberOfEntities) throws IOException {
+    AggregateFlowReport(List<String> configurationNames, List<FlowReport> reportFiles,
+                        Collection<Integer> plotNumbersOfEntities,
+                        int tableNumberOfEntities) throws IOException {
         this.plotNumbersOfEntities = Collections.unmodifiableSortedSet(new TreeSet<>(plotNumbersOfEntities));
         this.tableNumberOfEntities = tableNumberOfEntities;
         if (configurationNames.size() != reportFiles.size()) {
@@ -52,10 +46,9 @@ public class AggregateFlowEvaluationReport {
         }
         this.configurationNames = Collections.unmodifiableList(new ArrayList<>(configurationNames));
         Iterator<String> itr1 = this.configurationNames.iterator();
-        Iterator<File> itr2 = reportFiles.iterator();
+        Iterator<FlowReport> itr2 = reportFiles.iterator();
         while (itr1.hasNext()) {
-            configurationReportMap.put(itr1.next(),
-                    FlowEvaluationReport.readFromFile(itr2.next()));
+            configurationReportMap.put(itr1.next(), itr2.next());
         }
     }
 
@@ -74,7 +67,7 @@ public class AggregateFlowEvaluationReport {
     public Set<StudyInfo> getStudies() {
         return configurationReportMap.values()
                 .stream()
-                .map(FlowEvaluationReport::getStudyReports)
+                .map(FlowReport::getStudyReports)
                 .map(Map::keySet)
                 .collect(HashSet::new, Set::addAll, Set::addAll);
     }
@@ -82,21 +75,9 @@ public class AggregateFlowEvaluationReport {
     public Set<BenchInfo> getBenchmarks() {
         return configurationReportMap.values()
                 .stream()
-                .map(FlowEvaluationReport::getBenchReports)
+                .map(FlowReport::getBenchReports)
                 .map(Map::keySet)
                 .collect(HashSet::new, Set::addAll, Set::addAll);
-    }
-
-    public SortedSet<TableStat> getTableStatistics() {
-        SortedSet<TableStat> set = new TreeSet<>(Comparator.comparing(TableStat::name));
-        set.addAll(tableStatMap.keySet());
-        return set;
-    }
-
-    public SortedSet<PlotStat> getPlotStatistics() {
-        SortedSet<PlotStat> set = new TreeSet<>(Comparator.comparing(PlotStat::name));
-        set.addAll(plotStatMap.keySet());
-        return set;
     }
 
     public Optional<Number> getValue(String configurationName, StudyInfo study, TableStat stat) {
@@ -146,6 +127,18 @@ public class AggregateFlowEvaluationReport {
             }
         }
         return true;
+    }
+
+    public static SortedSet<TableStat> getTableStatistics() {
+        SortedSet<TableStat> set = new TreeSet<>(Comparator.comparing(TableStat::name));
+        set.addAll(tableStatMap.keySet());
+        return set;
+    }
+
+    public static SortedSet<PlotStat> getPlotStatistics() {
+        SortedSet<PlotStat> set = new TreeSet<>(Comparator.comparing(PlotStat::name));
+        set.addAll(plotStatMap.keySet());
+        return set;
     }
 
     private static Number getValue(RunResult result, TableStat stat) {
