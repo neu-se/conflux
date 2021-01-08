@@ -2,6 +2,7 @@ package edu.neu.ccs.conflux.internal.runtime;
 
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
+import edu.columbia.cs.psl.phosphor.struct.LazyReferenceArrayObjTags;
 import edu.columbia.cs.psl.phosphor.struct.TaintedPrimitiveWithObjTag;
 import edu.neu.ccs.conflux.internal.RunResult;
 
@@ -119,6 +120,9 @@ public class TaintTagChecker {
         }
         if (actualData instanceof String) {
             return Taint.combineTaintArray(MultiTainter.getStringCharTaints((String) actualData));
+        } else if (actualData instanceof LazyReferenceArrayObjTags) {
+            return Taint.combineTags(MultiTainter.getMergedTaint(actualData),
+                    Taint.combineTaintArray(((LazyReferenceArrayObjTags) actualData).taints));
         } else {
             return MultiTainter.getMergedTaint(actualData);
         }

@@ -3,7 +3,12 @@ package edu.neu.ccs.conflux;
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 
-public class FlowTestUtil {
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.IntStream;
+
+public class FlowEvalUtil {
 
     public static String taintWithIndices(String input) {
         return taintWithIndices(input, 0, input.length());
@@ -110,9 +115,24 @@ public class FlowTestUtil {
     }
 
     public static short[] taintWithIndices(short[] input, int start, int len) {
-        for(int i = start; i < len; i++) {
+        for (int i = start; i < len; i++) {
             input[i] = MultiTainter.taintedShort(input[i], i);
         }
         return input;
+    }
+
+
+    public static Set<Integer> createExpectedSet(String input, String... targets) {
+        Set<Integer> expected = new HashSet<>();
+        for (String target : targets) {
+            int start = input.indexOf(target);
+            IntStream.range(start, start + target.length()).boxed().forEach(expected::add);
+        }
+        return expected;
+    }
+
+    public static String readAndTaintResource(Class<?> clazz, String name) {
+        return taintWithIndices(new Scanner(clazz.getResourceAsStream(name), "UTF-8")
+                .useDelimiter("\\A").next());
     }
 }

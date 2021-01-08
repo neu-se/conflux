@@ -11,6 +11,7 @@
     </parent>
     <modules>
         <module>experiments-closure-v20140814</module>
+        <module>experiments-rhino-1.7.11</module>
         <module>experiments-benchmarks</module>
         <module>experiments-report</module>
     </modules>
@@ -232,6 +233,9 @@
                                     </param>
                                     <param>
                                         ${main.base.directory}/experiments-closure-v20140814/target/flow-reports
+                                    </param>
+                                    <param>
+                                        ${main.base.directory}/experiments-rhino-1.7.11/target/flow-reports
                                     </param>
                                 </reportDirectories>
                                 <configurationNames>

@@ -57,7 +57,7 @@ public class FlowReportingMojo extends AbstractMojo {
     public void execute() throws MojoFailureException {
         try {
             File finalReportDirectory = new File(project.getBuild().getDirectory());
-            if (!finalReportDirectory.mkdirs()) {
+            if (!finalReportDirectory.isDirectory() && !finalReportDirectory.mkdirs()) {
                 throw new MojoFailureException("Failed to create directory for final reports");
             }
             Set<File> reportFiles = reportDirectories.stream()

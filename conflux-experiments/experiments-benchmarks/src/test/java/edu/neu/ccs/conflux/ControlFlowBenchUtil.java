@@ -1,6 +1,5 @@
 package edu.neu.ccs.conflux;
 
-import edu.neu.ccs.conflux.FlowTestUtil;
 import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
 
 import java.util.*;
@@ -23,7 +22,7 @@ public class ControlFlowBenchUtil {
 
     public static void checkTransformer(List<String> entities, List<Integer> manyPerOnes, TaintTagChecker checker,
                                         int numberOfEntities, UnaryOperator<String> transformer, boolean oneToMany) {
-        String input = FlowTestUtil.taintWithIndices(String.join("", takeN(entities, numberOfEntities)));
+        String input = FlowEvalUtil.taintWithIndices(String.join("", takeN(entities, numberOfEntities)));
         String output = transformer.apply(input);
         manyPerOnes = takeN(manyPerOnes, numberOfEntities);
         if(oneToMany) {
@@ -80,7 +79,7 @@ public class ControlFlowBenchUtil {
         for(Byte entity : entities) {
             input[i] = entity;
         }
-        FlowTestUtil.taintWithIndices(input);
+        FlowEvalUtil.taintWithIndices(input);
         String output = encoder.apply(input);
         List<Integer> outputCharsPerInput = takeN(Collections.singletonList(2), numberOfEntities);
         checkOneInputToManyOutputs(checker, outputCharsPerInput, output);
@@ -91,7 +90,7 @@ public class ControlFlowBenchUtil {
      */
     public static void checkHexDecode(TaintTagChecker checker, int numberOfEntities, Function<String, byte[]> decoder) {
         List<String> entities = Arrays.asList("7e", "4a", "b1", "20");
-        String input = FlowTestUtil.taintWithIndices(String.join("", takeN(entities, numberOfEntities)));
+        String input = FlowEvalUtil.taintWithIndices(String.join("", takeN(entities, numberOfEntities)));
         byte[] output = decoder.apply(input);
         List<Integer> inputCharsPerOutput = takeN(Collections.singletonList(2), numberOfEntities);
         checkManyInputsToOneOutput(checker, inputCharsPerOutput, output);

@@ -9,15 +9,10 @@ import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.LogManager;
-import java.util.stream.IntStream;
 
-import static edu.neu.ccs.conflux.FlowTestUtil.taintWithIndices;
-
-public class ClosureFlowStudy {
+public class Closure20140814FlowStudy {
 
     static {
         LogManager.getLogManager().reset();
@@ -28,8 +23,8 @@ public class ClosureFlowStudy {
      */
     @FlowStudy(project = "closure", issue = "652")
     public void issue652(TaintTagChecker checker) {
-        String input = readAndTaintResource("/closure-652.js");
-        Set<Integer> expected = createExpectedSet(input, "throw");
+        String input = FlowEvalUtil.readAndTaintResource(getClass(), "/closure-652.js");
+        Set<Integer> expected = FlowEvalUtil.createExpectedSet(input, "throw");
         compileAndCheckException(checker, input, expected);
     }
 
@@ -46,20 +41,6 @@ public class ClosureFlowStudy {
             return;
         }
         throw new AssertionError("Expected exception to be thrown");
-    }
-
-    private static Set<Integer> createExpectedSet(String input, String... targets) {
-        Set<Integer> expected = new HashSet<>();
-        for (String target : targets) {
-            int start = input.indexOf(target);
-            IntStream.range(start, start + target.length()).boxed().forEach(expected::add);
-        }
-        return expected;
-    }
-
-    private static String readAndTaintResource(String name) {
-        return taintWithIndices(new Scanner(ClosureFlowStudy.class.getResourceAsStream(name), "UTF-8")
-                .useDelimiter("\\A").next());
     }
 }
 
