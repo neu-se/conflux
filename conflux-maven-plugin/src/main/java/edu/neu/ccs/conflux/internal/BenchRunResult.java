@@ -1,11 +1,11 @@
 package edu.neu.ccs.conflux.internal;
 
-public final class RunResult {
+public final class BenchRunResult {
     private final int truePositives;
     private final int falsePositives;
     private final int falseNegatives;
 
-    public RunResult(int truePositives, int falsePositives, int falseNegatives) {
+    public BenchRunResult(int truePositives, int falsePositives, int falseNegatives) {
         this.truePositives = truePositives;
         this.falsePositives = falsePositives;
         this.falseNegatives = falseNegatives;
@@ -54,6 +54,6 @@ public final class RunResult {
 
     @Override
     public String toString() {
-        return "RunResult{TP=" + truePositives() + ", FP=" + falsePositives() + ", FN=" + falseNegatives() + '}';
+        return "BenchRunResult{TP=" + truePositives() + ", FP=" + falsePositives() + ", FN=" + falseNegatives() + '}';
     }
 }

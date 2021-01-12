@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 
 public class AggregateFlowReport {
 
-    private static final SortedMap<TableStat, Method> tableStatMap = Arrays.stream(RunResult.class.getDeclaredMethods())
+    private static final SortedMap<TableStat, Method> tableStatMap = Arrays.stream(BenchRunResult.class.getDeclaredMethods())
             .filter(m -> m.isAnnotationPresent(TableStat.class))
             .collect(Collectors.toMap(m -> m.getAnnotation(TableStat.class), Function.identity(), (e, r) -> e,
                     () -> new TreeMap<>(Comparator.comparing(TableStat::name))));
-    private static final SortedMap<PlotStat, Method> plotStatMap = Arrays.stream(RunResult.class.getDeclaredMethods())
+    private static final SortedMap<PlotStat, Method> plotStatMap = Arrays.stream(BenchRunResult.class.getDeclaredMethods())
             .filter(m -> m.isAnnotationPresent(PlotStat.class))
             .collect(Collectors.toMap(m -> m.getAnnotation(PlotStat.class), Function.identity(), (e, r) -> e,
                     () -> new TreeMap<>(Comparator.comparing(PlotStat::name))));
@@ -80,11 +80,6 @@ public class AggregateFlowReport {
                 .collect(HashSet::new, Set::addAll, Set::addAll);
     }
 
-    public Optional<Number> getValue(String configurationName, StudyInfo study, TableStat stat) {
-        return getResult(configurationName, study)
-                .map(r -> getValue(r, stat));
-    }
-
     public Optional<Number> getValue(String configurationName, BenchInfo bench, int numberOfEntities,
                                      TableStat stat) {
         return getResult(configurationName, bench, numberOfEntities)
@@ -98,11 +93,11 @@ public class AggregateFlowReport {
                 .map(r -> getValue(r, stat));
     }
 
-    private Optional<RunResult> getResult(String configurationName, StudyInfo study) {
+    public Optional<StudyRunResult> getResult(String configurationName, StudyInfo study) {
         return Optional.ofNullable(configurationReportMap.get(configurationName).getStudyReports().get(study));
     }
 
-    private Optional<RunResult> getResult(String configurationName, BenchInfo bench, int numberOfEntities) {
+    private Optional<BenchRunResult> getResult(String configurationName, BenchInfo bench, int numberOfEntities) {
         return Optional.ofNullable(configurationReportMap.get(configurationName).getBenchReports().get(bench))
                 .map(m -> m.get(numberOfEntities));
     }
@@ -141,7 +136,7 @@ public class AggregateFlowReport {
         return set;
     }
 
-    private static Number getValue(RunResult result, TableStat stat) {
+    private static Number getValue(BenchRunResult result, TableStat stat) {
         try {
             return (Number) tableStatMap.get(stat).invoke(result);
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -149,7 +144,7 @@ public class AggregateFlowReport {
         }
     }
 
-    private static Number getValue(RunResult result, PlotStat stat) {
+    private static Number getValue(BenchRunResult result, PlotStat stat) {
         try {
             return (Number) plotStatMap.get(stat).invoke(result);
         } catch (IllegalAccessException | InvocationTargetException e) {

@@ -4,11 +4,11 @@ import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.columbia.cs.psl.phosphor.struct.LazyReferenceArrayObjTags;
 import edu.columbia.cs.psl.phosphor.struct.TaintedPrimitiveWithObjTag;
-import edu.neu.ccs.conflux.internal.RunResult;
+import edu.neu.ccs.conflux.internal.BenchRunResult;
 
 import java.util.*;
 
-public class TaintTagChecker {
+public class BenchTaintTagChecker {
 
     private int truePositives = 0;
     private int falsePositives = 0;
@@ -143,7 +143,7 @@ public class TaintTagChecker {
         }
     }
 
-    public RunResult toRunResult() {
-        return new RunResult(truePositives, falsePositives, falseNegatives);
+    public BenchRunResult toRunResult() {
+        return new BenchRunResult(truePositives, falsePositives, falseNegatives);
     }
 }

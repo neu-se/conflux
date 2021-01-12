@@ -1,9 +1,6 @@
 package edu.neu.ccs.conflux.internal.maven;
 
-import edu.neu.ccs.conflux.internal.BenchInfo;
-import edu.neu.ccs.conflux.internal.PlotStat;
-import edu.neu.ccs.conflux.internal.StudyInfo;
-import edu.neu.ccs.conflux.internal.TableStat;
+import edu.neu.ccs.conflux.internal.*;
 
 import java.io.*;
 import java.util.*;
@@ -208,22 +205,6 @@ public class ReportManager {
         System.out.printf("%n%n");
     }
 
-    public void printStudyResultsTable() {
-        GroupedTable table = new GroupedTable("Flow Study Results")
-                .addGroup("", "Study", "Test");
-        String[] stats = AggregateFlowReport.getTableStatistics().stream().map(TableStat::name).toArray(String[]::new);
-        for (String name : report.getConfigurationNames()) {
-            table.addGroup(name, stats);
-        }
-        report.getStudies()
-                .stream()
-                .sorted(studyComparator)
-                .map(this::createStudyRow)
-                .forEach(table::addRow);
-        table.printToStream(System.out);
-        System.out.printf("%n%n");
-    }
-
     private Object[][] createBenchRow(BenchInfo bench) {
         Object[][] row = new Object[report.getConfigurationNames().size() + 1][];
         row[0] = new String[]{bench.getShortenedClassName(), bench.getMethodName()};
@@ -238,18 +219,29 @@ public class ReportManager {
         return row;
     }
 
-    private Object[][] createStudyRow(StudyInfo study) {
-        Object[][] row = new Object[report.getConfigurationNames().size() + 1][];
-        row[0] = new String[]{study.getShortenedClassName(), study.getMethodName()};
-        int i = 1;
-        for (String name : report.getConfigurationNames()) {
-            row[i++] = AggregateFlowReport.getTableStatistics()
-                    .stream()
-                    .map(stat -> report.getValue(name, study, stat))
-                    .map(ReportManager::formatValue)
-                    .toArray();
+    public void printStudyResults() {
+        report.getStudies()
+                .stream()
+                .sorted(studyComparator)
+                .forEach(study -> report.getConfigurationNames().forEach(n -> printStudyResult(study, n)));
+    }
+
+    private void printStudyResult(StudyInfo study, String configurationName) {
+        System.out.println(configurationName);
+        StudyRunResult result = report.getResult(configurationName, study).orElseThrow(IllegalStateException::new);
+        String input = result.getInput();
+        Set<Integer> predicted = Arrays.stream(result.getPredicted()).boxed().collect(Collectors.toSet());
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char val = input.charAt(i);
+            builder.append(predicted.contains(i) ? emphasize(val) : val);
         }
-        return row;
+        System.out.println(builder.toString());
+        System.out.printf("%n%n");
+    }
+
+    private static String emphasize(char text) {
+        return String.format("\033[105m%c\033[0m", text);
     }
 
     private static void writeReportFile(File file, File tableFile, List<File> plotFiles) throws IOException {

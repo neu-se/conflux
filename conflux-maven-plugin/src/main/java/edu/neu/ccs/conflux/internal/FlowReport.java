@@ -17,25 +17,25 @@ public class FlowReport {
             .setLenient()
             .enableComplexMapKeySerialization()
             .create();
-    private final Map<BenchInfo, Map<Integer, RunResult>> benchReports = new HashMap<>();
-    private final Map<StudyInfo, RunResult> studyReports = new HashMap<>();
+    private final Map<BenchInfo, Map<Integer, BenchRunResult>> benchReports = new HashMap<>();
+    private final Map<StudyInfo, StudyRunResult> studyReports = new HashMap<>();
 
-    public Map<BenchInfo, Map<Integer, RunResult>> getBenchReports() {
+    public Map<BenchInfo, Map<Integer, BenchRunResult>> getBenchReports() {
         return Collections.unmodifiableMap(benchReports);
     }
 
-    public Map<StudyInfo, RunResult> getStudyReports() {
+    public Map<StudyInfo, StudyRunResult> getStudyReports() {
         return Collections.unmodifiableMap(studyReports);
     }
 
-    public void addBenchReport(Class<?> testClass, Method testMethod, Map<Integer, RunResult> result) {
+    public void addBenchReport(Class<?> testClass, Method testMethod, Map<Integer, BenchRunResult> result) {
         if (result == null) {
             throw new NullPointerException();
         }
         benchReports.put(new BenchInfo(testClass, testMethod), result);
     }
 
-    public void addStudyReport(Class<?> testClass, Method testMethod, RunResult result) {
+    public void addStudyReport(Class<?> testClass, Method testMethod, StudyRunResult result) {
         if (result == null) {
             throw new NullPointerException();
         }

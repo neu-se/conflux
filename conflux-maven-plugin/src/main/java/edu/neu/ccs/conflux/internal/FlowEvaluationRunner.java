@@ -3,7 +3,8 @@ package edu.neu.ccs.conflux.internal;
 import edu.columbia.cs.psl.phosphor.TaintUtils;
 import edu.columbia.cs.psl.phosphor.struct.PowerSetTree;
 import edu.neu.ccs.conflux.IdentityFilter;
-import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
+import edu.neu.ccs.conflux.internal.runtime.BenchTaintTagChecker;
+import edu.neu.ccs.conflux.internal.runtime.StudyTaintTagChecker;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 
@@ -116,16 +117,16 @@ public class FlowEvaluationRunner {
     }
 
     public enum TestType {
-        BENCH(FlowBench.class, TaintTagChecker.class, int.class) {
+        BENCH(FlowBench.class, BenchTaintTagChecker.class, int.class) {
             @Override
             public Throwable runTest(Class<?> testClass, Method testMethod, int[] numbersOfEntities,
                                      FlowReport report) {
                 try {
                     validateTestMethod(testMethod);
-                    Map<Integer, RunResult> result = new HashMap<>();
+                    Map<Integer, BenchRunResult> result = new HashMap<>();
                     for (int numberOfEntities : numbersOfEntities) {
                         Object receiver = testClass.newInstance();
-                        TaintTagChecker checker = new TaintTagChecker();
+                        BenchTaintTagChecker checker = new BenchTaintTagChecker();
                         PowerSetTree.getInstance().reset();
                         testMethod.invoke(receiver, checker, numberOfEntities);
                         result.put(numberOfEntities, checker.toRunResult());
@@ -137,21 +138,25 @@ public class FlowEvaluationRunner {
                 }
             }
         },
-        STUDY(FlowStudy.class, TaintTagChecker.class) {
+        STUDY(FlowStudy.class, StudyTaintTagChecker.class) {
             @Override
             public Throwable runTest(Class<?> testClass, Method testMethod, int[] numbersOfEntities,
                                      FlowReport report) {
                 try {
                     validateTestMethod(testMethod);
                     Object receiver = testClass.newInstance();
-                    TaintTagChecker checker = new TaintTagChecker();
+                    StudyTaintTagChecker checker = new StudyTaintTagChecker();
                     PowerSetTree.getInstance().reset();
                     try {
                         testMethod.invoke(receiver, checker);
                     } catch (InvocationTargetException e) {
                         return e.getCause();
                     }
-                    report.addStudyReport(testClass, testMethod, checker.toRunResult());
+                    if (checker.inputRecorded()) {
+                        report.addStudyReport(testClass, testMethod, checker.toRunResult());
+                    } else {
+                        return new IllegalStateException("FlowStudy must record the input value used in the study");
+                    }
                     return null;
                 } catch (Throwable t) {
                     return t;

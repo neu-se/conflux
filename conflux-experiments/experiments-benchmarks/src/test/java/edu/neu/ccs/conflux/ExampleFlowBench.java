@@ -1,18 +1,18 @@
 package edu.neu.ccs.conflux;
 
-import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
+import edu.neu.ccs.conflux.internal.runtime.BenchTaintTagChecker;
 
 public class ExampleFlowBench {
 
     //@FlowBench(group = "example", project = "example", implementation = "example")
-    public void spaceDecode(TaintTagChecker checker, int numberOfEntities) {
+    public void spaceDecode(BenchTaintTagChecker checker, int numberOfEntities) {
         char[] input = "Hello+World".toCharArray();
         FlowEvalUtil.taintWithIndices(input);
         char[] output = spaceDecode(input);
     }
 
     //@FlowBench(group = "example2", project = "example2", implementation = "example2")
-    public void percentDecode(TaintTagChecker checker, int numberOfEntities) {
+    public void percentDecode(BenchTaintTagChecker checker, int numberOfEntities) {
         char[] input = "%48%69%21".toCharArray();
         FlowEvalUtil.taintWithIndices(input);
         char[] output = percentDecode(input);

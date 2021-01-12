@@ -1,8 +1,8 @@
 package edu.neu.ccs.conflux.internal.maven;
 
 import edu.neu.ccs.conflux.internal.BenchInfo;
+import edu.neu.ccs.conflux.internal.BenchRunResult;
 import edu.neu.ccs.conflux.internal.FlowReport;
-import edu.neu.ccs.conflux.internal.RunResult;
 import edu.neu.ccs.conflux.internal.StudyInfo;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -47,6 +47,10 @@ public class FlowReportingMojo extends AbstractMojo {
      */
     @Parameter(property = "configurationNames", readonly = true, required = true)
     private List<String> configurationNames;
+    /**
+     * True if study results should be printed to standard out.
+     */
+    private static final boolean printStudyResults = Boolean.getBoolean("flow.print.studies");
 
     /**
      * Aggregates the results of flow evaluations to produce a final report.
@@ -78,7 +82,9 @@ public class FlowReportingMojo extends AbstractMojo {
                     plotNumbersOfEntities, tableNumberOfEntities);
             ReportManager reportManager = new ReportManager(report);
             reportManager.printBenchResultsTable();
-            reportManager.printStudyResultsTable();
+            if (printStudyResults) {
+                reportManager.printStudyResults();
+            }
             reportManager.writeLatexResults(finalReportDirectory);
         } catch (IOException e) {
             throw new MojoFailureException("Failed to create or write flow report", e);
@@ -114,7 +120,7 @@ public class FlowReportingMojo extends AbstractMojo {
         // values
         for (FlowReport report : configReportMap.values()) {
             for (BenchInfo benchmark : benchmarks) {
-                Map<Integer, RunResult> results = report.getBenchReports().get(benchmark);
+                Map<Integer, BenchRunResult> results = report.getBenchReports().get(benchmark);
                 if (!results.keySet().containsAll(plotNumbersOfEntities)
                         || !results.containsKey(tableNumberOfEntities)) {
                     throw new MojoFailureException("Missing result for at least one required number of entities value");

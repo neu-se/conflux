@@ -1,6 +1,6 @@
 package edu.neu.ccs.conflux;
 
-import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
+import edu.neu.ccs.conflux.internal.runtime.BenchTaintTagChecker;
 
 import java.util.*;
 import java.util.function.Function;
@@ -20,7 +20,7 @@ public class ControlFlowBenchUtil {
         return IntStream.range(0, n).mapToObj(i -> source.get(i % source.size())).collect(Collectors.toList());
     }
 
-    public static void checkTransformer(List<String> entities, List<Integer> manyPerOnes, TaintTagChecker checker,
+    public static void checkTransformer(List<String> entities, List<Integer> manyPerOnes, BenchTaintTagChecker checker,
                                         int numberOfEntities, UnaryOperator<String> transformer, boolean oneToMany) {
         String input = FlowEvalUtil.taintWithIndices(String.join("", takeN(entities, numberOfEntities)));
         String output = transformer.apply(input);
@@ -32,7 +32,7 @@ public class ControlFlowBenchUtil {
         }
     }
 
-    public static void checkOneInputToManyOutputs(TaintTagChecker checker, Iterable<Integer> outputCharsPerInput,
+    public static void checkOneInputToManyOutputs(BenchTaintTagChecker checker, Iterable<Integer> outputCharsPerInput,
                                                   String output) {
         int inputIndex = 0;
         int outputIndex = 0;
@@ -44,7 +44,7 @@ public class ControlFlowBenchUtil {
         }
     }
 
-    public static void checkManyInputsToOneOutput(TaintTagChecker checker, Iterable<Integer> inputCharsPerOutput,
+    public static void checkManyInputsToOneOutput(BenchTaintTagChecker checker, Iterable<Integer> inputCharsPerOutput,
                                                   String output) {
         int inputIndex = 0;
         int outputIndex = 0;
@@ -56,7 +56,7 @@ public class ControlFlowBenchUtil {
         }
     }
 
-    public static void checkManyInputsToOneOutput(TaintTagChecker checker, Iterable<Integer> inputCharsPerOutput,
+    public static void checkManyInputsToOneOutput(BenchTaintTagChecker checker, Iterable<Integer> inputCharsPerOutput,
                                                   byte[] output) {
         int inputIndex = 0;
         int outputIndex = 0;
@@ -71,7 +71,7 @@ public class ControlFlowBenchUtil {
     /**
      * Converts an array of bytes into a string of hexadecimal digits
      */
-    public static void checkHexEncode(TaintTagChecker checker, int numberOfEntities, Function<byte[], String> encoder) {
+    public static void checkHexEncode(BenchTaintTagChecker checker, int numberOfEntities, Function<byte[], String> encoder) {
         List<Byte> entities = Arrays.asList((byte) 126, (byte) 74, (byte) -79, (byte) 32);
         entities = takeN(entities, numberOfEntities);
         byte[] input = new byte[entities.size()];
@@ -88,7 +88,7 @@ public class ControlFlowBenchUtil {
     /**
      * Converts a string of hexadecimal digits to an array of bytes
      */
-    public static void checkHexDecode(TaintTagChecker checker, int numberOfEntities, Function<String, byte[]> decoder) {
+    public static void checkHexDecode(BenchTaintTagChecker checker, int numberOfEntities, Function<String, byte[]> decoder) {
         List<String> entities = Arrays.asList("7e", "4a", "b1", "20");
         String input = FlowEvalUtil.taintWithIndices(String.join("", takeN(entities, numberOfEntities)));
         byte[] output = decoder.apply(input);
@@ -100,7 +100,7 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when encoding a string of spaces characters as '+'s as is done in the
      * 'www-form-urlencoded' encoding scheme.
      */
-    public static void checkSpacesUrlEncode(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
+    public static void checkSpacesUrlEncode(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
         checkTransformer(Collections.singletonList(" "), Collections.singletonList(1), checker, numberOfEntities,
                 encoder, true);
     }
@@ -109,7 +109,7 @@ public class ControlFlowBenchUtil {
      * Checks taint propagation when decoding a string of '+' characters as spaces as is done when decoding the
      * 'www-form-urlencoded' encoding scheme.
      */
-    public static void checkSpacesUrlDecode(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> decoder) {
+    public static void checkSpacesUrlDecode(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> decoder) {
         checkTransformer(Collections.singletonList("+"), Collections.singletonList(1), checker, numberOfEntities,
                 decoder, false);
     }
@@ -117,7 +117,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when encoding reserved ascii characters to percent-encoded octets.
      */
-    public static void checkReservedPercentEncode(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
+    public static void checkReservedPercentEncode(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
         List<String> entities = new LinkedList<>();
         for(char c : RESERVED_CHARS_FOR_PERCENT_ENCODING.toCharArray()) {
             entities.add(Character.toString(c));
@@ -129,7 +129,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when decoding reserved ascii characters from percent-encoded octets.
      */
-    public static void checkReservedPercentDecode(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> decoder) {
+    public static void checkReservedPercentDecode(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> decoder) {
         checkTransformer(Arrays.asList("%3a", "%40", "%26", "%25"), Collections.singletonList(3), checker,
                 numberOfEntities, decoder, false);
     }
@@ -137,7 +137,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when encoding unicode characters to percent-encoded octets.
      */
-    public static void checkUnicodePercentEncode(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
+    public static void checkUnicodePercentEncode(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
         checkTransformer(Arrays.asList("\u03A9", "\u3399"), Arrays.asList(6, 9), checker, numberOfEntities,
                 encoder, true);
     }
@@ -145,7 +145,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when decoding unicode characters from percent-encoded octets.
      */
-    public static void checkUnicodePercentDecode(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> decoder) {
+    public static void checkUnicodePercentDecode(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> decoder) {
         checkTransformer(Arrays.asList("%CE%A9", "%E3%8E%99"), Arrays.asList(6, 9), checker, numberOfEntities,
                 decoder, false);
     }
@@ -153,7 +153,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when escaping HTML reserved characters by replacing them with named character entities.
      */
-    public static void checkHtmlEscape(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> escaper) {
+    public static void checkHtmlEscape(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> escaper) {
         checkTransformer(Arrays.asList("&", "<"), Arrays.asList(5, 4), checker, numberOfEntities,
                 escaper, true);
     }
@@ -161,7 +161,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when unescaping named character entities to HTML reserved characters;
      */
-    public static void checkHtmlUnescape(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> unescaper) {
+    public static void checkHtmlUnescape(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> unescaper) {
         checkTransformer(Arrays.asList("&amp;", "&lt;"), Arrays.asList(5, 4), checker, numberOfEntities,
                 unescaper, false);
     }
@@ -169,7 +169,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when escaping EcmaScript/JavaScript special characters.
      */
-    public static void checkJavaScriptEscape(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> escaper) {
+    public static void checkJavaScriptEscape(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> escaper) {
         checkTransformer(Arrays.asList("\"", "/", "\n", "\u2029"),
                 Arrays.asList(2, 2, 2, 6), checker, numberOfEntities, escaper, true);
     }
@@ -177,7 +177,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when unescaping EcmaScript/JavaScript special characters.
      */
-    public static void checkJavaScriptUnescape(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> unescaper) {
+    public static void checkJavaScriptUnescape(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> unescaper) {
         checkTransformer(Arrays.asList("\\\"", "\\/", "\\n", "\\u2029"),
                 Arrays.asList(2, 2, 2, 6), checker, numberOfEntities, unescaper, false);
     }
@@ -185,7 +185,7 @@ public class ControlFlowBenchUtil {
     /**
      * Quoted-Printable content-transfer-encoding as defined by RFC 1521
      */
-    public static void checkQuotedPrintableEncode(TaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
+    public static void checkQuotedPrintableEncode(BenchTaintTagChecker checker, int numberOfEntities, UnaryOperator<String> encoder) {
         checkTransformer(Arrays.asList("=", "\b", "\u03A9", "\u3399"), Arrays.asList(3, 3, 6, 9),
                 checker, numberOfEntities, encoder, true);
     }
@@ -193,7 +193,7 @@ public class ControlFlowBenchUtil {
     /**
      * Checks taint propagation when decoding Quoted-Printable content-transfer-encoding as defined by RFC 1521.
      */
-    public static void checkQuotedPrintableDecode(TaintTagChecker checker, int numberOfEntities,
+    public static void checkQuotedPrintableDecode(BenchTaintTagChecker checker, int numberOfEntities,
                                                   UnaryOperator<String> decoder) {
         checkTransformer(Arrays.asList("=3D", "=08", "=CE=A9", "=E3=8E=99"), Arrays.asList(3, 3, 6, 9),
                 checker, numberOfEntities, decoder, false);

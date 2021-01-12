@@ -1,7 +1,7 @@
 package edu.neu.ccs.conflux;
 
 import edu.neu.ccs.conflux.internal.FlowBench;
-import edu.neu.ccs.conflux.internal.runtime.TaintTagChecker;
+import edu.neu.ccs.conflux.internal.runtime.BenchTaintTagChecker;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
@@ -27,42 +27,42 @@ public class JavaClassLibraryFlowBench {
     };
 
     @FlowBench(group = "hex-encode", project = "Java Class Library", implementation = "DatatypeConverter")
-    public void hexEncode(TaintTagChecker checker, int numberOfEntities) {
+    public void hexEncode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkHexEncode(checker, numberOfEntities, DatatypeConverter::printHexBinary);
     }
 
     @FlowBench(group = "hex-decode", project = "Java Class Library", implementation = "DatatypeConverter")
-    public void hexDecode(TaintTagChecker checker, int numberOfEntities) {
+    public void hexDecode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkHexDecode(checker, numberOfEntities, DatatypeConverter::parseHexBinary);
     }
 
     @FlowBench(group = "spaces-url-encode", project = "Java Class Library", implementation = "URLEncoder")
-    public void spacesUrlEncode(TaintTagChecker checker, int numberOfEntities) {
+    public void spacesUrlEncode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkSpacesUrlEncode(checker, numberOfEntities, wrappedURLEncoder);
     }
 
     @FlowBench(group = "spaces-url-decode", project = "Java Class Library", implementation = "URLDecoder")
-    public void spacesUrlDecode(TaintTagChecker checker, int numberOfEntities) {
+    public void spacesUrlDecode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkSpacesUrlDecode(checker, numberOfEntities, wrappedURLDecoder);
     }
 
     @FlowBench(group = "reserved-percent-encode", project = "Java Class Library", implementation = "URLEncoder")
-    public void reservedPercentEncode(TaintTagChecker checker, int numberOfEntities) {
+    public void reservedPercentEncode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkReservedPercentEncode(checker, numberOfEntities, wrappedURLEncoder);
     }
 
     @FlowBench(group = "reserved-percent-decode", project = "Java Class Library", implementation = "URLDecoder")
-    public void reservedPercentDecode(TaintTagChecker checker, int numberOfEntities) {
+    public void reservedPercentDecode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkReservedPercentDecode(checker, numberOfEntities, wrappedURLDecoder);
     }
 
     @FlowBench(group = "unicode-percent-encode", project = "Java Class Library", implementation = "URLEncoder")
-    public void unicodePercentEncode(TaintTagChecker checker, int numberOfEntities) {
+    public void unicodePercentEncode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkUnicodePercentEncode(checker, numberOfEntities, wrappedURLEncoder);
     }
 
     @FlowBench(group = "unicode-percent-decode", project = "Java Class Library", implementation = "URLDecoder")
-    public void unicodePercentDecode(TaintTagChecker checker, int numberOfEntities) {
+    public void unicodePercentDecode(BenchTaintTagChecker checker, int numberOfEntities) {
         ControlFlowBenchUtil.checkUnicodePercentDecode(checker, numberOfEntities, wrappedURLDecoder);
     }
 }
