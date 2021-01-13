@@ -10,11 +10,7 @@ import edu.neu.ccs.conflux.internal.runtime.StudyTaintTagChecker;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-public class Closure20140814FlowStudy {
-
-    static {
-        //LogManager.getLogManager().reset();
-    }
+public class ClosureFlowStudy {
 
     /**
      * https://github.com/google/closure-compiler/issues/652

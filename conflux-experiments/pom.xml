@@ -10,8 +10,9 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modules>
-        <module>experiments-closure-v20140814</module>
-        <module>experiments-rhino-1.7.11</module>
+        <module>experiments-closure</module>
+        <module>experiments-rhino</module>
+        <module>experiments-openrefine</module>
         <module>experiments-benchmarks</module>
         <module>experiments-report</module>
     </modules>
@@ -41,6 +42,32 @@
         <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
     </properties>
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>install-openrefine</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>
+                                ${project.basedir}/experiments-openrefine/src/lib/openrefine-3.3.jar
+                            </file>
+                            <groupId>org.openrefine</groupId>
+                            <artifactId>openrefine</artifactId>
+                            <version>3.3</version>
+                            <packaging>jar</packaging>
+                            <generatePom>true</generatePom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -232,10 +259,13 @@
                                         ${main.base.directory}/experiments-benchmarks/target/flow-reports
                                     </param>
                                     <param>
-                                        ${main.base.directory}/experiments-closure-v20140814/target/flow-reports
+                                        ${main.base.directory}/experiments-closure/target/flow-reports
                                     </param>
                                     <param>
-                                        ${main.base.directory}/experiments-rhino-1.7.11/target/flow-reports
+                                        ${main.base.directory}/experiments-rhino/target/flow-reports
+                                    </param>
+                                    <param>
+                                        ${main.base.directory}/experiments-openrefine/target/flow-reports
                                     </param>
                                 </reportDirectories>
                                 <configurationNames>
