@@ -3,6 +3,7 @@ package edu.neu.ccs.conflux.internal.policy.conflux;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.ArrayList;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.List;
+import edu.columbia.cs.psl.phosphor.struct.harmony.util.StringBuilder;
 
 /**
  * Maps between instability levels and stacks of taint tags.
@@ -117,6 +118,22 @@ final class LevelStacks<E> {
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("{");
+        boolean first = true;
+        for (int key = 0; key < stacks.size(); key++) {
+            if (containsKey(key)) {
+                if (!first) {
+                    builder.append(", ");
+                }
+                first = false;
+                builder.append(key).append(" = ").append(get(key));
+            }
+        }
+        return builder.append("}").toString();
+    }
+
     private static final class Node<E> {
         private final Node<E> next;
         private Taint<E> tag;
@@ -132,6 +149,18 @@ final class LevelStacks<E> {
 
         private Taint<E> getUnion(Taint<E> tag) {
             return Taint.combineTags(this.tag, tag);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder("[");
+            for (Node<E> cur = this; cur != null; cur = cur.next) {
+                builder.append(cur.tag);
+                if (cur.next != null) {
+                    builder.append(", ");
+                }
+            }
+            return builder.append("]").toString();
         }
     }
 }
