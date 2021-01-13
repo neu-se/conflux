@@ -113,6 +113,35 @@ public class ConfluxControlFlowStackTest {
         ctrl.startFrame(2, 2).setNextFrameArgStable().setNextFrameArgUnstable(1).pushFrame();
     }
 
+    @Test
+    public void testCopyDependent() {
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
+        // Prepare frame for a call to method with 3 arguments that is within one loop
+        ctrl.startFrame(1, 3)
+                .setNextFrameArgDependent(new int[]{0})
+                .setNextFrameArgStable()
+                .setNextFrameArgUnstable(1);
+        ctrl.pushFrame();
+        ctrl.setNextBranchTag(Taint.withLabel(0));
+        ctrl.pushUnstable(1, 3, 0);
+        assertNullOrEmpty(ctrl.copyTagDependent(new int[]{0}));
+        assertNullOrEmpty(ctrl.copyTagDependent(new int[]{1}));
+        assertContainsLabels(ctrl.copyTagDependent(new int[]{2}), 0);
+    }
+
+    @Test
+    public void testPushDependent() {
+        ConfluxControlFlowStack<Object> ctrl = new ConfluxControlFlowStack<>();
+        // Prepare frame for a call to method with 1 argument that is within one loop
+        ctrl.startFrame(1, 3)
+                .setNextFrameArgUnstable(1);//  unstable with respect to all containing loops
+        ctrl.pushFrame();
+        ctrl.setNextBranchTag(Taint.withLabel(0));
+        ctrl.pushDependent(0, 2, new int[]{0});
+        assertNullOrEmpty(ctrl.copyTagStable());
+        assertContainsLabels(ctrl.copyTagUnstable(0), 0);
+    }
+
     public static void assertContainsLabels(Taint<Object> tag, Object... labels) {
         assertNotNull(tag);
         Set<Object> expected = new HashSet<>(Arrays.asList(labels));
@@ -121,7 +150,7 @@ public class ConfluxControlFlowStackTest {
     }
 
     public static void assertNullOrEmpty(Taint<?> taint) {
-        if(taint != null && !taint.isEmpty()) {
+        if (taint != null && !taint.isEmpty()) {
             fail("Expected null taint. Got: " + taint);
         }
     }
