@@ -1,6 +1,7 @@
 {
   "separator": ",",
-  "quoteCharacter": "true",
+  "quoteCharacter": "\"",
+  "trimStrings": true,
   "limit": -1,
   "skipDataLines": 0,
   "ignoreLines": 0,
@@ -8,5 +9,6 @@
   "guessCellValueTypes": true,
   "processQuotes": true,
   "storeBlankCellsAsNulls": true,
-  "columnNames": []
+  "columnNames": [],
+  "storeBlankRows": true
 }

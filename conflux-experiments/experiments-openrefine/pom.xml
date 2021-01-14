@@ -74,7 +74,18 @@
     <dependency>
       <groupId>org.openrefine</groupId>
       <artifactId>main</artifactId>
-      <version>3.3</version>
+      <version>3.4-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openrefine</groupId>
+      <artifactId>main</artifactId>
+      <version>3.4-SNAPSHOT</version>
+      <classifier>tests</classifier>
     </dependency>
   </dependencies>
 </project>
