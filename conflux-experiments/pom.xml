@@ -44,25 +44,38 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.4.2</version>
                 <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>download-maven</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://github.com/OpenRefine/OpenRefine/archive/3.3.tar.gz</url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.basedir}/experiments-openrefine/src/lib/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
                 <executions>
                     <execution>
                         <id>install-openrefine</id>
                         <phase>validate</phase>
                         <goals>
-                            <goal>install-file</goal>
+                            <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <file>
-                                ${project.basedir}/experiments-openrefine/src/lib/openrefine-3.3.jar
-                            </file>
-                            <groupId>org.openrefine</groupId>
-                            <artifactId>openrefine</artifactId>
-                            <version>3.3</version>
-                            <packaging>jar</packaging>
-                            <generatePom>true</generatePom>
+                            <executable>${project.basedir}/experiments-openrefine/src/lib/OpenRefine-3.3/refine</executable>
+                            <commandlineArgs>build</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
