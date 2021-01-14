@@ -1,0 +1,12 @@
+{
+  "separator": ",",
+  "quoteCharacter": "true",
+  "limit": -1,
+  "skipDataLines": 0,
+  "ignoreLines": 0,
+  "headerLines": 0,
+  "guessCellValueTypes": true,
+  "processQuotes": true,
+  "storeBlankCellsAsNulls": true,
+  "columnNames": []
+}

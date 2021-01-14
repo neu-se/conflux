@@ -73,7 +73,7 @@
   <dependencies>
     <dependency>
       <groupId>org.openrefine</groupId>
-      <artifactId>openrefine</artifactId>
+      <artifactId>main</artifactId>
       <version>3.3</version>
     </dependency>
   </dependencies>

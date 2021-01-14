@@ -118,8 +118,11 @@ public class FlowEvalUtil {
         return input;
     }
 
+    public static String readResource(Class<?> clazz, String name) {
+        return new Scanner(clazz.getResourceAsStream(name), "UTF-8").useDelimiter("\\A").next();
+    }
+
     public static String readAndTaintResource(Class<?> clazz, String name) {
-        return taintWithIndices(new Scanner(clazz.getResourceAsStream(name), "UTF-8")
-                .useDelimiter("\\A").next());
+        return taintWithIndices(readResource(clazz, name));
     }
 }

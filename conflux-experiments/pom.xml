@@ -44,38 +44,24 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.4.2</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
                 <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>download-maven</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://github.com/OpenRefine/OpenRefine/archive/3.3.tar.gz</url>
-                            <unpack>true</unpack>
-                            <outputDirectory>${project.basedir}/experiments-openrefine/src/lib/</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
                 <executions>
                     <execution>
                         <id>install-openrefine</id>
                         <phase>validate</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>install-file</goal>
                         </goals>
                         <configuration>
-                            <executable>${project.basedir}/experiments-openrefine/src/lib/OpenRefine-3.3/refine</executable>
-                            <commandlineArgs>build</commandlineArgs>
+                            <file>
+                                ${project.basedir}/experiments-openrefine/src/lib/openrefine-main.jar
+                            </file>
+                            <groupId>org.openrefine</groupId>
+                            <artifactId>main</artifactId>
+                            <version>3.3</version>
+                            <packaging>jar</packaging>
                         </configuration>
                     </execution>
                 </executions>
