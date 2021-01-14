@@ -50,6 +50,8 @@ public class FlowEvaluationRunner {
         }
         if (!errors.isEmpty()) {
             System.exit(-1);
+        } else {
+            System.exit(0);
         }
     }
 
