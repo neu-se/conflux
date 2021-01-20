@@ -9,8 +9,8 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <properties>
-    <main.base.directory>${project.parent.basedir}</main.base.directory>
-    <main.build.directory>${project.parent.build.directory}</main.build.directory>
+    <experiments.base.directory>${project.parent.basedir}</experiments.base.directory>
+    <root.build.directory>${project.parent.parent.build.directory}</root.build.directory>
   </properties>
   <build>
     <plugins>

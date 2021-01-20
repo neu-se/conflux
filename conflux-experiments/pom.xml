@@ -18,32 +18,7 @@
         <module>experiments-report</module>
     </modules>
     <properties>
-        <main.base.directory>${project.basedir}</main.base.directory>
-        <main.build.directory>${project.build.directory}</main.build.directory>
-        <!--  Data Only   -->
-        <data.only.jvm>jvm-inst-data-only</data.only.jvm>
-        <data.only.manager>
-            edu.neu.ccs.conflux.internal.policy.exception.ExceptionalControlFlowManager
-        </data.only.manager>
-        <data.only.cache>${project.build.directory}/data-only-cache</data.only.cache>
-        <!-- Basic Control -->
-        <basic.control.jvm>jvm-inst-basic-control</basic.control.jvm>
-        <basic.control.manager>
-            edu.neu.ccs.conflux.internal.policy.basic.BasicControlFlowManager
-        </basic.control.manager>
-        <basic.control.cache>${project.build.directory}/basic-control-cache</basic.control.cache>
-        <!-- Strict Control -->
-        <strict.control.jvm>jvm-inst-strict-control</strict.control.jvm>
-        <strict.control.manager>
-            edu.neu.ccs.conflux.internal.policy.strict.StrictControlFlowManager
-        </strict.control.manager>
-        <strict.control.cache>${project.build.directory}/strict-control-cache</strict.control.cache>
-        <!-- Conflux -->
-        <conflux.jvm>jvm-inst-conflux</conflux.jvm>
-        <conflux.manager>
-            edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowManager
-        </conflux.manager>
-        <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
+        <experiments.base.directory>${project.basedir}</experiments.base.directory>
     </properties>
     <build>
         <plugins>
@@ -91,88 +66,6 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>edu.gmu.swe.phosphor</groupId>
-                    <artifactId>phosphor-instrument-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>data-only</id>
-                            <goals>
-                                <goal>instrument</goal>
-                            </goals>
-                            <configuration>
-                                <targetBaseDir>${main.build.directory}</targetBaseDir>
-                                <targetName>${data.only.jvm}</targetName>
-                                <options>
-                                    <quiet/>
-                                    <controlFlowManager>${data.only.manager}</controlFlowManager>
-                                    <forceUnboxAcmpEq/>
-                                    <withEnumsByValue/>
-                                    <withArrayIndexTags/>
-                                    <reenableCaches/>
-                                    <withHeavyObjEqualsHashcode/>
-                                </options>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>basic-control</id>
-                            <goals>
-                                <goal>instrument</goal>
-                            </goals>
-                            <configuration>
-                                <targetBaseDir>${main.build.directory}</targetBaseDir>
-                                <targetName>${basic.control.jvm}</targetName>
-                                <options>
-                                    <quiet/>
-                                    <controlFlowManager>${basic.control.manager}</controlFlowManager>
-                                    <forceUnboxAcmpEq/>
-                                    <withEnumsByValue/>
-                                    <withArrayIndexTags/>
-                                    <reenableCaches/>
-                                    <withHeavyObjEqualsHashcode/>
-                                </options>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>strict-control</id>
-                            <goals>
-                                <goal>instrument</goal>
-                            </goals>
-                            <configuration>
-                                <targetBaseDir>${main.build.directory}</targetBaseDir>
-                                <targetName>${strict.control.jvm}</targetName>
-                                <options>
-                                    <quiet/>
-                                    <controlFlowManager>${strict.control.manager}</controlFlowManager>
-                                    <forceUnboxAcmpEq/>
-                                    <withEnumsByValue/>
-                                    <withArrayIndexTags/>
-                                    <reenableCaches/>
-                                    <withHeavyObjEqualsHashcode/>
-                                </options>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>conflux</id>
-                            <goals>
-                                <goal>instrument</goal>
-                            </goals>
-                            <configuration>
-                                <targetBaseDir>${main.build.directory}</targetBaseDir>
-                                <targetName>${conflux.jvm}</targetName>
-                                <options>
-                                    <quiet/>
-                                    <controlFlowManager>${conflux.manager}</controlFlowManager>
-                                    <forceUnboxAcmpEq/>
-                                    <withEnumsByValue/>
-                                    <withArrayIndexTags/>
-                                    <reenableCaches/>
-                                    <withHeavyObjEqualsHashcode/>
-                                </options>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
                     <groupId>edu.neu.ccs.conflux</groupId>
                     <artifactId>conflux-maven-plugin</artifactId>
                     <executions>
@@ -200,7 +93,7 @@
                                             <withHeavyObjEqualsHashcode/>
                                         </options>
                                         <instrumentedJVM>
-                                            ${main.build.directory}/${data.only.jvm}
+                                            ${root.build.directory}/${data.only.jvm}
                                         </instrumentedJVM>
                                     </phosphorConfiguration>
                                     <phosphorConfiguration>
@@ -216,7 +109,7 @@
                                             <withHeavyObjEqualsHashcode/>
                                         </options>
                                         <instrumentedJVM>
-                                            ${main.build.directory}/${basic.control.jvm}
+                                            ${root.build.directory}/${basic.control.jvm}
                                         </instrumentedJVM>
                                     </phosphorConfiguration>
                                     <phosphorConfiguration>
@@ -232,7 +125,7 @@
                                             <withHeavyObjEqualsHashcode/>
                                         </options>
                                         <instrumentedJVM>
-                                            ${main.build.directory}/${strict.control.jvm}
+                                            ${root.build.directory}/${strict.control.jvm}
                                         </instrumentedJVM>
                                     </phosphorConfiguration>
                                     <phosphorConfiguration>
@@ -248,7 +141,7 @@
                                             <withHeavyObjEqualsHashcode/>
                                         </options>
                                         <instrumentedJVM>
-                                            ${main.build.directory}/${conflux.jvm}
+                                            ${root.build.directory}/${conflux.jvm}
                                         </instrumentedJVM>
                                     </phosphorConfiguration>
                                 </phosphorConfigurations>
@@ -274,19 +167,19 @@
                             <configuration>
                                 <reportDirectories>
                                     <param>
-                                        ${main.base.directory}/experiments-benchmarks/target/flow-reports
+                                        ${experiments.base.directory}/experiments-benchmarks/target/flow-reports
                                     </param>
                                     <param>
-                                        ${main.base.directory}/experiments-closure/target/flow-reports
+                                        ${experiments.base.directory}/experiments-closure/target/flow-reports
                                     </param>
                                     <param>
-                                        ${main.base.directory}/experiments-rhino/target/flow-reports
+                                        ${experiments.base.directory}/experiments-rhino/target/flow-reports
                                     </param>
                                     <param>
-                                        ${main.base.directory}/experiments-openrefine/target/flow-reports
+                                        ${experiments.base.directory}/experiments-openrefine/target/flow-reports
                                     </param>
                                     <param>
-                                        ${main.base.directory}/experiments-checkstyle/target/flow-reports
+                                        ${experiments.base.directory}/experiments-checkstyle/target/flow-reports
                                     </param>
                                 </reportDirectories>
                                 <configurationNames>

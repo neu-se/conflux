@@ -10,11 +10,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <properties>
-        <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
-        <conflux.jvm>jvm-inst-conflux</conflux.jvm>
-        <conflux.manager>
-            edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowManager
-        </conflux.manager>
+        <root.build.directory>${project.parent.build.directory}</root.build.directory>
     </properties>
     <build>
         <plugins>
@@ -60,33 +56,6 @@
                     <plugin>
                         <groupId>edu.gmu.swe.phosphor</groupId>
                         <artifactId>phosphor-instrument-maven-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>edu.neu.ccs.conflux</groupId>
-                                <artifactId>conflux-policies</artifactId>
-                                <version>1.0.0-SNAPSHOT</version>
-                            </dependency>
-                        </dependencies>
-                        <executions>
-                            <execution>
-                                <id>conflux</id>
-                                <goals>
-                                    <goal>instrument</goal>
-                                </goals>
-                                <configuration>
-                                    <targetName>${conflux.jvm}</targetName>
-                                    <options>
-                                        <controlFlowManager>${conflux.manager}</controlFlowManager>
-                                        <forceUnboxAcmpEq/>
-                                        <withEnumsByValue/>
-                                        <quiet/>
-                                    </options>
-                                    <associatedCaches>
-                                        <associatedCache>${conflux.cache}</associatedCache>
-                                    </associatedCaches>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -95,7 +64,7 @@
                             <execution>
                                 <id>test-conflux</id>
                                 <configuration>
-                                    <jvm>${project.build.directory}/${conflux.jvm}/bin/java</jvm>
+                                    <jvm>${root.build.directory}/${conflux.jvm}/bin/java</jvm>
                                     <includes>
                                         <include>**/*ConfluxITCase.java</include>
                                     </includes>

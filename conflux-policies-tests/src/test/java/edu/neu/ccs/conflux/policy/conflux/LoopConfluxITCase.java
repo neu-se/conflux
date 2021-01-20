@@ -3,7 +3,6 @@ package edu.neu.ccs.conflux.policy.conflux;
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 import edu.neu.ccs.conflux.policy.BasePolicyTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -56,23 +55,6 @@ public class LoopConfluxITCase extends BasePolicyTest {
         Taint<?> tag = MultiTainter.getTaint(z);
         assertNonNullTaint(tag);
         assertTaintHasOnlyLabels(tag, 4);
-    }
-
-    @Test
-    @Ignore("z = i is considered to be outside of the loop")
-    public void testIndexOfBreak() {
-        int z = 0;
-        int[] a = new int[5];
-        BasePolicyTest.taintWithIndices(a);
-        for(int i = 0; i < a.length; i++) {
-            if(a[i] == 0) {
-                z = i;
-                break;
-            }
-        }
-        Taint<?> tag = MultiTainter.getTaint(z);
-        assertNonNullTaint(tag);
-        assertTaintHasOnlyLabels(tag, 0);
     }
 
     @Test
