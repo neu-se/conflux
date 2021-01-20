@@ -13,7 +13,9 @@ import java.io.PrintStream;
 public class ClosureFlowStudy {
 
     /**
-     * https://github.com/google/closure-compiler/issues/652
+     * Issue: https://github.com/google/closure-compiler/issues/652
+     * <p>
+     * Fix: https://github.com/google/closure-compiler/commit/aac5d11480a0ed3f37919c23a5d3cc210e534bd5
      */
     @FlowStudy(project = "closure", issue = "652")
     public void issue652(StudyTaintTagChecker checker) {

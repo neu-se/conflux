@@ -21,7 +21,9 @@ import java.util.Arrays;
 public class CheckstyleFlowStudy {
 
     /**
-     * https://github.com/checkstyle/checkstyle/issues/8934
+     * Issue: https://github.com/checkstyle/checkstyle/issues/8934
+     * <p>
+     * Fix: https://github.com/checkstyle/checkstyle/commit/70c7ae0e1866074530a49c983d015936a0c2c10f
      */
     @FlowStudy(project = "checkstyle", issue = "8934")
     public void issue8934(StudyTaintTagChecker checker) throws IOException {

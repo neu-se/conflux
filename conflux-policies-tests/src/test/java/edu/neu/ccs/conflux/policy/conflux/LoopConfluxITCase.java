@@ -1,18 +1,18 @@
-package edu.neu.ccs.conflux.binding;
+package edu.neu.ccs.conflux.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
-import edu.neu.ccs.conflux.BaseMultiTaintClass;
+import edu.neu.ccs.conflux.policy.BasePolicyTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.LinkedList;
 
-public class LoopBindingControlITCase extends BaseMultiTaintClass {
+public class LoopConfluxITCase extends BasePolicyTest {
 
     @Test
     public void testLoopingVarConditionallyUpdated() {
-        char[] c = GeneralBindingControlITCase.createDigitArray();
+        char[] c = GeneralConfluxITCase.createDigitArray();
         LinkedList<Character> digits = new LinkedList<>();
         for(int i = 0; i < c.length; i++) {
             digits.add(c[i]);
@@ -33,7 +33,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
         int z = 0;
         int[] a = new int[5];
         a[4] = 1;
-        GeneralBindingControlITCase.taintWithIndices(a);
+        BasePolicyTest.taintWithIndices(a);
         for(int i : a) {
             if(i == 0) {
                 z++;
@@ -47,7 +47,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
     public void testIndexOfNoBreak() {
         int z = 0;
         int[] a = new int[5];
-        GeneralBindingControlITCase.taintWithIndices(a);
+        BasePolicyTest.taintWithIndices(a);
         for(int i = 0; i < a.length; i++) {
             if(a[i] == 0) {
                 z = i;
@@ -63,7 +63,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
     public void testIndexOfBreak() {
         int z = 0;
         int[] a = new int[5];
-        GeneralBindingControlITCase.taintWithIndices(a);
+        BasePolicyTest.taintWithIndices(a);
         for(int i = 0; i < a.length; i++) {
             if(a[i] == 0) {
                 z = i;
@@ -79,7 +79,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
     public void testContainsNoBreak() {
         boolean contains = false;
         int[] a = new int[5];
-        GeneralBindingControlITCase.taintWithIndices(a);
+        BasePolicyTest.taintWithIndices(a);
         for(int value : a) {
             if(value == 0) {
                 contains = true;
@@ -93,7 +93,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
     public void testContainsBreak() {
         boolean contains = false;
         int[] a = new int[5];
-        GeneralBindingControlITCase.taintWithIndices(a);
+        BasePolicyTest.taintWithIndices(a);
         for(int value : a) {
             if(value == 0) {
                 contains = true;
@@ -121,7 +121,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
     public void testPartialControlExclusionSameMethod() {
         boolean outerCondition = MultiTainter.taintedBoolean(true, "outerCondition");
         int[] a = new int[5];
-        GeneralBindingControlITCase.taintWithIndices(a);
+        BasePolicyTest.taintWithIndices(a);
         int result = partialControlExclusion(outerCondition, a);
         Taint<?> tag = MultiTainter.getTaint(result);
         assertNonNullTaint(tag);
@@ -132,7 +132,7 @@ public class LoopBindingControlITCase extends BaseMultiTaintClass {
     public void testPartialControlExclusionDifferentMethod() {
         boolean outerCondition = MultiTainter.taintedBoolean(true, "outerCondition");
         int[] a = new int[5];
-        GeneralBindingControlITCase.taintWithIndices(a);
+        BasePolicyTest.taintWithIndices(a);
         int result = 5;
         if(outerCondition) {
             result = partialControlExclusion(true, a);

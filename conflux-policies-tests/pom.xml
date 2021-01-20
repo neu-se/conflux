@@ -12,9 +12,9 @@
     <properties>
         <conflux.cache>${project.build.directory}/conflux-cache</conflux.cache>
         <conflux.jvm>jvm-inst-conflux</conflux.jvm>
-        <conflux.control.manager>
+        <conflux.manager>
             edu.neu.ccs.conflux.internal.policy.conflux.ConfluxControlFlowManager
-        </conflux.control.manager>
+        </conflux.manager>
     </properties>
     <build>
         <plugins>
@@ -76,7 +76,7 @@
                                 <configuration>
                                     <targetName>${conflux.jvm}</targetName>
                                     <options>
-                                        <controlFlowManager>${conflux.control.manager}</controlFlowManager>
+                                        <controlFlowManager>${conflux.manager}</controlFlowManager>
                                         <forceUnboxAcmpEq/>
                                         <withEnumsByValue/>
                                         <quiet/>
@@ -97,13 +97,13 @@
                                 <configuration>
                                     <jvm>${project.build.directory}/${conflux.jvm}/bin/java</jvm>
                                     <includes>
-                                        <include>**/*BindingControlITCase.java</include>
+                                        <include>**/*ConfluxITCase.java</include>
                                     </includes>
                                     <reuseForks>false</reuseForks>
                                     <argLine>
                                         -Dphosphor.verify=true
                                         -Xbootclasspath/p:${edu.gmu.swe.phosphor:Phosphor:jar}:${edu.neu.ccs.conflux:conflux-policies:jar}
-                                        -javaagent:${edu.gmu.swe.phosphor:Phosphor:jar}=enum,acmpeq,cacheDir=${conflux.cache},controlFlowManager=${conflux.control.manager}
+                                        -javaagent:${edu.gmu.swe.phosphor:Phosphor:jar}=enum,acmpeq,cacheDir=${conflux.cache},controlFlowManager=${conflux.manager}
                                     </argLine>
                                 </configuration>
                                 <goals>

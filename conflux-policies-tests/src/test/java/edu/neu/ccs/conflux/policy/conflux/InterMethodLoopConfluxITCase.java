@@ -1,16 +1,16 @@
-package edu.neu.ccs.conflux.binding;
+package edu.neu.ccs.conflux.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
-import edu.neu.ccs.conflux.BaseMultiTaintClass;
+import edu.neu.ccs.conflux.policy.BasePolicyTest;
 import org.junit.Test;
 
-public class InterMethodLoopBindingControlITCase extends BaseMultiTaintClass {
+public class InterMethodLoopConfluxITCase extends BasePolicyTest {
 
     @Test
     public void testReceiverInvariantParamInvariant() {
         int[] values = new int[]{1, 1, 0, 1};
-        GeneralBindingControlITCase.taintWithIndices(values);
+        BasePolicyTest.taintWithIndices(values);
         Example e = new Example();
         for(int i = 0; i < values.length; i++) {
             if(values[i] == 0) {
@@ -24,7 +24,7 @@ public class InterMethodLoopBindingControlITCase extends BaseMultiTaintClass {
     @Test
     public void testReceiverVariantParamInvariant() {
         int[] values = new int[]{0, 1, 0, 1};
-        GeneralBindingControlITCase.taintWithIndices(values);
+        BasePolicyTest.taintWithIndices(values);
         Example[] es = new Example[values.length];
         for(int i = 0; i < values.length; i++) {
             es[i] = new Example();
@@ -46,7 +46,7 @@ public class InterMethodLoopBindingControlITCase extends BaseMultiTaintClass {
     @Test
     public void testReceiverInvariantParamVariant() {
         int[] values = new int[]{1, 1, 0, 1};
-        GeneralBindingControlITCase.taintWithIndices(values);
+        BasePolicyTest.taintWithIndices(values);
         Example e = new Example();
         for(int i = 0; i < values.length; i++) {
             if(values[i] == 0) {
@@ -62,7 +62,7 @@ public class InterMethodLoopBindingControlITCase extends BaseMultiTaintClass {
     @Test
     public void testReceiverVariantParamVariant() {
         int[] values = new int[]{0, 1, 0, 1};
-        GeneralBindingControlITCase.taintWithIndices(values);
+        BasePolicyTest.taintWithIndices(values);
         Example[] es = new Example[values.length];
         for(int i = 0; i < values.length; i++) {
             es[i] = new Example();

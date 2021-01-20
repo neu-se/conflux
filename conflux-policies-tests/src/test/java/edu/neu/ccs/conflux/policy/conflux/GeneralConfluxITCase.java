@@ -1,9 +1,8 @@
-package edu.neu.ccs.conflux.binding;
+package edu.neu.ccs.conflux.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.runtime.MultiTainter;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
-import edu.neu.ccs.conflux.BaseMultiTaintClass;
-import org.junit.Ignore;
+import edu.neu.ccs.conflux.policy.BasePolicyTest;
 import org.junit.Test;
 
 import java.util.BitSet;
@@ -11,13 +10,13 @@ import java.util.BitSet;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class GeneralBindingControlITCase extends BaseMultiTaintClass {
+public class GeneralConfluxITCase extends BasePolicyTest {
 
     @Test
     public void testBasicSwitch() {
         int x = MultiTainter.taintedInt(88, "testBasicSwitch");
         int y;
-        switch(x) {
+        switch (x) {
             case 0:
             case 1:
                 y = 5;
@@ -95,16 +94,6 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
         assertTaintHasOnlyLabels(MultiTainter.getTaint(c), "a", "b");
     }
 
-    @Ignore(value = "Requires branch-not-taken semantics")
-    @Test
-    public void testArrayEqualsSingleExitTrue() {
-        int[] a = new int[]{0, 1, 2, 3, 4};
-        taintWithIndices(a);
-        int[] b = new int[]{0, 1, 2, 3, 4};
-        boolean result = arrayEqualsSingleExit(a, b);
-        assertTaintHasOnlyLabels(MultiTainter.getTaint(result), 0, 1, 2, 3, 4);
-    }
-
     @Test
     public void testArrayEqualsSingleExitFalse() {
         int[] a = new int[]{0, 1, 2, 3, 4};
@@ -114,15 +103,6 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
         assertNullOrEmpty(MultiTainter.getTaint(result));
     }
 
-    @Ignore(value = "Need different binding semantics")
-    @Test
-    public void testArrayEqualsMultipleExitTrue() {
-        int[] a = new int[]{0, 1, 2, 3, 4};
-        taintWithIndices(a);
-        int[] b = new int[]{0, 1, 2, 3, 4};
-        boolean result = arrayEqualsMultipleExit(a, b);
-        assertTaintHasOnlyLabels(MultiTainter.getTaint(result), 0, 1, 2, 3, 4);
-    }
 
     @Test
     public void testArrayEqualsMultipleExitFalse() {
@@ -156,32 +136,12 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
         }
     }
 
-    @Ignore(value = "Special casing for single bit checking is disabled")
-    @Test
-    public void testBitSetGetTrue() {
-        BitSet b = new BitSet(10);
-        b.set(0);
-        int i = MultiTainter.taintedInt(0, 0);
-        boolean z = b.get(i);
-        assertTaintHasOnlyLabel(MultiTainter.getTaint(z), 0);
-    }
-
     @Test
     public void testBitSetGetFalse() {
         BitSet b = new BitSet(10);
         int i = MultiTainter.taintedInt(0, 0);
         boolean z = b.get(i);
         assertNullOrEmpty(MultiTainter.getTaint(z));
-    }
-
-    @Ignore(value = "Loop formed via recursive call")
-    @Test
-    public void testRecursiveArrayEqualsFalse() {
-        int[] a = new int[]{0, 1, 2, 3, 4};
-        taintWithIndices(a);
-        int[] b = new int[]{0, 1, 2, 3, 5};
-        boolean result = recursiveEquals(0, a, b);
-        assertNullOrEmpty(MultiTainter.getTaint(result));
     }
 
     public static boolean arrayEqualsSingleExit(int[] a, int[] b) {
@@ -250,12 +210,6 @@ public class GeneralBindingControlITCase extends BaseMultiTaintClass {
             assertNotNull(t);
             Object[] labels = t.getLabels();
             assertArrayEquals(new Object[]{i}, labels);
-        }
-    }
-
-    public static void taintWithIndices(int[] a) {
-        for(int i = 0; i < a.length; i++) {
-            a[i] = MultiTainter.taintedInt(a[i], i);
         }
     }
 

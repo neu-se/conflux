@@ -18,7 +18,9 @@ import java.util.ArrayList;
 public class OpenRefineFlowStudy {
 
     /**
-     * https://github.com/OpenRefine/OpenRefine/issues/2584
+     * Issue: https://github.com/OpenRefine/OpenRefine/issues/2584
+     * <p>
+     * Fix: https://github.com/OpenRefine/OpenRefine/commit/825e687b0b676fd1be1fa0a9d00be22de0e57060
      */
     @FlowStudy(project = "openrefine", issue = "2583")
     public void issue652(StudyTaintTagChecker checker) {
