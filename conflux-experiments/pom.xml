@@ -13,6 +13,7 @@
         <module>experiments-closure</module>
         <module>experiments-rhino</module>
         <module>experiments-openrefine</module>
+        <module>experiments-checkstyle</module>
         <module>experiments-benchmarks</module>
         <module>experiments-report</module>
     </modules>
@@ -282,6 +283,9 @@
                                     </param>
                                     <param>
                                         ${main.base.directory}/experiments-openrefine/target/flow-reports
+                                    </param>
+                                    <param>
+                                        ${main.base.directory}/experiments-checkstyle/target/flow-reports
                                     </param>
                                 </reportDirectories>
                                 <configurationNames>
