@@ -15,7 +15,7 @@ import java.util.Iterator;
 import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.push;
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.COMBINE_TAGS;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
-import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionTrackingMethodRecord.EXCEPTION_HANDLER_START;
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionalMethodRecord.EXCEPTION_HANDLER_START;
 
 public class ConfluxControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<ConfluxControlFlowAnalyzer> {
 

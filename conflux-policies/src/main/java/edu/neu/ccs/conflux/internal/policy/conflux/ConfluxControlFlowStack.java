@@ -1,9 +1,9 @@
 package edu.neu.ccs.conflux.internal.policy.conflux;
 
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
-import edu.neu.ccs.conflux.internal.policy.exception.ExceptionTrackingControlFlowStack;
+import edu.neu.ccs.conflux.internal.policy.exception.ExceptionalControlFlowStack;
 
-public final class ConfluxControlFlowStack<E> extends ExceptionTrackingControlFlowStack<E> {
+public final class ConfluxControlFlowStack<E> extends ExceptionalControlFlowStack<E> {
 
     @SuppressWarnings("rawtypes")
     private static final ConfluxControlFlowStack disabledInstance = new ConfluxControlFlowStack(true);
@@ -113,6 +113,7 @@ public final class ConfluxControlFlowStack<E> extends ExceptionTrackingControlFl
 
     @Override
     public void reset() {
+        super.reset();
         stackTop.reset();
         nextBranchTag = Taint.emptyTaint();
     }

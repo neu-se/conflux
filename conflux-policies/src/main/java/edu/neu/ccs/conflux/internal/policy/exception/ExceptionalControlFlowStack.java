@@ -4,15 +4,15 @@ package edu.neu.ccs.conflux.internal.policy.exception;
 import edu.columbia.cs.psl.phosphor.control.ControlFlowStack;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 
-public abstract class ExceptionTrackingControlFlowStack<E> extends ControlFlowStack {
+public abstract class ExceptionalControlFlowStack<E> extends ControlFlowStack {
 
     private Taint<E> instructionExceptionTag = Taint.emptyTaint();
 
-    public ExceptionTrackingControlFlowStack(boolean disabled) {
+    public ExceptionalControlFlowStack(boolean disabled) {
         super(disabled);
     }
 
-    public ExceptionTrackingControlFlowStack(ExceptionTrackingControlFlowStack<E> stack) {
+    public ExceptionalControlFlowStack(ExceptionalControlFlowStack<E> stack) {
         super(stack.isDisabled());
         this.instructionExceptionTag = stack.instructionExceptionTag;
     }
@@ -27,6 +27,11 @@ public abstract class ExceptionTrackingControlFlowStack<E> extends ControlFlowSt
      */
     public Taint<E> exceptionHandlerStart(Taint<E> handledExceptionTag) {
         return Taint.combineTags(instructionExceptionTag, handledExceptionTag);
+    }
+
+    @Override
+    public void reset() {
+        instructionExceptionTag = Taint.emptyTaint();
     }
 
     @Override

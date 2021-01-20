@@ -20,9 +20,12 @@
     <properties>
         <main.base.directory>${project.basedir}</main.base.directory>
         <main.build.directory>${project.build.directory}</main.build.directory>
-        <!--  Data + Array Index   -->
-        <data.array.index.jvm>jvm-inst-data-only</data.array.index.jvm>
-        <data.array.index.cache>${project.build.directory}/data-only-cache</data.array.index.cache>
+        <!--  Data Only   -->
+        <data.only.jvm>jvm-inst-data-only</data.only.jvm>
+        <data.only.manager>
+            edu.neu.ccs.conflux.internal.policy.exception.ExceptionalControlFlowManager
+        </data.only.manager>
+        <data.only.cache>${project.build.directory}/data-only-cache</data.only.cache>
         <!-- Basic Control -->
         <basic.control.jvm>jvm-inst-basic-control</basic.control.jvm>
         <basic.control.manager>
@@ -92,20 +95,21 @@
                     <artifactId>phosphor-instrument-maven-plugin</artifactId>
                     <executions>
                         <execution>
-                            <id>data-array-index</id>
+                            <id>data-only</id>
                             <goals>
                                 <goal>instrument</goal>
                             </goals>
                             <configuration>
                                 <targetBaseDir>${main.build.directory}</targetBaseDir>
-                                <targetName>${data.array.index.jvm}</targetName>
+                                <targetName>${data.only.jvm}</targetName>
                                 <options>
+                                    <quiet/>
+                                    <controlFlowManager>${data.only.manager}</controlFlowManager>
                                     <forceUnboxAcmpEq/>
                                     <withEnumsByValue/>
                                     <withArrayIndexTags/>
                                     <reenableCaches/>
                                     <withHeavyObjEqualsHashcode/>
-                                    <quiet/>
                                 </options>
                             </configuration>
                         </execution>
@@ -156,13 +160,13 @@
                                 <targetBaseDir>${main.build.directory}</targetBaseDir>
                                 <targetName>${conflux.jvm}</targetName>
                                 <options>
+                                    <quiet/>
                                     <controlFlowManager>${conflux.manager}</controlFlowManager>
                                     <forceUnboxAcmpEq/>
                                     <withEnumsByValue/>
                                     <withArrayIndexTags/>
                                     <reenableCaches/>
                                     <withHeavyObjEqualsHashcode/>
-                                    <quiet/>
                                 </options>
                             </configuration>
                         </execution>
@@ -184,22 +188,19 @@
                                 </bootClasspathJars>
                                 <phosphorConfigurations>
                                     <phosphorConfiguration>
-                                        <name>data-array-index</name>
+                                        <name>data-only</name>
                                         <options>
-                                            <cacheDir>${data.array.index.cache}</cacheDir>
+                                            <cacheDir>${basic.control.cache}</cacheDir>
                                             <quiet/>
-                                            <objmethods/>
+                                            <controlFlowManager>${data.only.manager}</controlFlowManager>
                                             <forceUnboxAcmpEq/>
                                             <withEnumsByValue/>
                                             <withArrayIndexTags/>
                                             <reenableCaches/>
                                             <withHeavyObjEqualsHashcode/>
-                                            <taintTagFactory>
-                                                edu.neu.ccs.conflux.internal.policy.ConfluxTaintTagFactory
-                                            </taintTagFactory>
                                         </options>
                                         <instrumentedJVM>
-                                            ${main.build.directory}/${data.array.index.jvm}
+                                            ${main.build.directory}/${data.only.jvm}
                                         </instrumentedJVM>
                                     </phosphorConfiguration>
                                     <phosphorConfiguration>
@@ -289,7 +290,7 @@
                                     </param>
                                 </reportDirectories>
                                 <configurationNames>
-                                    <param>data-array-index</param>
+                                    <param>data-only</param>
                                     <param>basic-control</param>
                                     <param>strict-control</param>
                                     <param>conflux</param>

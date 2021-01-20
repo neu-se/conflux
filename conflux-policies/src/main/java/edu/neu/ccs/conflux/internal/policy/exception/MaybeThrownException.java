@@ -201,7 +201,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
                 delegate.visitVarInsn(types[2].getOpcode(Opcodes.ILOAD), indices[2]);
                 TaintMethodRecord.COMBINE_TAGS.delegateVisit(delegate);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -228,7 +228,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 delegate.visitVarInsn(types[4].getOpcode(Opcodes.ILOAD), indices[4]);
                 TaintMethodRecord.COMBINE_TAGS.delegateVisit(delegate);
                 TaintMethodRecord.COMBINE_TAGS.delegateVisit(delegate);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -252,7 +252,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 delegate.visitVarInsn(types[2].getOpcode(Opcodes.ILOAD), indices[2]);
                 delegate.visitVarInsn(types[4].getOpcode(Opcodes.ILOAD), indices[4]);
                 TaintMethodRecord.COMBINE_TAGS.delegateVisit(delegate);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -273,7 +273,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // ArithmeticException -> {value2}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -294,7 +294,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // IllegalMonitorStateException -> {}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 TaintMethodRecord.NEW_EMPTY_TAINT.delegateVisit(delegate);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -315,7 +315,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // IllegalMonitorStateException -> {}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 TaintMethodRecord.NEW_EMPTY_TAINT.delegateVisit(delegate);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -336,7 +336,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // NullPointerException -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -357,7 +357,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // NullPointerException -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[2].getOpcode(Opcodes.ILOAD), indices[2]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -379,7 +379,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // WrongMethodTypeException -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[indices.length - 2].getOpcode(Opcodes.ILOAD), indices[indices.length - 2]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -400,7 +400,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // NullPointerException -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[indices.length - 2].getOpcode(Opcodes.ILOAD), indices[indices.length - 2]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -421,7 +421,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // NegativeArraySizeException -> {count}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -442,7 +442,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 //  NullPointerException -> {arrayref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -465,7 +465,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // Throwable -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -486,7 +486,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // ClassCastException -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -507,7 +507,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // NullPointerException -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -529,7 +529,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                 // IllegalMonitorStateException -> {objectref}
                 delegate.visitVarInsn(ALOAD, localVariableManager.getIndexOfMasterControlLV());
                 delegate.visitVarInsn(types[0].getOpcode(Opcodes.ILOAD), indices[0]);
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override
@@ -554,7 +554,7 @@ public final class MaybeThrownException implements PhosphorInstructionInfo {
                     delegate.visitVarInsn(types[i].getOpcode(Opcodes.ILOAD), indices[i]);
                     TaintMethodRecord.COMBINE_TAGS.delegateVisit(delegate);
                 }
-                ExceptionTrackingMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
+                ExceptionalMethodRecord.SET_INSTRUCTION_EXCEPTION_TAG.delegateVisit(delegate);
             }
 
             @Override

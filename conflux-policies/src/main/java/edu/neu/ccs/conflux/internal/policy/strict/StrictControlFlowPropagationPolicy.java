@@ -16,7 +16,7 @@ import static edu.columbia.cs.psl.phosphor.control.ControlFlowPropagationPolicy.
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.COMBINE_TAGS;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 import static edu.neu.ccs.conflux.internal.policy.basic.BasicMethodRecord.*;
-import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionTrackingMethodRecord.EXCEPTION_HANDLER_START;
+import static edu.neu.ccs.conflux.internal.policy.exception.ExceptionalMethodRecord.EXCEPTION_HANDLER_START;
 import static edu.neu.ccs.conflux.internal.policy.strict.StrictMethodRecord.STRICT_CONTROL_STACK_PUSH;
 import static edu.neu.ccs.conflux.internal.policy.strict.StrictMethodRecord.STRICT_CONTROL_STACK_SET_NEXT_BRANCH_TAG;
 
