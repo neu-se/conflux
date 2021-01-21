@@ -83,7 +83,7 @@
                                     <phosphorConfiguration>
                                         <name>data-only</name>
                                         <options>
-                                            <cacheDir>${basic.control.cache}</cacheDir>
+                                            <cacheDir>${data.only.cache}</cacheDir>
                                             <quiet/>
                                             <controlFlowManager>${data.only.manager}</controlFlowManager>
                                             <forceUnboxAcmpEq/>

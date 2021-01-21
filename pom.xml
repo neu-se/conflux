@@ -42,7 +42,7 @@
         <!--  Data Only   -->
         <data.only.jvm>jvm-inst-data-only</data.only.jvm>
         <data.only.manager>
-            edu.neu.ccs.conflux.internal.policy.exception.ExceptionalControlFlowManager
+            edu.neu.ccs.conflux.internal.policy.data.DataOnlyFlowManager
         </data.only.manager>
         <data.only.cache>${project.build.directory}/data-only-cache</data.only.cache>
         <!-- Basic Control -->

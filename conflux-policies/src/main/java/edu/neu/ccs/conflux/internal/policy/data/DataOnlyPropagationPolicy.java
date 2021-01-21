@@ -1,17 +1,19 @@
-package edu.neu.ccs.conflux.internal.policy.exception;
+package edu.neu.ccs.conflux.internal.policy.data;
 
 import edu.columbia.cs.psl.phosphor.PhosphorInstructionInfo;
 import edu.columbia.cs.psl.phosphor.control.AbstractControlFlowPropagationPolicy;
 import edu.columbia.cs.psl.phosphor.control.standard.ExceptionHandlerStart;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Label;
+import edu.neu.ccs.conflux.internal.policy.exception.ExceptionalMethodRecord;
+import edu.neu.ccs.conflux.internal.policy.exception.MaybeThrownException;
 
 import static edu.columbia.cs.psl.phosphor.instrumenter.TaintMethodRecord.NEW_EMPTY_TAINT;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.*;
 
-public class ExceptionalControlFlowPropagationPolicy extends AbstractControlFlowPropagationPolicy<ExceptionMarkingAnalyzer> {
+public class DataOnlyPropagationPolicy extends AbstractControlFlowPropagationPolicy<DataOnlyAnalyzer> {
 
-    public ExceptionalControlFlowPropagationPolicy(ExceptionMarkingAnalyzer marker) {
-        super(marker);
+    public DataOnlyPropagationPolicy(DataOnlyAnalyzer dataOnlyAnalyzer) {
+        super(dataOnlyAnalyzer);
     }
 
     @Override

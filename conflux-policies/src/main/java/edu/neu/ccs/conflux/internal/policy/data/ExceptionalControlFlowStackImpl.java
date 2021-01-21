@@ -1,6 +1,7 @@
-package edu.neu.ccs.conflux.internal.policy.exception;
+package edu.neu.ccs.conflux.internal.policy.data;
 
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
+import edu.neu.ccs.conflux.internal.policy.exception.ExceptionalControlFlowStack;
 
 /**
  * ControlFlowStack that can be used for propagating from an instruction's operands to any exception directly

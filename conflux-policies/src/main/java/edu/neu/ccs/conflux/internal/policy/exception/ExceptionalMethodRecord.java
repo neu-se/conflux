@@ -4,13 +4,11 @@ import edu.columbia.cs.psl.phosphor.instrumenter.MethodRecord;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.Type;
 import edu.columbia.cs.psl.phosphor.runtime.Taint;
 
-import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static edu.columbia.cs.psl.phosphor.org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 public enum ExceptionalMethodRecord implements MethodRecord {
     SET_INSTRUCTION_EXCEPTION_TAG(INVOKEVIRTUAL, ExceptionalControlFlowStack.class, "setInstructionExceptionTag", Void.TYPE, false, Taint.class),
-    EXCEPTION_HANDLER_START(INVOKEVIRTUAL, ExceptionalControlFlowStack.class, "exceptionHandlerStart", Taint.class, false, Taint.class),
-    EXCEPTION_CONTROL_STACK_FACTORY(INVOKESTATIC, ExceptionalControlFlowStackImpl.class, "factory", ExceptionalControlFlowStackImpl.class, false, boolean.class);
+    EXCEPTION_HANDLER_START(INVOKEVIRTUAL, ExceptionalControlFlowStack.class, "exceptionHandlerStart", Taint.class, false, Taint.class);
 
     private final int opcode;
     private final String owner;
