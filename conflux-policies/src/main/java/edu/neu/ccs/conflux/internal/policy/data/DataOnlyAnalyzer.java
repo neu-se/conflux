@@ -20,6 +20,16 @@ public class DataOnlyAnalyzer implements ControlFlowAnalyzer {
     }
 
     private void replaceInstructions(InsnList instructions) {
+        // Phosphor replaces calls to certain methods (e.g., System.arraycopy) with calls to propagation wrappers.
+        // Some of these wrappers determine the propagation logic based on whether the call to the wrapper contains a
+        // ControlFlowStack argument.
+        // The data-only policy is using a ControlFlowStack in order to propagation from the operands of
+        // an instruction that directly triggers an exception to the thrown exception.
+        // Thus, Phosphor will use the propagation wrappers that contain implicit/control flow logic for the policy.
+        // This is not desirable since the data-only policy is intended to propagation taint tag only along explicit
+        // flows.
+        // Therefore, we must replace the original calls with our own wrapper to prevent Phosphor from using an
+        // incorrect wrapper.
         for (AbstractInsnNode instruction : instructions.toArray()) {
             if (instruction instanceof MethodInsnNode) {
                 MethodInsnNode methodInsnNode = (MethodInsnNode) instruction;

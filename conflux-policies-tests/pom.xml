@@ -11,6 +11,10 @@
     </parent>
     <properties>
         <root.build.directory>${project.parent.build.directory}</root.build.directory>
+        <skip.data.only>false</skip.data.only>
+        <skip.basic.control>false</skip.basic.control>
+        <skip.strict.control>false</skip.strict.control>
+        <skip.conflux>false</skip.conflux>
     </properties>
     <build>
         <plugins>
@@ -62,8 +66,69 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>test-data-only</id>
+                                <configuration>
+                                    <skipTests>${skip.data.only}</skipTests>
+                                    <jvm>${root.build.directory}/${data.only.jvm}/bin/java</jvm>
+                                    <includes>
+                                        <include>**/*DataITCase.java</include>
+                                    </includes>
+                                    <reuseForks>false</reuseForks>
+                                    <argLine>
+                                        -Dphosphor.verify=true
+                                        -Xbootclasspath/p:${edu.gmu.swe.phosphor:Phosphor:jar}:${edu.neu.ccs.conflux:conflux-policies:jar}
+                                        -javaagent:${edu.gmu.swe.phosphor:Phosphor:jar}=enum,acmpeq,cacheDir=${data.only.cache},controlFlowManager=${data.only.manager}
+                                    </argLine>
+                                </configuration>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>test-basic-control</id>
+                                <configuration>
+                                    <skipTests>${skip.basic.control}</skipTests>
+                                    <jvm>${root.build.directory}/${basic.control.jvm}/bin/java</jvm>
+                                    <includes>
+                                        <include>**/*BasicITCase.java</include>
+                                    </includes>
+                                    <reuseForks>false</reuseForks>
+                                    <argLine>
+                                        -Dphosphor.verify=true
+                                        -Xbootclasspath/p:${edu.gmu.swe.phosphor:Phosphor:jar}:${edu.neu.ccs.conflux:conflux-policies:jar}
+                                        -javaagent:${edu.gmu.swe.phosphor:Phosphor:jar}=enum,acmpeq,cacheDir=${basic.control.cache},controlFlowManager=${basic.control.manager}
+                                    </argLine>
+                                </configuration>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>test-strict-control</id>
+                                <configuration>
+                                    <skipTests>${skip.strict.control}</skipTests>
+                                    <jvm>${root.build.directory}/${strict.control.jvm}/bin/java</jvm>
+                                    <includes>
+                                        <include>**/*StrictITCase.java</include>
+                                    </includes>
+                                    <reuseForks>false</reuseForks>
+                                    <argLine>
+                                        -Dphosphor.verify=true
+                                        -Xbootclasspath/p:${edu.gmu.swe.phosphor:Phosphor:jar}:${edu.neu.ccs.conflux:conflux-policies:jar}
+                                        -javaagent:${edu.gmu.swe.phosphor:Phosphor:jar}=enum,acmpeq,cacheDir=${strict.control.cache},controlFlowManager=${strict.control.manager}
+                                    </argLine>
+                                </configuration>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                            <execution>
                                 <id>test-conflux</id>
                                 <configuration>
+                                    <skipTests>${skip.conflux}</skipTests>
                                     <jvm>${root.build.directory}/${conflux.jvm}/bin/java</jvm>
                                     <includes>
                                         <include>**/*ConfluxITCase.java</include>
