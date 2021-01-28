@@ -15,10 +15,14 @@ public class ReportManager {
      * Name of the directory used to store generated plots
      */
     private static final String PLOT_DIRECTORY_NAME = "flow-plots";
-    private static final Comparator<StudyInfo> studyComparator = Comparator.comparing(StudyInfo::getProject)
+    static final Comparator<StudyInfo> studyComparator = Comparator.comparing(StudyInfo::getProject)
             .thenComparing(StudyInfo::getIssue)
             .thenComparing(StudyInfo::getClassName)
             .thenComparing(StudyInfo::getMethodName);
+    /**
+     * True if study results should be printed to standard out. For debugging.
+     */
+    private static final boolean printStudyResults = Boolean.getBoolean("flow.print.studies");
     private static final Comparator<BenchInfo> benchComparator = Comparator.comparing(
             BenchInfo::getGroup)
             .thenComparing(BenchInfo::getProject)
@@ -217,6 +221,14 @@ public class ReportManager {
                     .toArray();
         }
         return row;
+    }
+
+    public void writeStudyResults(File studyReportFile) throws IOException {
+        AggregateFlowStudyReport studyReport = new AggregateFlowStudyReport(report);
+        studyReport.writeToFile(studyReportFile);
+        if (printStudyResults) {
+            printStudyResults();
+        }
     }
 
     public void printStudyResults() {

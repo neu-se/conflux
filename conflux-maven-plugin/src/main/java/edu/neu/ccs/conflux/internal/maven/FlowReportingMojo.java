@@ -48,11 +48,6 @@ public class FlowReportingMojo extends AbstractMojo {
     @Parameter(property = "configurationNames", readonly = true, required = true)
     private List<String> configurationNames;
     /**
-     * True if study results should be printed to standard out.
-     */
-    private static final boolean printStudyResults = Boolean.getBoolean("flow.print.studies");
-
-    /**
      * Aggregates the results of flow evaluations to produce a final report.
      *
      * @throws MojoFailureException if the report cannot be created or written
@@ -82,9 +77,10 @@ public class FlowReportingMojo extends AbstractMojo {
                     plotNumbersOfEntities, tableNumberOfEntities);
             ReportManager reportManager = new ReportManager(report);
             reportManager.printBenchResultsTable();
-            if (printStudyResults) {
-                reportManager.printStudyResults();
-            }
+            File studyReportFile = new File(finalReportDirectory, "flow-studies.json");
+            getLog().info("Writing study results to file: " + studyReportFile);
+            reportManager.writeStudyResults(studyReportFile);
+            getLog().info("Writing result tables and plots to directory: " + finalReportDirectory);
             reportManager.writeLatexResults(finalReportDirectory);
         } catch (IOException e) {
             throw new MojoFailureException("Failed to create or write flow report", e);

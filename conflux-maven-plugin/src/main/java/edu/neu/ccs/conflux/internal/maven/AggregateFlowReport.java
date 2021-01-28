@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AggregateFlowReport {
+public final class AggregateFlowReport {
 
     private static final SortedMap<TableStat, Method> tableStatMap = Arrays.stream(BenchRunResult.class.getDeclaredMethods())
             .filter(m -> m.isAnnotationPresent(TableStat.class))
