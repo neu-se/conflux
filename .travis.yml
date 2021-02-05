@@ -1,6 +1,0 @@
-dist: trusty
-language: java
-sudo: false
-install: mvn install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -DskipTests
-script: jdk_switcher use oraclejdk8; export INST_HOME=$JAVA_HOME/jre; export JAVA_TOOL_OPTIONS='-XX:NewSize=360M';
-  mvn install -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
