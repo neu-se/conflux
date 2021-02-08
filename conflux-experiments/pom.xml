@@ -14,6 +14,7 @@
         <module>experiments-rhino</module>
         <module>experiments-openrefine</module>
         <module>experiments-checkstyle</module>
+        <module>experiments-h2</module>
         <module>experiments-benchmarks</module>
         <module>experiments-report</module>
     </modules>
@@ -180,6 +181,9 @@
                                     </param>
                                     <param>
                                         ${experiments.base.directory}/experiments-checkstyle/target/flow-reports
+                                    </param>
+                                    <param>
+                                        ${experiments.base.directory}/experiments-h2/target/flow-reports
                                     </param>
                                 </reportDirectories>
                                 <configurationNames>
