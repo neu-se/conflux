@@ -76,8 +76,20 @@ public class BasePolicyTest {
     }
 
     public static void taintWithIndices(int[] a) {
-        for(int i = 0; i < a.length; i++) {
+        for (int i = 0; i < a.length; i++) {
             a[i] = MultiTainter.taintedInt(a[i], i);
         }
+    }
+
+    public static String taintWithIndices(String input) {
+        return taintWithIndices(input, 0, input.length());
+    }
+
+    public static String taintWithIndices(String input, int start, int len) {
+        char[] c = input.toCharArray();
+        for (int i = start; i < len; i++) {
+            c[i] = MultiTainter.taintedChar(c[i], i);
+        }
+        return new String(c);
     }
 }

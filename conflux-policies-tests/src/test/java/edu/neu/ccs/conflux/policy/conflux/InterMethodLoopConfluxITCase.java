@@ -93,4 +93,45 @@ public class InterMethodLoopConfluxITCase extends BasePolicyTest {
             this.x = x;
         }
     }
+
+    @Test
+    public void testReplace() {
+        char[] values = new char[]{taint('h', 0), taint('i', 1)};
+        replace(values, 'h', 'j');
+        assertTaintHasOnlyLabel(MultiTainter.getTaint(values[0]), 0);
+        assertTaintHasOnlyLabel(MultiTainter.getTaint(values[1]), 1);
+    }
+
+    private static char taint(char c, Object label) {
+        return MultiTainter.taintedChar(c, label);
+    }
+
+    @Test
+    public void testContains() {
+        char[] values = new char[]{taint('h', 0), taint('i', 1)};
+        char[] result = contains(values, 'h');
+        assertNullOrEmpty(MultiTainter.getTaint(result[0]));
+    }
+
+    static void replace(char[] a, char t, char r) {
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] == t) {
+                set(a, i, r);
+            }
+        }
+    }
+
+    static char[] contains(char[] a, char t) {
+        char[] res= new char[]{'n'};
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] == t) {
+                set(res, 0, 'y');
+            }
+        }
+        return res;
+    }
+
+    static void set(char[] a, int i, char x) {
+        a[i] = x;
+    }
 }
