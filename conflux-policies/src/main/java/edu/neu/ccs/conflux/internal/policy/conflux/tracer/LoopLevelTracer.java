@@ -105,9 +105,13 @@ public class LoopLevelTracer {
         Expression rhs = statement.getRightHandSide();
         Expression excluded = statement.getLeftHandSide();
         if(excluded instanceof LocalVariable) {
+            // If the lhs represents a local variable, find the previous version of the local variable,
+            // that is, the version that represents the variable before this definition
             VariableExpression baseExpression = ((VariableExpression) excluded).setVersion(-1);
             excluded = method.getVersionStacks().get(baseExpression).getRedefines((VariableExpression) excluded);
             if(excluded == null) {
+                // There is no prior definition of the variable to be excluded.
+                // Return the entire rhs as is.
                 return Collections.singleton(statement.getRightHandSide());
             }
         }
@@ -118,8 +122,10 @@ public class LoopLevelTracer {
     private void gatherImpactingSubExpressions(Expression e, Expression excluded, Set<Expression> subExpressions,
                                                AnnotatedInstruction target) {
         if(e.equals(excluded)) {
+            // All of the expression e is excluded since it matches exclusion
             return;
         }
+        // Perform constant propagation, constant folding, and copy-propagation on e
         Expression processed = e.accept(propagatingVisitor, null);
         if(processed instanceof ConstantExpression) {
             subExpressions.add(processed);
