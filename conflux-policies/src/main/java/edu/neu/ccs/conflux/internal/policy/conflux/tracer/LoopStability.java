@@ -94,7 +94,6 @@ interface LoopStability {
                 Unstable result = new Unstable(containingLoops);
                 result.unstableLoops.retainAll(unstableLoops);
                 return result;
-
             }
         }
 
