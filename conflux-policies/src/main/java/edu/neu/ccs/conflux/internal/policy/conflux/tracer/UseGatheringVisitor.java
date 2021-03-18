@@ -6,7 +6,9 @@ import edu.columbia.cs.psl.phosphor.struct.harmony.util.Set;
 import edu.neu.ccs.conflux.internal.policy.ssa.expression.*;
 import edu.neu.ccs.conflux.internal.policy.ssa.statement.*;
 
-public class UseGatheringVisitor implements ExpressionVisitor<Set<VariableExpression>>, StatementVisitor<Set<VariableExpression>> {
+public enum UseGatheringVisitor implements ExpressionVisitor<Set<VariableExpression>>, StatementVisitor<Set<VariableExpression>> {
+
+    INSTANCE;
 
     @Override
     public Set<VariableExpression> visit(ArrayAccess expression) {

@@ -76,7 +76,7 @@ public class SSAMethodTest {
         FlowGraph<AnnotatedBasicBlock> cfg = ssaMethod.getControlFlowGraph();
         Map<VariableExpression, AnnotatedBasicBlock> definitions = new HashMap<>();
         Map<VariableExpression, Set<AnnotatedBasicBlock>> uses = new HashMap<>();
-        UseGatheringVisitor useGatherer = new UseGatheringVisitor();
+        UseGatheringVisitor useGatherer = UseGatheringVisitor.INSTANCE;
         for(AnnotatedBasicBlock block : cfg.getVertices()) {
             for(AnnotatedInstruction i : block.getInstructions()) {
                 for(Statement statement : i.getStatements()) {

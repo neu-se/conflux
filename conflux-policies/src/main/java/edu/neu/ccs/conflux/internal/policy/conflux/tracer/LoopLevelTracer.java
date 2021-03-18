@@ -5,14 +5,15 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph.NaturalLoop;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
 import edu.neu.ccs.conflux.internal.policy.FlowGraphUtil;
+import edu.neu.ccs.conflux.internal.policy.conflux.FrameLoopStabilityInfo;
+import edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel;
 import edu.neu.ccs.conflux.internal.policy.ssa.AnnotatedBasicBlock;
 import edu.neu.ccs.conflux.internal.policy.ssa.AnnotatedInstruction;
 import edu.neu.ccs.conflux.internal.policy.ssa.PropagatingVisitor;
 import edu.neu.ccs.conflux.internal.policy.ssa.SSAMethod;
 import edu.neu.ccs.conflux.internal.policy.ssa.expression.*;
 import edu.neu.ccs.conflux.internal.policy.ssa.statement.*;
-import edu.neu.ccs.conflux.internal.policy.conflux.FrameLoopStabilityInfo;
-import edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel;
+
 import java.util.function.Predicate;
 
 import static edu.neu.ccs.conflux.internal.policy.conflux.LoopLevel.StableLoopLevel.STABLE_LOOP_LEVEL;
@@ -42,7 +43,7 @@ public class LoopLevelTracer {
     }
 
     private void initializeMaps() {
-        UseGatheringVisitor useGatherer = new UseGatheringVisitor();
+        UseGatheringVisitor useGatherer = UseGatheringVisitor.INSTANCE;
         for(AnnotatedBasicBlock block : graph.getVertices()) {
             for(AnnotatedInstruction insn : block.getInstructions()) {
                 insnMap.put(insn.getInstruction(), insn);
@@ -93,7 +94,7 @@ public class LoopLevelTracer {
             Expression index = ((ArrayAccess) expression).getIndex();
             result = LoopStability.merge(result, valueStabilities.getStability(index, source.getBasicBlock()));
         } else if(expression instanceof VariableExpression) {
-            result = calculateStabilityOfUses((VariableExpression) expression, candidateLoops, new HashSet<>());
+            result = calculateStabilityOfUses((VariableExpression) expression, candidateLoops);
         } else {
             throw new IllegalArgumentException();
         }
@@ -160,32 +161,35 @@ public class LoopLevelTracer {
         return false;
     }
 
-    private LoopStability calculateStabilityOfUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops,
-                                                   Set<VariableExpression> visited) {
+    private LoopStability calculateStabilityOfUses(VariableExpression expr, Set<NaturalLoop<AnnotatedBasicBlock>> candidateLoops) {
         LoopStability result = LoopStability.STABLE;
-        if(visited.add(expr) && usesMap.containsKey(expr)) {
-            for(Statement s : usesMap.get(expr)) {
-                if(s instanceof AssignmentStatement) {
-                    AssignmentStatement assign = ((AssignmentStatement) s);
-                    Expression lhs = assign.getLeftHandSide();
-                    Expression rhs = assign.getRightHandSide();
-                    if(rhs instanceof InvokeExpression) {
-                        return new LoopStability.Unstable(candidateLoops);
-                    }
-                    if(lhs instanceof FieldAccess) {
-                        Expression receiver = ((FieldAccess) lhs).getReceiver();
-                        if(receiver != null) {
-                            result = LoopStability.merge(result, receiver.accept(valueStabilities, candidateLoops));
-                        }
-                    } else if(lhs instanceof ArrayAccess) {
-                        Expression arrayRef = ((ArrayAccess) lhs).getArrayRef();
-                        result = LoopStability.merge(result, arrayRef.accept(valueStabilities, candidateLoops));
-                        Expression index = ((ArrayAccess) lhs).getIndex();
-                        result = LoopStability.merge(result, index.accept(valueStabilities, candidateLoops));
-                    }
-                } else if(s instanceof ReturnStatement) {
-                    result = LoopStability.merge(result, new LoopStability.ParameterDependent(method.getParameterTypes().size()));
+        if (!usesMap.containsKey(expr)) {
+            return result;
+        }
+        for (Statement s : usesMap.get(expr)) {
+            if (s instanceof AssignmentStatement) {
+                Expression rhs = ((AssignmentStatement) s).getRightHandSide();
+                if (rhs instanceof InvokeExpression && rhs.accept(UseGatheringVisitor.INSTANCE).contains(expr)) {
+                    // The expression is used in an invoke expression on the right-hand-side of an assignment
+                    // statement
+                    return new LoopStability.Unstable(candidateLoops);
                 }
+            }
+            if (s instanceof AssignmentStatement) {
+                Expression lhs = ((AssignmentStatement) s).getLeftHandSide();
+                if (lhs instanceof FieldAccess) {
+                    Expression receiver = ((FieldAccess) lhs).getReceiver();
+                    if (receiver != null) {
+                        result = LoopStability.merge(result, receiver.accept(valueStabilities, candidateLoops));
+                    }
+                } else if (lhs instanceof ArrayAccess) {
+                    Expression arrayRef = ((ArrayAccess) lhs).getArrayRef();
+                    result = LoopStability.merge(result, arrayRef.accept(valueStabilities, candidateLoops));
+                    Expression index = ((ArrayAccess) lhs).getIndex();
+                    result = LoopStability.merge(result, index.accept(valueStabilities, candidateLoops));
+                }
+            } else if (s instanceof ReturnStatement) {
+                result = LoopStability.merge(result, new LoopStability.ParameterDependent(method.getParameterTypes().size()));
             }
         }
         return result;
@@ -252,8 +256,7 @@ public class LoopLevelTracer {
             info.addLastArgumentLevel(c.toLoopLevel());
         }
         if(statement.definesVariable()) {
-            LoopStability c = calculateStabilityOfUses(statement.getDefinedVariable(),
-                    candidateLoops, new HashSet<>());
+            LoopStability c = calculateStabilityOfUses(statement.getDefinedVariable(), candidateLoops);
             info.addLastArgumentLevel(c.toLoopLevel());
         }
         return info;
