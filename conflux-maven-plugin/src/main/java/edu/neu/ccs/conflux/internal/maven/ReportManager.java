@@ -111,6 +111,7 @@ public class ReportManager {
                 .stream()
                 .sequential()
                 .map(BenchInfo::getGroup)
+                .distinct()
                 .sorted()
                 .forEach(group -> writeLatexTableGroup(grey, group, writer));
         writer.write("\\bottomrule\n");
@@ -287,9 +288,9 @@ public class ReportManager {
         if (maybeValue.isPresent()) {
             Number value = maybeValue.get();
             if (value instanceof Float) {
-                return String.format("%,.4f", value);
+                return String.format("%,.2f", value);
             } else if (value instanceof Double) {
-                return String.format("%,.4f", value);
+                return String.format("%,.2f", value);
             } else {
                 return String.format("%,d", value.longValue());
             }
