@@ -33,5 +33,6 @@ public class ClosureMinimizationRunner extends MinimizationRunner {
 
     public static void main(String[] arguments) throws IOException {
         new ClosureMinimizationRunner().run(new File(arguments[0]));
+        System.exit(0);
     }
 }

@@ -31,5 +31,6 @@ public class CheckStyleMinimizationRunner extends MinimizationRunner {
 
     public static void main(String[] arguments) throws IOException {
         new CheckStyleMinimizationRunner().run(new File(arguments[0]));
+        System.exit(0);
     }
 }
