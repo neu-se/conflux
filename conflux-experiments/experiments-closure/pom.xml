@@ -76,5 +76,11 @@
             <artifactId>closure-compiler</artifactId>
             <version>v20140814</version>
         </dependency>
+        <dependency>
+            <groupId>edu.neu.ccs.conflux</groupId>
+            <artifactId>experiments-shared</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

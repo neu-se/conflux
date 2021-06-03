@@ -1,0 +1,1 @@
+class E{t f=switch(v){case 0->1;case 2->0;}}

@@ -29,7 +29,7 @@ public class CheckstyleFlowStudy {
     public void issue8934(StudyTaintTagChecker checker) throws IOException, CheckstyleException {
         String input = FlowEvalUtil.readAndTaintResource(getClass(), "/checkstyle-8934.java");
         checker.recordInput(input);
-        File inputFile = copyResourceToTempFile();
+        File inputFile = copyResourceToTempFile(getClass().getResourceAsStream("/checkstyle-8934.java"));
         FileText text = new FileText(inputFile.getAbsoluteFile(), Arrays.asList(input.split("\n")));
         checker.recordInput(input);
         try {
@@ -41,12 +41,11 @@ public class CheckstyleFlowStudy {
         throw new AssertionError("Expected exception to be thrown");
     }
 
-    private File copyResourceToTempFile() throws IOException {
+    static File copyResourceToTempFile(InputStream in) throws IOException {
         File tempDir = Files.createTempDirectory(null).toFile();
         tempDir.deleteOnExit();
         File inputFile = new File(tempDir, "ExpressionSwitchBugs.java");
         inputFile.deleteOnExit();
-        InputStream in = getClass().getResourceAsStream("/checkstyle-8934.java");
         if (in == null) {
             throw new IllegalArgumentException();
         }
@@ -60,7 +59,7 @@ public class CheckstyleFlowStudy {
         return inputFile;
     }
 
-    private void check(File targetFile, FileText text) throws CheckstyleException {
+    static void check(File targetFile, FileText text) throws CheckstyleException {
         TreeWalker fsc = new TreeWalker();
         ClassLoader moduleClassLoader = Checker.class.getClassLoader();
         fsc.finishLocalSetup();
