@@ -249,7 +249,7 @@ public class ReportManager {
             char val = input.charAt(i);
             builder.append(predicted.contains(i) ? emphasize(val) : val);
         }
-        System.out.println(builder.toString());
+        System.out.println(builder);
         System.out.printf("%n%n");
     }
 

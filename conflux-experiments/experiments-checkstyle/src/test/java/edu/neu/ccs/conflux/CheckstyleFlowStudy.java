@@ -10,10 +10,7 @@ import com.puppycrawl.tools.checkstyle.checks.coding.FinalLocalVariableCheck;
 import edu.neu.ccs.conflux.internal.FlowStudy;
 import edu.neu.ccs.conflux.internal.runtime.StudyTaintTagChecker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -29,11 +26,8 @@ public class CheckstyleFlowStudy {
     public void issue8934(StudyTaintTagChecker checker) throws IOException, CheckstyleException {
         String input = FlowEvalUtil.readAndTaintResource(getClass(), "/checkstyle-8934.java");
         checker.recordInput(input);
-        File inputFile = copyResourceToTempFile(getClass().getResourceAsStream("/checkstyle-8934.java"));
-        FileText text = new FileText(inputFile.getAbsoluteFile(), Arrays.asList(input.split("\n")));
-        checker.recordInput(input);
         try {
-            check(inputFile, text);
+            run(input);
         } catch (NullPointerException e) {
             checker.check(e);
             return;
@@ -41,7 +35,21 @@ public class CheckstyleFlowStudy {
         throw new AssertionError("Expected exception to be thrown");
     }
 
-    static File copyResourceToTempFile(InputStream in) throws IOException {
+    static void run(String input) throws IOException, CheckstyleException {
+        File inputFile = copyResourceToTempFile(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+        FileText text = new FileText(inputFile.getAbsoluteFile(), Arrays.asList(input.split("\n")));
+        TreeWalker fsc = new TreeWalker();
+        ClassLoader moduleClassLoader = Checker.class.getClassLoader();
+        fsc.finishLocalSetup();
+        fsc.setModuleFactory(new PackageObjectFactory(Checker.class.getPackage().getName(), moduleClassLoader));
+        fsc.setupChild(new DefaultConfiguration(FinalLocalVariableCheck.class.getName()));
+        fsc.beginProcessing(StandardCharsets.UTF_8.name());
+        fsc.process(inputFile, text);
+        fsc.finishProcessing();
+        fsc.destroy();
+    }
+
+    private static File copyResourceToTempFile(InputStream in) throws IOException {
         File tempDir = Files.createTempDirectory(null).toFile();
         tempDir.deleteOnExit();
         File inputFile = new File(tempDir, "ExpressionSwitchBugs.java");
@@ -57,18 +65,6 @@ public class CheckstyleFlowStudy {
             }
         }
         return inputFile;
-    }
-
-    static void check(File targetFile, FileText text) throws CheckstyleException {
-        TreeWalker fsc = new TreeWalker();
-        ClassLoader moduleClassLoader = Checker.class.getClassLoader();
-        fsc.finishLocalSetup();
-        fsc.setModuleFactory(new PackageObjectFactory(Checker.class.getPackage().getName(), moduleClassLoader));
-        fsc.setupChild(new DefaultConfiguration(FinalLocalVariableCheck.class.getName()));
-        fsc.beginProcessing(StandardCharsets.UTF_8.name());
-        fsc.process(targetFile, text);
-        fsc.finishProcessing();
-        fsc.destroy();
     }
 }
 

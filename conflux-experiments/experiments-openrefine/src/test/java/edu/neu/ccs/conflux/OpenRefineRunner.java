@@ -9,27 +9,26 @@ import com.google.refine.importing.ImportingManager;
 import com.google.refine.model.Project;
 import com.google.refine.util.ParsingUtilities;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 
-public class OpenRefineMinimizationRunner extends MinimizationRunner {
-    public OpenRefineMinimizationRunner() {
+public class OpenRefineRunner extends StudyRunner {
+    public OpenRefineRunner() {
         super(ClassCastException.class, new StackTraceElement(
                 "com.google.refine.importers.TabularImportingParserBase",
                 "readTable",
                 "TabularImportingParserBase.java",
                 173
-        ), 0);
+        ), "/openrefine-2583.json");
     }
 
     @Override
-    protected void test(String json) {
+    protected void run(String input) {
+        // Note: ParsingUtilities will call Throwable.printStackTrace in the case of certain errors
         String csv = FlowEvalUtil.readResource(getClass(), "/openrefine-2583-min.csv");
         RefineServletStub servlet = new RefineServletStub();
         ImportingManager.initialize(servlet);
-        ObjectNode options = ParsingUtilities.evaluateJsonStringToObjectNode(json);
+        ObjectNode options = ParsingUtilities.evaluateJsonStringToObjectNode(input);
         ImportingJob job = ImportingManager.createJob();
         try {
             new SeparatorBasedImporter().parseOneFile(new Project(), new ProjectMetadata(), job,
@@ -38,10 +37,5 @@ public class OpenRefineMinimizationRunner extends MinimizationRunner {
         } finally {
             ImportingManager.disposeJob(job.id);
         }
-    }
-
-    public static void main(String[] arguments) throws IOException {
-        new OpenRefineMinimizationRunner().run(new File(arguments[0]));
-        System.exit(0);
     }
 }
