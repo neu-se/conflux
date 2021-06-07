@@ -12,15 +12,15 @@ import java.util.function.Function;
 public final class DeltaDebuggingReducer<T> {
 
     private final boolean logTest = Boolean.getBoolean("dd.log.test");
-    private final Map<List<? extends T>, TestResult> cache = new HashMap<>();
-    private final Function<? super List<? extends T>, TestResult> runner;
+    private final Map<List<T>, TestResult> cache = new HashMap<>();
+    private final Function<? super List<T>, TestResult> runner;
     private int tests = 0;
 
-    public DeltaDebuggingReducer(Function<? super List<? extends T>, TestResult> runner) {
+    public DeltaDebuggingReducer(Function<? super List<T>, TestResult> runner) {
         this.runner = runner;
     }
 
-    private TestResult test(List<? extends T> input) {
+    private TestResult test(List<T> input) {
         if (!cache.containsKey(input)) {
             TestResult result = runner.apply(input);
             tests++;
@@ -32,7 +32,7 @@ public final class DeltaDebuggingReducer<T> {
         return cache.get(input);
     }
 
-    public <U extends T> List<U> reduce(List<U> input) {
+    public List<T> reduce(List<T> input) {
         tests = 0;
         cache.clear();
         if (test(input) == TestResult.PASS) {
@@ -44,12 +44,12 @@ public final class DeltaDebuggingReducer<T> {
             double subsetLength = (1.0 * input.size()) / granularity;
             boolean someComplementIsFailing = false;
             while (start < input.size()) {
-                // TODO check rounding and other issues
-                List<U> complement = complement(input, (int) start, (int) subsetLength);
+                List<T> complement = complement(input, start, subsetLength);
                 if (test(complement) == TestResult.FAIL) {
                     input = complement;
                     granularity = Math.max(granularity - 1, 2);
                     someComplementIsFailing = true;
+                    break;
                 }
                 start += subsetLength;
             }
@@ -63,10 +63,12 @@ public final class DeltaDebuggingReducer<T> {
         return input;
     }
 
-    private static <R> List<R> complement(List<R> input, int start, int subsetLength) {
-        List<R> result = new LinkedList<>(input.subList(0, start));
-        if (start + subsetLength <= input.size()) {
-            result.addAll(input.subList(start + subsetLength, input.size()));
+    private static <R> List<R> complement(List<R> input, double start, double subsetLength) {
+        int a = (int) start;
+        int b = (int) (start + subsetLength);
+        List<R> result = new LinkedList<>(input.subList(0, a));
+        if (b <= input.size()) {
+            result.addAll(input.subList(b, input.size()));
         }
         return result;
     }

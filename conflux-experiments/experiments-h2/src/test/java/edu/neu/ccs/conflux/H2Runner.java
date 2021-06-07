@@ -4,6 +4,7 @@ import org.h2.tools.RunScript;
 
 import java.io.StringReader;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class H2Runner extends StudyRunner {
     public H2Runner() {
@@ -23,6 +24,13 @@ public class H2Runner extends StudyRunner {
         } catch (Throwable t) {
             if (t.getCause() instanceof NullPointerException) {
                 throw (NullPointerException) t.getCause();
+            }
+        } finally {
+            try {
+                RunScript.execute(DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "", ""),
+                        new StringReader("DROP ALL OBJECTS"));
+            } catch (SQLException e) {
+                //
             }
         }
     }

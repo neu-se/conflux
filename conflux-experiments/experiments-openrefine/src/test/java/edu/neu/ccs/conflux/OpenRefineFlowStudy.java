@@ -50,6 +50,7 @@ public class OpenRefineFlowStudy {
             checker.check(t);
             return;
         } finally {
+            job.canceled = true;
             ImportingManager.disposeJob(job.id);
         }
         throw new AssertionError("Expected exception to be thrown");
