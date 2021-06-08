@@ -13,11 +13,11 @@ public class H2Runner extends StudyRunner {
                 "getValue",
                 "ExpressionColumn.java",
                 189
-        ), "/h2-2550.sql");
+        ));
     }
 
     @Override
-    protected void run(String input) {
+    public void run(String input) {
         try {
             RunScript.execute(DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "", ""),
                     new StringReader(input));
@@ -27,11 +27,16 @@ public class H2Runner extends StudyRunner {
             }
         } finally {
             try {
-                RunScript.execute(DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "", ""),
-                        new StringReader("DROP ALL OBJECTS"));
+                RunScript.execute(DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+                        "", ""), new StringReader("DROP ALL OBJECTS"));
             } catch (SQLException e) {
                 //
             }
         }
+    }
+
+    @Override
+    public String getInitial() {
+        return FlowEvalUtil.readResource(getClass(), "/h2-2550.sql");
     }
 }

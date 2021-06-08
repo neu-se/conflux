@@ -10,16 +10,15 @@ public abstract class StudyRunner {
 
     private final Class<? extends Throwable> targetException;
     private final StackTraceElement targetElement;
-    private final String initialInputResourceName;
 
-    public StudyRunner(Class<? extends Throwable> targetException, StackTraceElement targetElement,
-                       String initialInputResourceName) {
+    public StudyRunner(Class<? extends Throwable> targetException, StackTraceElement targetElement) {
         this.targetException = targetException;
         this.targetElement = targetElement;
-        this.initialInputResourceName = initialInputResourceName;
     }
 
-    protected abstract void run(String input) throws Throwable;
+    public abstract void run(String input) throws Throwable;
+
+    public abstract String getInitial();
 
     public final TestResult run(Function<List<CharSequence>, String> joiner, List<CharSequence> elements) {
         try {
@@ -32,10 +31,6 @@ public abstract class StudyRunner {
             }
         }
         return PASS;
-    }
-
-    public final String getInitial() {
-        return FlowEvalUtil.readResource(getClass(), initialInputResourceName);
     }
 
     public static void main(String[] arguments) throws ReflectiveOperationException {

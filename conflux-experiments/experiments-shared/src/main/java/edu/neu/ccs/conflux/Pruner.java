@@ -9,6 +9,9 @@ public class Pruner {
 
     public static String randomPrune(StudyRunner runner, List<CharSequence> input,
                                      Function<List<CharSequence>, String> joiner, int iterations) {
+        if (input.isEmpty() || runner.run(joiner, input) != FAIL) {
+            throw new IllegalArgumentException();
+        }
         Random random = new Random(1_749_939);
         List<CharSequence> best = input;
         Map<List<CharSequence>, TestResult> cache = new HashMap<>();

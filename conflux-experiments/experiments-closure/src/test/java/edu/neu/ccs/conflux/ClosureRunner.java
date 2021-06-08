@@ -15,16 +15,21 @@ public class ClosureRunner extends StudyRunner {
                 "shouldAttachJSDocHere",
                 "NewIRFactory.java",
                 626
-        ), "/closure-652.js");
+        ));
     }
 
     @Override
-    protected void run(String input) {
+    public void run(String input) {
         Compiler compiler = new Compiler(new PrintStream(new ByteArrayOutputStream(), false));
         SourceFile extern = SourceFile.fromCode("extern", "");
         CompilerOptions options = new CompilerOptions();
         compiler.disableThreads();
         CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
         compiler.compile(extern, SourceFile.fromCode("input", input), options);
+    }
+
+    @Override
+    public String getInitial() {
+        return FlowEvalUtil.readResource(getClass(), "/closure-652.js");
     }
 }

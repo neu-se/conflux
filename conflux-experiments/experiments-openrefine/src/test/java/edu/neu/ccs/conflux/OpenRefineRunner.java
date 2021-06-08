@@ -15,9 +15,11 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Pattern;
 
 public class OpenRefineRunner extends StudyRunner {
 
+    private static final String SEPARATOR = "$$$$";
     private static final PrintStream DISCARD = new PrintStream(new OutputStream() {
         @Override
         public void write(int b) {
@@ -30,11 +32,18 @@ public class OpenRefineRunner extends StudyRunner {
                 "readTable",
                 "TabularImportingParserBase.java",
                 173
-        ), "/openrefine-2583.json");
+        ));
     }
 
     @Override
-    protected void run(String input) {
+    public void run(String input) {
+        if (input.contains(SEPARATOR)) {
+            String[] elements = input.split(Pattern.quote(SEPARATOR));
+            run(elements[0], elements[1]);
+        }
+    }
+
+    private void run(String csv, String json) {
         PrintStream err = System.err;
         // ParsingUtilities will call Throwable.printStackTrace in the case of certain errors
         // Temporarily discard output to standard err discard these errors
@@ -42,8 +51,7 @@ public class OpenRefineRunner extends StudyRunner {
         RefineServletStub servlet = new RefineServletStub();
         ImportingManager.initialize(servlet);
         try {
-            String csv = FlowEvalUtil.readResource(getClass(), "/openrefine-2583-min.csv");
-            ObjectNode options = ParsingUtilities.evaluateJsonStringToObjectNode(input);
+            ObjectNode options = ParsingUtilities.evaluateJsonStringToObjectNode(json);
             ImportingJob job = ImportingManager.createJob();
             try {
                 new SeparatorBasedImporter().parseOneFile(new Project(), new ProjectMetadata(), job,
@@ -64,5 +72,12 @@ public class OpenRefineRunner extends StudyRunner {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public String getInitial() {
+        String csv = FlowEvalUtil.readResource(getClass(), "/openrefine-2583.csv");
+        String json = FlowEvalUtil.readResource(getClass(), "/openrefine-2583.json");
+        return csv + SEPARATOR + json;
     }
 }
