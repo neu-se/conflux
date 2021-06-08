@@ -1,1 +1,1 @@
-f=function(){throw}
+throw

@@ -1,1 +1,1 @@
-function(){try{}finally{2}yield}
+function(){try{}finally{v}yield}
