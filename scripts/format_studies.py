@@ -4,7 +4,7 @@ import os
 
 def main():
     dir_name = os.path.dirname(__file__)
-    report_file = os.path.join(dir_name, 'conflux-experiments', 'experiments-report', 'target', 'flow-studies.json')
+    report_file = os.path.join(dir_name, '../conflux-experiments', 'experiments-report', 'target', 'flow-studies.json')
     with open(report_file) as f:
         report_data = json.load(f)
     studies = report_data['studies']

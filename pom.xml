@@ -9,12 +9,12 @@
     <name>conflux</name>
     <licenses>
         <license>
-            <name>MIT License</name>
-            <url>https://www.opensource.org/licenses/mit-license.php</url>
+            <name>BSD 3-Clause License</name>
+            <url>https://opensource.org/licenses/BSD-3-Clause</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <description>Practical Dynamic Taint Tracking with Control-Flow Relationships</description>
+    <description>A Practical Approach for Dynamic Taint Tracking with Control-Flow Relationships</description>
     <developers>
         <developer>
             <id>khough</id>

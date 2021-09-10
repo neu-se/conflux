@@ -147,8 +147,7 @@
                                         </instrumentedJVM>
                                     </phosphorConfiguration>
                                 </phosphorConfigurations>
-                                <tableNumberOfEntities>8</tableNumberOfEntities>
-                                <plotNumbersOfEntities>
+                                <numberOfEntitiesValues>
                                     <param>8</param>
                                     <param>16</param>
                                     <param>32</param>
@@ -157,7 +156,7 @@
                                     <param>256</param>
                                     <param>512</param>
                                     <param>1024</param>
-                                </plotNumbersOfEntities>
+                                </numberOfEntitiesValues>
                             </configuration>
                         </execution>
                         <execution>
@@ -193,17 +192,6 @@
                                     <param>strict-control</param>
                                     <param>conflux</param>
                                 </configurationNames>
-                                <tableNumberOfEntities>8</tableNumberOfEntities>
-                                <plotNumbersOfEntities>
-                                    <param>8</param>
-                                    <param>16</param>
-                                    <param>32</param>
-                                    <param>64</param>
-                                    <param>128</param>
-                                    <param>256</param>
-                                    <param>512</param>
-                                    <param>1024</param>
-                                </plotNumbersOfEntities>
                             </configuration>
                         </execution>
                     </executions>

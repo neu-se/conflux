@@ -30,7 +30,6 @@ import static edu.gmu.swe.phosphor.ignored.maven.PhosphorInstrumentUtil.getPhosp
  */
 @Mojo(name = "evaluate", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
 public class FlowEvaluationMojo extends AbstractMojo {
-
     /**
      * Name of the directory used to store results for the different configurations.
      */
@@ -52,7 +51,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
      */
     private static final boolean debugForks = Boolean.getBoolean("flow.debug");
     /**
-     * The name of the Phosphor configuration to be run or null if all of the configurations should be run.
+     * The name of the Phosphor configuration to be run or null if all the configurations should be run.
      */
     private static final String selectedConfig = System.getProperty("flow.config", null);
     /**
@@ -71,18 +70,13 @@ public class FlowEvaluationMojo extends AbstractMojo {
     @Parameter(property = "bootClasspathJars", readonly = true)
     private List<String> bootClasspathJars;
     /**
-     * Lengths of tainted inputs to be used in the generated plots.
+     * Lengths of tainted inputs to be tested.
      */
-    @Parameter(property = "plotNumbersOfEntities", readonly = true)
-    private Set<Integer> plotNumbersOfEntities;
-    /**
-     * Length of tainted inputs to be used in the generated table.
-     */
-    @Parameter(property = "tableNumberOfEntities", readonly = true)
-    private int tableNumberOfEntities;
+    @Parameter(property = "numberOfEntitiesValues", readonly = true)
+    private Set<Integer> numberOfEntitiesValues;
 
     /**
-     * Runs evaluations with different Phosphor configurations..
+     * Runs evaluations with different Phosphor configurations.
      *
      * @throws MojoFailureException if evaluations fail to run
      */
@@ -117,43 +111,39 @@ public class FlowEvaluationMojo extends AbstractMojo {
     }
 
     /**
-     * Validates plotNumberOfEntities and tableNumberOfEntities to ensure that lengths are non-negative.
+     * Validates numberOfEntitiesValues to ensure that lengths are non-negative.
      *
      * @throws MojoFailureException if a length is negative
      */
     private void validateNumberOfEntities() throws MojoFailureException {
-        if(plotNumbersOfEntities == null) {
-            plotNumbersOfEntities = Collections.emptySet();
+        if (numberOfEntitiesValues == null) {
+            numberOfEntitiesValues = Collections.emptySet();
         }
-        for(int NumberOfEntities : plotNumbersOfEntities) {
-            if(NumberOfEntities < 0) {
-                throw new MojoFailureException("Plot input length cannot be less than 0");
+        for (int NumberOfEntities : numberOfEntitiesValues) {
+            if (NumberOfEntities < 0) {
+                throw new MojoFailureException("Input length cannot be less than 0");
             }
-        }
-        if(tableNumberOfEntities < 0) {
-            throw new MojoFailureException("Table input length cannot be less than 0");
         }
     }
 
     /**
      * Validates phosphorConfigurations to ensure that configurations have valid names and instrumented
-     * JVM directories.
-     * Canonicalizes the phosphorConfigurations' properties.
+     * JVM directories. Converts the phosphor configurations' properties to the canonical form.
      *
      * @throws MojoFailureException if a PhosphorConfig in phosphorConfigurations has an invalid name or instrumentedJVM
      *                              value
      */
     private void validatePhosphorConfigurations() throws MojoFailureException {
         Set<String> names = new HashSet<>();
-        for(PhosphorConfig config : phosphorConfigurations) {
-            if(config.name == null || config.name.length() == 0) {
+        for (PhosphorConfig config : phosphorConfigurations) {
+            if (config.name == null || config.name.length() == 0) {
                 throw new MojoFailureException("Phosphor configurations must have non-null, non-empty names");
             }
-            if(config.instrumentedJVM == null || !config.instrumentedJVM.isDirectory()
+            if (config.instrumentedJVM == null || !config.instrumentedJVM.isDirectory()
                     || !new File(config.instrumentedJVM, "bin" + File.separator + "java").isFile()) {
                 throw new MojoFailureException("Phosphor configurations must specify an instrumented JVM directory");
             }
-            if(!names.add(config.name)) {
+            if (!names.add(config.name)) {
                 throw new MojoFailureException("Phosphor configurations must unique names: " + config.name);
             }
             config.options = PhosphorInstrumentUtil.canonicalizeProperties(config.options, true);
@@ -163,7 +153,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
     /**
      * If the specified configuration's properties contains a non-null, non-empty cache directory property returns a
      * file object created from it.
-     * Otherwise returns a default cache directory based on the name of the configuration located in the project
+     * Otherwise, returns a default cache directory based on the name of the configuration located in the project
      * build directory.
      *
      * @param phosphorConfiguration configuration whose cache directory is to be returned
@@ -171,7 +161,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
      */
     private File getCacheDir(PhosphorConfig phosphorConfiguration) {
         String cacheDirProperty = phosphorConfiguration.options.getProperty(PHOSPHOR_CACHE_DIRECTORY_OPTION_NAME);
-        if(cacheDirProperty != null && cacheDirProperty.length() > 0) {
+        if (cacheDirProperty != null && cacheDirProperty.length() > 0) {
             return new File(cacheDirProperty);
         } else {
             String cacheDirName = phosphorConfiguration.name + "-cache";
@@ -190,14 +180,14 @@ public class FlowEvaluationMojo extends AbstractMojo {
      * the specified desired properties
      */
     private boolean isExistingCacheDirectory(File cacheDir, Properties desiredProperties) {
-        if(cacheDir.isDirectory()) {
+        if (cacheDir.isDirectory()) {
             File propFile = new File(cacheDir, PHOSPHOR_CACHE_PROPERTIES_FILE);
-            if(propFile.isFile()) {
+            if (propFile.isFile()) {
                 try {
                     Properties existingProperties = new Properties();
                     existingProperties.load(new FileReader(propFile));
                     return desiredProperties.equals(existingProperties);
-                } catch(IOException e) {
+                } catch (IOException e) {
                     return false;
                 }
             }
@@ -210,7 +200,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
      *
      * @param reportDirectory directory to which evaluation reports should be written
      * @param reportFiles     list to which files containing evaluation reports should be written
-     * @return true if all of the evaluations completed successfully
+     * @return true if all the evaluations completed successfully
      * @throws IOException                           if an I/O error occurs
      * @throws InterruptedException                  if a thread interrupts this thread while it is waiting for an
      *                                               evaluation process to finish
@@ -242,7 +232,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
      * Evaluates a Phosphor configuration is a separate process.
      *
      * @param instrumentedJVM directory of the instrumented JVM that should be used to run the evaluation
-     * @param properties      canonicalized properties that specify the Phosphor configuration options that should be
+     * @param properties      canonical properties that specify the Phosphor configuration options that should be
      *                        used in the fork
      * @param reportFile      file to which created process should write its json report
      * @return true if the forked process return successfully
@@ -259,7 +249,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
         commands.add("-cp");
         commands.add(String.join(File.pathSeparator, project.getTestClasspathElements()));
         String phosphorJarPath = getPhosphorJarFile().getAbsolutePath();
-        StringBuilder bootClassPathBuilder = new StringBuilder("-Xbootclasspath/p:").append(phosphorJarPath);
+        StringBuilder bootClassPathBuilder = new StringBuilder("-Xbootclasspath/a:").append(phosphorJarPath);
         if (bootClasspathJars != null && !bootClasspathJars.isEmpty()) {
             for (String s : bootClasspathJars) {
                 bootClassPathBuilder.append(':').append(s);
@@ -273,9 +263,7 @@ public class FlowEvaluationMojo extends AbstractMojo {
         commands.add(FlowEvaluationRunner.class.getName());
         commands.add(getTestOutputDirectory().getAbsolutePath());
         commands.add(reportFile.getAbsolutePath());
-        Set<Integer> allNumberOfEntities = new HashSet<>(plotNumbersOfEntities);
-        allNumberOfEntities.add(tableNumberOfEntities);
-        for (int NumberOfEntities : allNumberOfEntities) {
+        for (int NumberOfEntities : numberOfEntitiesValues) {
             commands.add(Integer.toString(NumberOfEntities));
         }
         Process process = new ProcessBuilder(commands).inheritIO().start();

@@ -1,154 +1,184 @@
 package edu.neu.ccs.conflux.internal.maven;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.neu.ccs.conflux.internal.*;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public final class AggregateFlowReport {
+final class AggregateFlowReport {
+    private static final Gson gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .disableHtmlEscaping()
+            .setLenient()
+            .create();
+    private final List<StudyResult> studies;
+    private final List<BenchResult> benchmarks;
 
-    private static final SortedMap<TableStat, Method> tableStatMap = Arrays.stream(BenchRunResult.class.getDeclaredMethods())
-            .filter(m -> m.isAnnotationPresent(TableStat.class))
-            .collect(Collectors.toMap(m -> m.getAnnotation(TableStat.class), Function.identity(), (e, r) -> e,
-                    () -> new TreeMap<>(Comparator.comparing(TableStat::name))));
-    private static final SortedMap<PlotStat, Method> plotStatMap = Arrays.stream(BenchRunResult.class.getDeclaredMethods())
-            .filter(m -> m.isAnnotationPresent(PlotStat.class))
-            .collect(Collectors.toMap(m -> m.getAnnotation(PlotStat.class), Function.identity(), (e, r) -> e,
-                    () -> new TreeMap<>(Comparator.comparing(PlotStat::name))));
-    /**
-     * The names of the configurations that were evaluated.
-     */
-    private final List<String> configurationNames;
-    /**
-     * Maps the names of the configurations to their evaluation reports.
-     */
-    private final Map<String, FlowReport> configurationReportMap = new HashMap<>();
-    /**
-     * Lengths of tainted inputs to be used in the generated plots for benchmarks.
-     */
-    private final SortedSet<Integer> plotNumbersOfEntities;
-    /**
-     * Length of tainted inputs to be used in the generated table for benchmarks.
-     */
-    private final int tableNumberOfEntities;
-
-    AggregateFlowReport(List<String> configurationNames, List<FlowReport> reportFiles,
-                        Collection<Integer> plotNumbersOfEntities,
-                        int tableNumberOfEntities) throws IOException {
-        this.plotNumbersOfEntities = Collections.unmodifiableSortedSet(new TreeSet<>(plotNumbersOfEntities));
-        this.tableNumberOfEntities = tableNumberOfEntities;
-        if (configurationNames.size() != reportFiles.size()) {
-            throw new IllegalArgumentException();
+    public AggregateFlowReport(Map<String, FlowReport> configReportMap) {
+        studies = extractStudies(configReportMap);
+        studies.sort(Comparator.comparing(StudyResult::getProject).thenComparing(StudyResult::getIssue));
+        for (StudyResult study : studies) {
+            study.policies.sort(Comparator.comparing(StudyPolicyResult::getPolicy));
         }
-        this.configurationNames = Collections.unmodifiableList(new ArrayList<>(configurationNames));
-        Iterator<String> itr1 = this.configurationNames.iterator();
-        Iterator<FlowReport> itr2 = reportFiles.iterator();
-        while (itr1.hasNext()) {
-            configurationReportMap.put(itr1.next(), itr2.next());
+        benchmarks = extractBenchmarks(configReportMap);
+        benchmarks.sort(Comparator.comparing(BenchResult::getGroup).thenComparing(BenchResult::getProject)
+                .thenComparing(BenchResult::getImplementation));
+        for (BenchResult benchmark : benchmarks) {
+            benchmark.policies.sort(Comparator.comparing(BenchPolicyResult::getPolicy));
         }
     }
 
-    public List<String> getConfigurationNames() {
-        return configurationNames;
-    }
-
-    public SortedSet<Integer> getPlotNumbersOfEntities() {
-        return plotNumbersOfEntities;
-    }
-
-    public int getTableNumberOfEntities() {
-        return tableNumberOfEntities;
-    }
-
-    public Set<StudyInfo> getStudies() {
-        return configurationReportMap.values()
-                .stream()
-                .map(FlowReport::getStudyReports)
-                .map(Map::keySet)
-                .collect(HashSet::new, Set::addAll, Set::addAll);
-    }
-
-    public Set<BenchInfo> getBenchmarks() {
-        return configurationReportMap.values()
-                .stream()
-                .map(FlowReport::getBenchReports)
-                .map(Map::keySet)
-                .collect(HashSet::new, Set::addAll, Set::addAll);
-    }
-
-    public Optional<Number> getValue(String configurationName, BenchInfo bench, int numberOfEntities,
-                                     TableStat stat) {
-        return getResult(configurationName, bench, numberOfEntities)
-                .map(r -> getValue(r, stat));
-
-    }
-
-    public Optional<Number> getValue(String configurationName, BenchInfo bench, int numberOfEntities,
-                                     PlotStat stat) {
-        return getResult(configurationName, bench, numberOfEntities)
-                .map(r -> getValue(r, stat));
-    }
-
-    public Optional<StudyRunResult> getResult(String configurationName, StudyInfo study) {
-        return Optional.ofNullable(configurationReportMap.get(configurationName).getStudyReports().get(study));
-    }
-
-    private Optional<BenchRunResult> getResult(String configurationName, BenchInfo bench, int numberOfEntities) {
-        return Optional.ofNullable(configurationReportMap.get(configurationName).getBenchReports().get(bench))
-                .map(m -> m.get(numberOfEntities));
-    }
-
-    public boolean shouldEmphasizeTableStat(String configurationName, BenchInfo bench,
-                                            int numberOfEntities, TableStat stat) {
-        if (!stat.emphasizeMax()) {
-            return false;
+    public void writeToFile(File reportFile) throws FileNotFoundException {
+        String json = gson.toJson(this);
+        try (PrintWriter out = new PrintWriter(reportFile)) {
+            out.println(json);
         }
-        Optional<Number> maybeValue = getValue(configurationName, bench, numberOfEntities, stat);
-        if (!maybeValue.isPresent()) {
-            return false;
+    }
+
+    private static List<BenchResult> extractBenchmarks(Map<String, FlowReport> configReportMap) {
+        Map<BenchInfo, BenchResult> benchMap = new HashMap<>();
+        for (FlowReport report : configReportMap.values()) {
+            for (BenchInfo benchInfo : report.getBenchReports().keySet()) {
+                benchMap.put(benchInfo, new BenchResult(benchInfo.getGroup(), benchInfo.getImplementation(),
+                        benchInfo.getProject()));
+            }
         }
-        Number value = maybeValue.get();
-        for (String c : getConfigurationNames()) {
-            if (!c.equals(configurationName)) {
-                if (getValue(c, bench, numberOfEntities, stat)
-                        .map(v -> v.doubleValue() > value.doubleValue() || v.longValue() > value.longValue())
-                        .orElse(false)) {
-                    return false;
+        for (String configuration : configReportMap.keySet()) {
+            FlowReport report = configReportMap.get(configuration);
+            for (BenchInfo benchInfo : report.getBenchReports().keySet()) {
+                Map<Integer, BenchRunResult> runResults = report.getBenchReports().get(benchInfo);
+                BenchPolicyResult entry = new BenchPolicyResult(configuration, runResults);
+                benchMap.get(benchInfo).policies.add(entry);
+            }
+        }
+        return new ArrayList<>(benchMap.values());
+    }
+
+    private static List<StudyResult> extractStudies(Map<String, FlowReport> configReportMap) {
+        Map<StudyInfo, StudyResult> studyMap = new HashMap<>();
+        for (FlowReport report : configReportMap.values()) {
+            for (StudyInfo study : report.getStudyReports().keySet()) {
+                String input = report.getStudyReports().get(study).getInput();
+                if (!studyMap.containsKey(study)) {
+                    studyMap.put(study, new StudyResult(study.getProject(), study.getIssue(), input));
+                } else if (!studyMap.get(study).getInput().equals(input)) {
+                    throw new IllegalArgumentException("Same study performed with different inputs");
                 }
             }
         }
-        return true;
+        for (String configuration : configReportMap.keySet()) {
+            FlowReport report = configReportMap.get(configuration);
+            for (StudyInfo studyInfo : report.getStudyReports().keySet()) {
+                StudyRunResult runResult = report.getStudyReports().get(studyInfo);
+                StudyPolicyResult entry = new StudyPolicyResult(configuration, runResult.getPredicted());
+                studyMap.get(studyInfo).policies.add(entry);
+            }
+        }
+        return new ArrayList<>(studyMap.values());
     }
 
-    public static SortedSet<TableStat> getTableStatistics() {
-        SortedSet<TableStat> set = new TreeSet<>(Comparator.comparing(TableStat::name));
-        set.addAll(tableStatMap.keySet());
-        return set;
-    }
+    private static final class BenchResult {
+        private final String group;
+        private final String implementation;
+        private final String project;
+        private final List<BenchPolicyResult> policies = new LinkedList<>();
 
-    public static SortedSet<PlotStat> getPlotStatistics() {
-        SortedSet<PlotStat> set = new TreeSet<>(Comparator.comparing(PlotStat::name));
-        set.addAll(plotStatMap.keySet());
-        return set;
-    }
+        private BenchResult(String group, String implementation, String project) {
+            this.group = group;
+            this.implementation = implementation;
+            this.project = project;
+        }
 
-    private static Number getValue(BenchRunResult result, TableStat stat) {
-        try {
-            return (Number) tableStatMap.get(stat).invoke(result);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalStateException();
+        public String getGroup() {
+            return group;
+        }
+
+        public String getImplementation() {
+            return implementation;
+        }
+
+        public String getProject() {
+            return project;
         }
     }
 
-    private static Number getValue(BenchRunResult result, PlotStat stat) {
-        try {
-            return (Number) plotStatMap.get(stat).invoke(result);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalStateException();
+    private static final class BenchPolicyResult {
+        private final String policy;
+        private final List<BenchTrialResult> trials = new LinkedList<>();
+
+        private BenchPolicyResult(String policy, Map<Integer, BenchRunResult> runResults) {
+            this.policy = policy;
+            for (int numberOfEntities : runResults.keySet()) {
+                trials.add(new BenchTrialResult(numberOfEntities, runResults.get(numberOfEntities)));
+            }
+            trials.sort(Comparator.comparing(BenchTrialResult::getNumberOfEntities));
+        }
+
+        public String getPolicy() {
+            return policy;
+        }
+    }
+
+    private static final class BenchTrialResult {
+        private final int numberOfEntities;
+        private final int truePositives;
+        private final int falsePositives;
+        private final int falseNegatives;
+
+        public BenchTrialResult(int numberOfEntities, BenchRunResult benchRunResult) {
+            this.numberOfEntities = numberOfEntities;
+            this.truePositives = benchRunResult.truePositives();
+            this.falsePositives = benchRunResult.falsePositives();
+            this.falseNegatives = benchRunResult.falseNegatives();
+        }
+
+        public int getNumberOfEntities() {
+            return numberOfEntities;
+        }
+    }
+
+    private static final class StudyResult {
+        private final String project;
+        private final String issue;
+        private final String input;
+        private final List<StudyPolicyResult> policies = new LinkedList<>();
+
+        private StudyResult(String project, String issue, String input) {
+            this.project = project;
+            this.issue = issue;
+            this.input = input;
+        }
+
+        public String getProject() {
+            return project;
+        }
+
+        public String getIssue() {
+            return issue;
+        }
+
+        public String getInput() {
+            return input;
+        }
+    }
+
+    private static final class StudyPolicyResult {
+        private final String policy;
+        private final SortedSet<Integer> predictedIndices = new TreeSet<>();
+
+        private StudyPolicyResult(String policy, int[] predictedIndices) {
+            this.policy = policy;
+            for (int i : predictedIndices) {
+                this.predictedIndices.add(i);
+            }
+        }
+
+        public String getPolicy() {
+            return policy;
         }
     }
 }

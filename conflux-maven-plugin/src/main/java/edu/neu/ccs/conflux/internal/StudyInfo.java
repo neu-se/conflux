@@ -3,7 +3,6 @@ package edu.neu.ccs.conflux.internal;
 import java.lang.reflect.Method;
 
 public final class StudyInfo extends TestInfo {
-
     private final String project;
     private final String issue;
 

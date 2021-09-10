@@ -4,7 +4,7 @@ import os
 
 def per_line_counts():
     dir_name = os.path.dirname(__file__)
-    report_file = os.path.join(dir_name, 'conflux-experiments', 'experiments-report', 'target', 'flow-studies.json')
+    report_file = os.path.join(dir_name, '../conflux-experiments', 'experiments-report', 'target', 'flow-studies.json')
     with open(report_file) as f:
         report_data = json.load(f)
     names = ['total', 'data-only', 'basic-control', 'strict-control', 'conflux']
@@ -39,7 +39,7 @@ def print_line_counts(current_line_counts, row):
 
 def counts():
     dir_name = os.path.dirname(__file__)
-    report_file = os.path.join(dir_name, 'conflux-experiments', 'experiments-report', 'target', 'flow-studies.json')
+    report_file = os.path.join(dir_name, '../conflux-experiments', 'experiments-report', 'target', 'flow-studies.json')
     with open(report_file) as f:
         report_data = json.load(f)
     studies = report_data['studies']

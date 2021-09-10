@@ -3,7 +3,7 @@ import os
 
 def main():
     dir_name = os.path.dirname(__file__)
-    plot_dir = os.path.join(dir_name, 'conflux-experiments', 'experiments-report', 'target', 'flow-plots')
+    plot_dir = os.path.join(dir_name, '../conflux-experiments', 'experiments-report', 'target', 'flow-plots')
     plot_files = [os.path.join(plot_dir, f) for f in os.listdir(plot_dir)]
     categories = [categorize(read_lines(plot_file)) for plot_file in plot_files]
     print(len(categories))
