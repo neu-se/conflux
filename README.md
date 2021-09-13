@@ -2,7 +2,8 @@
 
 Conflux is a system that uses alternative semantics for propagating taint tags along control flows. 
 These semantics aim to reduce control-flow-related over-tainting by decreasing the scopes of control flows and by providing a heuristic for reducing loop-related over-tainting.
-This repository contains the source code for Conflux.
+This repository contains the source code and experiments for Conflux as described in our TOSEM paper.
+
 
 Conflux is an extension to [Phosphor](https://github.com/gmu-swe/phosphor), a Java dynamic taint tracking framework.
 Currently, Phosphor only fully supports Java versions 8 or lower.
@@ -16,13 +17,14 @@ Currently, Phosphor only fully supports Java versions 8 or lower.
 
 1. Make sure that you have some version of OpenJDK 8 installed. Set the JAVA_HOME environmental variable to this path.
    For example, on Mac, run `export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_222-openjdk/Contents/Home/`.
-2. Clone this repository.
+To reproduce our exact results, please use OpenJDK version 1.8.0_222.
+2. Clone or download this repository.
 3. In the root project directory, run `mvn -DskipTests install` to build Conflux.
 
 ## Experiments
 
-The following instructions assume that you have already built Conflux following the above instructions. 
-In the "conflux-experiments" directory execute the command `mvn install` to run all the benchmarks and case study experiments.
+The following instructions assume that you have already built Conflux according to the above instructions. 
+In the "conflux-experiments" directory, execute the command `mvn install` to run all the benchmarks and case study experiments.
 
 ### Interpreting the Results
 
