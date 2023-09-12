@@ -353,14 +353,17 @@
         </profile>
     </profiles>
     <distributionManagement>
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/neu-se/conflux</url>
-        </repository>
         <snapshotRepository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/neu-se/conflux</url>
+            <id>ossrh-snapshots</id>
+            <name>OSSRH Snapshots Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <name>OSSRH Releases Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <downloadUrl>https://oss.sonatype.org/content/groups/public</downloadUrl>
     </distributionManagement>
     <repositories>
         <repository>
