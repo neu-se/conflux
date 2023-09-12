@@ -353,17 +353,14 @@
         </profile>
     </profiles>
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh-shapshots</id>
-            <name>OSSRH Snapshots Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <name>OSSRH Releases Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/neu-se/conflux</url>
         </repository>
-        <downloadUrl>https://oss.sonatype.org/content/groups/public</downloadUrl>
+        <snapshotRepository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/neu-se/conflux</url>
+        </snapshotRepository>
     </distributionManagement>
     <repositories>
         <repository>
@@ -376,7 +373,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-    </repositories>  
+    </repositories>
     <pluginRepositories>
         <pluginRepository>
             <id>oss.sonatype.org-snapshot</id>
@@ -387,8 +384,8 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
 
 
