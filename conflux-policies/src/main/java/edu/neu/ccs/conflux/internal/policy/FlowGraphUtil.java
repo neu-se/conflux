@@ -6,6 +6,8 @@ import edu.columbia.cs.psl.phosphor.control.graph.FlowGraph;
 import edu.columbia.cs.psl.phosphor.control.graph.FlowGraphBuilder;
 import edu.columbia.cs.psl.phosphor.org.objectweb.asm.tree.AbstractInsnNode;
 import edu.columbia.cs.psl.phosphor.struct.harmony.util.*;
+import edu.neu.ccs.conflux.internal.policy.ssa.AnnotatedBasicBlock;
+import edu.neu.ccs.conflux.internal.policy.tac.ThreeAddressBasicBlock;
 
 import java.util.function.Function;
 
@@ -104,7 +106,7 @@ public class FlowGraphUtil {
      * @param converter     function used to create the new vertices
      * @param <U>           the type of the vertices in the new graph
      * @param <V>           the type of the vertices in the original graph
-     * @return a flow graph with the same edges are the original graph but with each vertex converted to a new object
+     * @return a flow graph with the same edges as the original graph but with each vertex converted to a new object
      * using the specified converter
      */
     public static <U, V> FlowGraph<U> convertVertices(FlowGraph<V> originalGraph, Function<? super V, U> converter) {
@@ -124,6 +126,23 @@ public class FlowGraphUtil {
         return builder.build();
     }
 
+    public static FlowGraph<AnnotatedBasicBlock> convertVertices(FlowGraph<ThreeAddressBasicBlock> originalGraph) {
+        FlowGraphBuilder<AnnotatedBasicBlock> builder = new FlowGraphBuilder<>();
+        Map<ThreeAddressBasicBlock, AnnotatedBasicBlock> blockMap = new HashMap<>();
+        for(ThreeAddressBasicBlock vertex : originalGraph.getVertices()) {
+            blockMap.put(vertex, vertex.createSSABasicBlock());
+            builder.addVertex(blockMap.get(vertex));
+        }
+        builder.addEntryPoint(blockMap.get(originalGraph.getEntryPoint()));
+        builder.addExitPoint(blockMap.get(originalGraph.getExitPoint()));
+        for(ThreeAddressBasicBlock source : blockMap.keySet()) {
+            for(ThreeAddressBasicBlock target : originalGraph.getSuccessors(source)) {
+                builder.addEdge(blockMap.get(source), blockMap.get(target));
+            }
+        }
+        return builder.build();
+    }
+    
     public static AbstractInsnNode findNextPrecedableInstruction(AbstractInsnNode insn) {
         while(insn != null && (insn.getType() == AbstractInsnNode.FRAME || insn.getType() == AbstractInsnNode.LINE
                 || insn.getType() == AbstractInsnNode.LABEL || insn.getOpcode() > 200)) {
