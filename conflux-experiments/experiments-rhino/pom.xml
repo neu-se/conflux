@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>experiments-rhino</artifactId>
     <parent>
-        <groupId>edu.neu.ccs.conflux</groupId>
+        <groupId>edu.neu.ccs.prl.conflux</groupId>
         <artifactId>conflux-experiments</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
@@ -57,7 +57,7 @@
                         <artifactId>phosphor-instrument-maven-plugin</artifactId>
                     </plugin>
                     <plugin>
-                        <groupId>edu.neu.ccs.conflux</groupId>
+                        <groupId>edu.neu.ccs.prl.conflux</groupId>
                         <artifactId>conflux-maven-plugin</artifactId>
                         <executions>
                             <execution>
@@ -111,7 +111,7 @@
             <version>1.7.11</version>
         </dependency>
         <dependency>
-            <groupId>edu.neu.ccs.conflux</groupId>
+            <groupId>edu.neu.ccs.prl.conflux</groupId>
             <artifactId>experiments-shared</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>test</scope>

@@ -5,7 +5,7 @@
     <artifactId>conflux-experiments</artifactId>
     <packaging>pom</packaging>
     <parent>
-        <groupId>edu.neu.ccs.conflux</groupId>
+        <groupId>edu.neu.ccs.prl.conflux</groupId>
         <artifactId>conflux</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
@@ -68,7 +68,7 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>edu.neu.ccs.conflux</groupId>
+                    <groupId>edu.neu.ccs.prl.conflux</groupId>
                     <artifactId>conflux-maven-plugin</artifactId>
                     <executions>
                         <execution>
@@ -212,11 +212,11 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>edu.neu.ccs.conflux</groupId>
+            <groupId>edu.neu.ccs.prl.conflux</groupId>
             <artifactId>conflux-maven-plugin</artifactId>
         </dependency>
         <dependency>
-            <groupId>edu.neu.ccs.conflux</groupId>
+            <groupId>edu.neu.ccs.prl.conflux</groupId>
             <artifactId>conflux-policies</artifactId>
         </dependency>
     </dependencies>

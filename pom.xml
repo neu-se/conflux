@@ -2,7 +2,7 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>edu.neu.ccs.conflux</groupId>
+    <groupId>edu.neu.ccs.prl.conflux</groupId>
     <artifactId>conflux</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -94,12 +94,12 @@
                 <version>0.0.5-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>edu.neu.ccs.conflux</groupId>
+                <groupId>edu.neu.ccs.prl.conflux</groupId>
                 <artifactId>conflux-policies</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>edu.neu.ccs.conflux</groupId>
+                <groupId>edu.neu.ccs.prl.conflux</groupId>
                 <artifactId>conflux-maven-plugin</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
@@ -228,7 +228,7 @@
                     <version>1.6.0</version>
                 </plugin>
                 <plugin>
-                    <groupId>edu.neu.ccs.conflux</groupId>
+                    <groupId>edu.neu.ccs.prl.conflux</groupId>
                     <artifactId>conflux-maven-plugin</artifactId>
                     <version>1.0.0-SNAPSHOT</version>
                 </plugin>
@@ -238,7 +238,7 @@
                     <version>0.0.5-SNAPSHOT</version>
                     <dependencies>
                         <dependency>
-                            <groupId>edu.neu.ccs.conflux</groupId>
+                            <groupId>edu.neu.ccs.prl.conflux</groupId>
                             <artifactId>conflux-policies</artifactId>
                             <version>1.0.0-SNAPSHOT</version>
                         </dependency>
@@ -356,18 +356,18 @@
         <snapshotRepository>
             <id>ossrh-snapshots</id>
             <name>OSSRH Snapshots Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
             <name>OSSRH Releases Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
-        <downloadUrl>https://oss.sonatype.org/content/groups/public</downloadUrl>
+        <downloadUrl>https://s01.oss.sonatype.org/content/groups/public</downloadUrl>
     </distributionManagement>
     <repositories>
         <repository>
-            <id>oss.sonatype.org-snapshot</id>
+            <id>oss.sonatype.org-snapshot-legacy</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
                 <enabled>false</enabled>
@@ -379,7 +379,7 @@
     </repositories>
     <pluginRepositories>
         <pluginRepository>
-            <id>oss.sonatype.org-snapshot</id>
+            <id>oss.sonatype.org-snapshot-legacy</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
                 <enabled>false</enabled>
